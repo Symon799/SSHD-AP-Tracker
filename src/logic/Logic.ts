@@ -27,6 +27,7 @@ import {
 import type {
     RawArea,
     RawEntrance,
+    RawEntranceConnection,
     RawExit,
     RawLogic,
     TimeOfDayInt,
@@ -136,6 +137,10 @@ export interface AreaGraph {
     entrances: Record<string, RawEntrance>;
     entranceHintRegions: Record<string, string>;
     exits: Record<string, RawExit>;
+    /** Canonical SSHD shuffle connections, absent from legacy SS dumps. */
+    entranceConnections: Record<string, RawEntranceConnection>;
+    /** Conditional exit -> entrance-shuffle exit that must remain vanilla. */
+    conditionalVanillaConnections: Record<string, string>;
 
     /** Sandship Dock Exit -> Exit to Sandship */
     autoExits: {
@@ -925,8 +930,9 @@ export function parseLogic(raw: RawLogic): Logic {
     const vanillaConnections: AreaGraph['vanillaConnections'] = {};
     for (const [exitId, exitDef] of Object.entries(raw.exits)) {
         if (exitDef.vanilla) {
-            vanillaConnections[exitId] =
-                entrancesByShortName[exitDef.vanilla].id;
+            vanillaConnections[exitId] = raw.entrances[exitDef.vanilla]
+                ? exitDef.vanilla
+                : entrancesByShortName[exitDef.vanilla].id;
         }
     }
 
@@ -993,6 +999,9 @@ export function parseLogic(raw: RawLogic): Logic {
         entranceHintRegions: entranceHintAreas,
         entrances: raw.entrances,
         exits: raw.exits,
+        entranceConnections: raw.entrance_connections ?? {},
+        conditionalVanillaConnections:
+            raw.conditional_vanilla_connections ?? {},
         vanillaConnections,
         autoExits,
         linkedEntrancePools,

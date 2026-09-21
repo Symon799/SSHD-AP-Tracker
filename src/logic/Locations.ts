@@ -61,7 +61,13 @@ interface AbstractExitMapping {
 export interface ReadOnlyExitMapping extends AbstractExitMapping {
     canAssign: false;
     rule: ExitRule & {
-        type: 'vanilla' | 'follow' | 'lmfSecondExit' | 'linked';
+        type:
+            | 'vanilla'
+            | 'follow'
+            | 'coupledReverse'
+            | 'lmfSecondExit'
+            | 'conditionalVanilla'
+            | 'linked';
     };
 }
 
@@ -127,9 +133,7 @@ export function dungeonFromApGoalLocationName(
     return AP_GOAL_BOSS_LOCATION_TO_DUNGEON[locationName];
 }
 
-export function isGoalDungeonLocationCodes(
-    raw: unknown,
-): raw is number[] {
+export function isGoalDungeonLocationCodes(raw: unknown): raw is number[] {
     return (
         Array.isArray(raw) &&
         raw.length > 0 &&

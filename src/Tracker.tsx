@@ -37,12 +37,21 @@ import {
     ENABLE_MAP_LAYOUT_DEBUG,
 } from './locationTracker/mapTracker/layoutDebug';
 import MapLayoutDebugContextMenu from './locationTracker/mapTracker/MapLayoutDebugContextMenu';
-import { isLogicLoadedSelector, logicSelector } from './logic/Selectors';
+import { forceSshdManualEntranceTestMode } from './logic/EntranceTestMode';
+import {
+    areaGraphSelector,
+    isLogicLoadedSelector,
+    logicSelector,
+} from './logic/Selectors';
 import { getInitialItems } from './logic/TrackerModifications';
 import type { RootState } from './store/Store';
 import { MakeTooltipsAvailable } from './tooltips/TooltipHooks';
 import styles from './Tracker.module.css';
-import { totalCountersSelector } from './tracker/Selectors';
+import {
+    exitsByIdSelector,
+    hasManualEntranceMappingSelector,
+    totalCountersSelector,
+} from './tracker/Selectors';
 import {
     replaceItemCounts,
     // clickDungeonName,
@@ -80,7 +89,6 @@ function Tracker() {
     );
     const [showCustomizationDialog, setShowCustomizationDialog] =
         useState(false);
-    const [showEntranceDialog, setShowEntranceDialog] = useState(false);
 
     return (
         <>
@@ -96,7 +104,6 @@ function Tracker() {
                             openCustomization={() =>
                                 setShowCustomizationDialog(true)
                             }
-                            openEntrances={() => setShowEntranceDialog(true)}
                         />
                     )}
                 </div>
@@ -105,16 +112,18 @@ function Tracker() {
                 open={showCustomizationDialog}
                 onOpenChange={setShowCustomizationDialog}
             />
-            <EntranceTracker
-                open={showEntranceDialog}
-                onOpenChange={setShowEntranceDialog}
-            />
         </>
     );
 }
 
 function TrackerContents({ openTools }: { openTools: () => void }) {
     const logic = useSelector(logicSelector);
+    const areaGraph = useSelector(areaGraphSelector);
+    const exitsById = useSelector(exitsByIdSelector);
+    const hasManualEntranceMapping = useSelector(
+        hasManualEntranceMappingSelector,
+    );
+    const [showEntranceDialog, setShowEntranceDialog] = useState(false);
     const [trackerInterfaceState, trackerInterfaceDispatch] =
         useTrackerInterfaceReducer();
 
@@ -124,6 +133,17 @@ function TrackerContents({ openTools }: { openTools: () => void }) {
     const clientManager = useContext(ClientManagerContext);
     const autoRegionLoadingRef = useRef(autoRegionLoading);
     autoRegionLoadingRef.current = autoRegionLoading;
+    const entranceRandomizerEnabled =
+        forceSshdManualEntranceTestMode || hasManualEntranceMapping;
+    const goToEntrance = (exitId: string) => {
+        const entranceId = exitsById[exitId]?.entrance?.id;
+        const hintRegion = entranceId
+            ? areaGraph.entranceHintRegions[entranceId]
+            : undefined;
+        if (hintRegion !== undefined) {
+            trackerInterfaceDispatch({ type: 'selectHintRegion', hintRegion });
+        }
+    };
     const logicRef = useRef(logic);
     logicRef.current = logic;
     const seenUnmappedApLocations = useRef<Set<string>>(new Set());
@@ -260,10 +280,33 @@ function TrackerContents({ openTools }: { openTools: () => void }) {
                 interfaceDispatch={trackerInterfaceDispatch}
             />
             <MapLayoutDebugContextMenu />
-            <TrackerLayout
-                footerContent={<TrackerFooterNav openTools={openTools} />}
-                interfaceDispatch={trackerInterfaceDispatch}
-                interfaceState={trackerInterfaceState}
+            <div className={styles.trackerView}>
+                <TrackerLayout
+                    footerContent={<TrackerFooterNav openTools={openTools} />}
+                    mapOverlayContent={
+                        entranceRandomizerEnabled ? (
+                            <button
+                                type="button"
+                                className={`${styles.entranceOverlayButton} tracker-button`}
+                                onClick={() => setShowEntranceDialog(true)}
+                                aria-label="Open Entrances"
+                                title="Entrances"
+                            >
+                                <i
+                                    className="fas fa-door-open"
+                                    aria-hidden="true"
+                                />
+                            </button>
+                        ) : undefined
+                    }
+                    interfaceDispatch={trackerInterfaceDispatch}
+                    interfaceState={trackerInterfaceState}
+                />
+            </div>
+            <EntranceTracker
+                open={showEntranceDialog}
+                onOpenChange={setShowEntranceDialog}
+                onGoToExit={goToEntrance}
             />
         </>
     );
@@ -272,11 +315,9 @@ function TrackerContents({ openTools }: { openTools: () => void }) {
 function TrackerToolsView({
     closeTools,
     openCustomization,
-    openEntrances,
 }: {
     closeTools: () => void;
     openCustomization: () => void;
-    openEntrances: () => void;
 }) {
     const dispatch = useDispatch();
     const debugMode = useSelector(debugModeSelector);
@@ -323,13 +364,6 @@ function TrackerToolsView({
                         <div className={styles.toolsButtons}>
                             <ExportTrackerStateButton />
                             <ImportTrackerStateButton />
-                            <button
-                                type="button"
-                                className="tracker-button"
-                                onClick={openEntrances}
-                            >
-                                Entrances
-                            </button>
                             <button
                                 type="button"
                                 className="tracker-button"

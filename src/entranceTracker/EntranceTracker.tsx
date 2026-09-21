@@ -1,12 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
     FixedSizeList as List,
     type ListChildComponentProps,
 } from 'react-window';
-import { Checkbox } from '../additionalComponents/Checkbox';
 import { Dialog } from '../additionalComponents/Dialog';
 import { Select, type SelectValue } from '../additionalComponents/Select';
+import { formatEntranceName } from '../logic/Entrances';
+import { forceSshdManualEntranceTestMode } from '../logic/EntranceTestMode';
 import {
     entrancePoolsSelector,
     exitsSelector,
@@ -14,13 +15,17 @@ import {
 } from '../tracker/Selectors';
 import { mapEntrance } from '../tracker/Slice';
 import { mapValues } from '../utils/Collections';
+import { useElementSize } from '../utils/React';
+import styles from './EntranceTracker.module.css';
 
 function EntranceTracker({
     open,
     onOpenChange,
+    onGoToExit,
 }: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    onGoToExit: (exitId: string) => void;
 }) {
     const dispatch = useDispatch();
     const exits = useSelector(exitsSelector);
@@ -29,7 +34,12 @@ function EntranceTracker({
 
     const [exitSearch, setExitSearch] = useState('');
     const [entranceSearch, setEntranceSearch] = useState('');
-    const [clickthrough, setClickthrough] = useState(true);
+    const listViewportRef = useRef<HTMLDivElement | null>(null);
+    const listOuterRef = useRef<HTMLDivElement | null>(null);
+    const { measuredHeight } = useElementSize(listViewportRef);
+    const listHeight =
+        measuredHeight ||
+        Math.max(120, Math.min(600, window.innerHeight - 240));
 
     const clearFilters = () => {
         setExitSearch('');
@@ -55,11 +65,17 @@ function EntranceTracker({
     );
 
     const onEntranceChange = (from: string, entrance: string | undefined) => {
+        const scrollTop = listOuterRef.current?.scrollTop ?? 0;
         if (!entrance) {
             dispatch(mapEntrance({ from, to: undefined }));
         } else {
             dispatch(mapEntrance({ from, to: entrance }));
         }
+        requestAnimationFrame(() => {
+            if (listOuterRef.current) {
+                listOuterRef.current.scrollTop = scrollTop;
+            }
+        });
     };
 
     const entranceLower = entranceSearch.toLowerCase();
@@ -75,10 +91,13 @@ function EntranceTracker({
 
     const filteredRows = exits.filter((e) => {
         return (
-            matches(e.exit.name.toLowerCase(), exitLower) &&
+            matches(formatEntranceName(e.exit.name).toLowerCase(), exitLower) &&
             (!entranceSearch ||
                 (e.entrance &&
-                    matches(e.entrance.name.toLowerCase(), entranceLower)))
+                    matches(
+                        formatEntranceName(e.entrance.name).toLowerCase(),
+                        entranceLower,
+                    )))
         );
     });
 
@@ -100,13 +119,13 @@ function EntranceTracker({
                 <div
                     style={{ flex: '1', display: 'flex', alignItems: 'center' }}
                 >
-                    <span>{exit.exit.name}</span>
+                    <span>{formatEntranceName(exit.exit.name)}</span>
                 </div>
                 <div style={{ flex: '1', minWidth: 0 }}>
                     <Select
                         selectedValue={
                             exit.entrance && {
-                                label: exit.entrance.name,
+                                label: formatEntranceName(exit.entrance.name),
                                 payload: exit.entrance.id,
                                 value: exit.entrance.id,
                             }
@@ -116,7 +135,7 @@ function EntranceTracker({
                         }
                         options={
                             exit.canAssign
-                                ? entranceOptions[exit.rule.pool]
+                                ? (entranceOptions[exit.rule.pool] ?? [])
                                 : []
                         }
                         label={exit.exit.name}
@@ -130,11 +149,10 @@ function EntranceTracker({
                         type="button"
                         className="tracker-button"
                         disabled={!exit.entrance}
-                        onClick={() =>
-                            setExitSearch(
-                                exit.entrance?.name.split('-')[0].trim() ?? '',
-                            )
-                        }
+                        onClick={() => {
+                            onOpenChange(false);
+                            onGoToExit(exit.exit.id);
+                        }}
                     >
                         Go to
                     </button>
@@ -143,57 +161,71 @@ function EntranceTracker({
         );
     };
     return (
-        <Dialog open={open} onOpenChange={onOpenChange} title="Entrances" wide>
-            <div style={{ display: 'flex', gap: 4 }}>
-                <input
-                    className="tracker-input"
-                    style={{ flex: '1' }}
-                    type="search"
-                    placeholder="Search exits"
-                    onChange={(e) => setExitSearch(e.target.value)}
-                    value={exitSearch}
-                />
-                <input
-                    className="tracker-input"
-                    style={{ flex: '1' }}
-                    type="search"
-                    placeholder="Search entrances"
-                    onChange={(e) => setEntranceSearch(e.target.value)}
-                    value={entranceSearch}
-                />
-                <div>
-                    <button
-                        type="button"
-                        className="tracker-button"
-                        onClick={clearFilters}
-                    >
-                        Clear Filters
-                    </button>
+        <Dialog
+            open={open}
+            onOpenChange={onOpenChange}
+            title="Entrances"
+            wide
+            extraWide
+            hideFooter
+        >
+            <div className={styles.entranceDialog}>
+                <div style={{ display: 'flex', gap: 4, flex: '0 0 auto' }}>
+                    <input
+                        className="tracker-input"
+                        style={{ flex: '1' }}
+                        type="search"
+                        placeholder="Search exits"
+                        onChange={(e) => setExitSearch(e.target.value)}
+                        value={exitSearch}
+                    />
+                    <input
+                        className="tracker-input"
+                        style={{ flex: '1' }}
+                        type="search"
+                        placeholder="Search entrances"
+                        onChange={(e) => setEntranceSearch(e.target.value)}
+                        value={entranceSearch}
+                    />
+                    <div>
+                        <button
+                            type="button"
+                            className="tracker-button"
+                            onClick={clearFilters}
+                        >
+                            Clear Filters
+                        </button>
+                    </div>
+                </div>
+                {forceSshdManualEntranceTestMode && (
+                    <p style={{ margin: '10px 2px 4px', color: '#9a6700' }}>
+                        Local entrance test mode: seed settings are ignored.
+                    </p>
+                )}
+                <div className={styles.listViewport} ref={listViewportRef}>
+                    {filteredRows.length ? (
+                        <List
+                            outerRef={listOuterRef}
+                            itemCount={filteredRows.length}
+                            height={listHeight}
+                            width="100%"
+                            itemSize={60}
+                        >
+                            {row}
+                        </List>
+                    ) : (
+                        <p
+                            style={{
+                                margin: '48px 0',
+                                textAlign: 'center',
+                                color: '#667085',
+                            }}
+                        >
+                            No entrances match the current filters.
+                        </p>
+                    )}
                 </div>
             </div>
-            <div
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 4,
-                    margin: 4,
-                }}
-            >
-                <Checkbox
-                    id="clickthrough"
-                    checked={clickthrough}
-                    onCheckedChange={setClickthrough}
-                />
-                <label htmlFor="clickthrough">Clickthrough</label>
-            </div>
-            <List
-                itemCount={filteredRows.length}
-                height={600}
-                width=""
-                itemSize={60}
-            >
-                {row}
-            </List>
         </Dialog>
     );
 }

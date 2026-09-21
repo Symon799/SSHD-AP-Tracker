@@ -1,12 +1,7 @@
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import type { ColorScheme } from './customization/ColorScheme';
-import type {
-    CounterBasis,
-    CustomizationState,
-    ItemLayout,
-    LocationLayout,
-} from './customization/Slice';
+import type { CustomizationState, ItemLayout } from './customization/Slice';
 import {
     type RemoteReference,
     formatRemote,
@@ -30,9 +25,7 @@ const trackerLocationFilterLocalStorageKey = 'sshdTrackerLocationFilter';
 // Legacy
 const itemLayoutLocalStorageKey = 'ssrTrackerLayout';
 const colorSchemeLocalStorageKey = 'ssrTrackerColorScheme';
-const locationLayoutLocalStorageKey = 'ssrTrackerLocationLayout';
 const trickSemilogicLocalStorageKey = 'ssrTrackerTrickLogic';
-const counterBasisLocalStorageKey = 'ssrTrackerCounterBasis';
 
 export type TrackerLaunchMode = 'continue' | 'new';
 
@@ -138,10 +131,8 @@ export function getStoredCustomization(): Partial<
     } else {
         state = {
             itemLayout: getStoredItemLayout(),
-            locationLayout: getStoredLocationLayout(),
             colorScheme: getStoredColorScheme(),
             trickSemilogic: getStoredTrickSemiLogic(),
-            counterBasis: getStoredCounterBasis(),
         };
     }
 
@@ -245,13 +236,6 @@ function getStoredItemLayout(): ItemLayout | undefined {
     return itemLayout ?? undefined;
 }
 
-function getStoredLocationLayout(): LocationLayout | undefined {
-    const locationLayout = localStorage.getItem(
-        locationLayoutLocalStorageKey,
-    ) as LocationLayout | null;
-    return locationLayout ?? undefined;
-}
-
 function getStoredColorScheme(): Partial<ColorScheme> | undefined {
     const schemeJson = localStorage.getItem(colorSchemeLocalStorageKey);
     return schemeJson
@@ -262,9 +246,4 @@ function getStoredColorScheme(): Partial<ColorScheme> | undefined {
 function getStoredTrickSemiLogic(): boolean | undefined {
     const schemeJson = localStorage.getItem(trickSemilogicLocalStorageKey);
     return schemeJson ? (JSON.parse(schemeJson) as boolean) : undefined;
-}
-
-function getStoredCounterBasis(): CounterBasis | undefined {
-    const schemeJson = localStorage.getItem(counterBasisLocalStorageKey);
-    return schemeJson ? (JSON.parse(schemeJson) as CounterBasis) : undefined;
 }

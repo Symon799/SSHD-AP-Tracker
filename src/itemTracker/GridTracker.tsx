@@ -1,7 +1,6 @@
 import type { CSSProperties } from 'react';
 import { useSelector } from 'react-redux';
 import noTablets from '../assets/tablets/no_tablets.png';
-import { tumbleweedSelector } from '../customization/Selectors';
 import { useDraggable } from '../dragAndDrop/DragAndDrop';
 import { rawItemCountSelector } from '../tracker/Selectors';
 // import { clickItem } from '../tracker/Slice';
@@ -48,7 +47,6 @@ export default function GridTracker({ width }: { width: number }) {
     const amberWidth = emptyTabWidth * 0.505;
 
     const walletCount = useSelector(rawItemCountSelector('Extra Wallet')) ?? 0;
-    const tumbleweed = useSelector(tumbleweedSelector);
 
     const { listeners, setNodeRef } = useDraggable({
         type: 'item',
@@ -261,11 +259,6 @@ export default function GridTracker({ width }: { width: number }) {
             <div>
                 <Item itemName="Scrapper" imgWidth={imgWidth} />
             </div>
-            {tumbleweed && (
-                <div>
-                    <Item itemName="Tumbleweed" imgWidth={imgWidth} />
-                </div>
-            )}
         </div>
     );
 }

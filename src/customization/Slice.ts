@@ -3,31 +3,23 @@ import { getStoredCustomization } from '../LocalStorage';
 import { type ColorScheme, lightColorScheme } from './ColorScheme';
 
 export type ItemLayout = 'grid' | 'inventory';
-export type LocationLayout = 'list' | 'map';
-export type CounterBasis = 'logic' | 'semilogic';
 
 export interface CustomizationState {
     colorScheme: ColorScheme;
     itemLayout: ItemLayout;
-    locationLayout: LocationLayout;
     debugMode: boolean;
     trickSemilogic: boolean;
     enabledTrickLogicTricks: string[];
-    counterBasis: CounterBasis;
-    tumbleweed: boolean;
     autoRegionLoading: boolean;
 }
 
 const initialState: CustomizationState = {
     colorScheme: lightColorScheme,
     itemLayout: 'grid',
-    locationLayout: 'map',
     debugMode: false,
     trickSemilogic: false,
     enabledTrickLogicTricks: [],
-    counterBasis: 'logic',
-    tumbleweed: false,
-    autoRegionLoading: false,
+    autoRegionLoading: true,
 };
 
 export function preloadedCustomizationState(): CustomizationState {
@@ -51,23 +43,14 @@ const customizationSlice = createSlice({
         setItemLayout: (state, action: PayloadAction<ItemLayout>) => {
             state.itemLayout = action.payload;
         },
-        setLocationLayout: (state, action: PayloadAction<LocationLayout>) => {
-            state.locationLayout = action.payload;
-        },
         setDebugMode: (state, action: PayloadAction<boolean>) => {
             state.debugMode = action.payload;
         },
         setTrickSemiLogic: (state, action: PayloadAction<boolean>) => {
             state.trickSemilogic = action.payload;
         },
-        setCounterBasis: (state, action: PayloadAction<CounterBasis>) => {
-            state.counterBasis = action.payload;
-        },
         setEnabledSemilogicTricks: (state, action: PayloadAction<string[]>) => {
             state.enabledTrickLogicTricks = action.payload;
-        },
-        setTrackTumbleweed: (state, action: PayloadAction<boolean>) => {
-            state.tumbleweed = action.payload;
         },
         setAutoRegionLoading: (state, action: PayloadAction<boolean>) => {
             state.autoRegionLoading = action.payload;
@@ -81,12 +64,9 @@ const customizationSlice = createSlice({
 export const {
     setColorScheme,
     setItemLayout,
-    setLocationLayout,
     setDebugMode,
     setTrickSemiLogic,
-    setCounterBasis,
     setEnabledSemilogicTricks,
-    setTrackTumbleweed,
     setAutoRegionLoading,
     resetCustomizationForTest,
 } = customizationSlice.actions;

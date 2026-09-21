@@ -152,7 +152,7 @@ export function getTooltipOpaqueBits(
 
     // All actual inventory items are shown in the tooltips
     for (const [item, count] of Object.entries(itemMaxes)) {
-        if (count === undefined || item === 'Tumbleweed') {
+        if (count === undefined) {
             continue;
         }
         if (item === sothItemReplacement) {

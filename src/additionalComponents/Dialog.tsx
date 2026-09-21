@@ -64,6 +64,8 @@ export function Dialog({
     onOpenChange,
     title,
     wide,
+    extraWide = false,
+    hideFooter = false,
     className,
     children,
 }: {
@@ -71,6 +73,8 @@ export function Dialog({
     onOpenChange: (open: boolean) => void;
     title: string;
     wide?: boolean;
+    extraWide?: boolean;
+    hideFooter?: boolean;
     className?: string;
     children: React.ReactNode;
 }) {
@@ -78,12 +82,17 @@ export function Dialog({
         <Root open={open} onOpenChange={onOpenChange}>
             <Portal>
                 <Overlay />
-                <Content narrow={!wide}>
+                <Content
+                    narrow={!wide}
+                    className={extraWide ? styles.extraWide : undefined}
+                >
                     <Title>{title}</Title>
                     <div className={className}>{children}</div>
-                    <Footer>
-                        <Close className="tracker-button">Close</Close>
-                    </Footer>
+                    {!hideFooter && (
+                        <Footer>
+                            <Close className="tracker-button">Close</Close>
+                        </Footer>
+                    )}
                 </Content>
             </Portal>
         </Root>

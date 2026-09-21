@@ -12,12 +12,14 @@ export function Locations({
     wide,
     hintRegion,
     onChooseEntrance,
+    onGoToEntrance,
 }: {
     compact: boolean;
     filter: TrackerLocationFilter;
     wide: boolean;
     hintRegion: HintRegion<string>;
     onChooseEntrance: (exitId: string) => void;
+    onGoToEntrance: (exitId: string) => void;
 }) {
     const filteredChecks = useSelector((state: RootState) => {
         const matchesFilter = (id: string) => {
@@ -34,14 +36,12 @@ export function Locations({
         return {
             primary: hintRegion.checks.list.filter(matchesFilter),
             extras: Object.fromEntries(
-                (['tr_cube', 'gossip_stone', 'exits'] as const).map(
-                    (type) => [
-                        type,
-                        (hintRegion.extraLocations[type]?.list ?? []).filter(
-                            matchesFilter,
-                        ),
-                    ],
-                ),
+                (['tr_cube', 'gossip_stone', 'exits'] as const).map((type) => [
+                    type,
+                    (hintRegion.extraLocations[type]?.list ?? []).filter(
+                        matchesFilter,
+                    ),
+                ]),
             ) as Record<'tr_cube' | 'gossip_stone' | 'exits', string[]>,
         };
     });
@@ -53,6 +53,7 @@ export function Locations({
                 forceFullName={forceFullName}
                 wide={wide}
                 onChooseEntrance={onChooseEntrance}
+                onGoToEntrance={onGoToEntrance}
                 locations={filteredChecks.primary}
             />
             {(['tr_cube', 'gossip_stone', 'exits'] as const).map(
@@ -65,6 +66,7 @@ export function Locations({
                                 forceFullName={forceFullName}
                                 wide={wide}
                                 onChooseEntrance={onChooseEntrance}
+                                onGoToEntrance={onGoToEntrance}
                                 locations={filteredChecks.extras[type]}
                             />
                         </React.Fragment>

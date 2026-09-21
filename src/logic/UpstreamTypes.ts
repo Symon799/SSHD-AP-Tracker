@@ -38,6 +38,28 @@ export interface RawExit {
     'pillar-province': string | undefined;
 }
 
+export type RawEntranceShuffleType =
+    | 'Spawn'
+    | 'Dungeon'
+    | 'Trial Gate'
+    | 'Gate of Time'
+    | 'Door'
+    | 'Interior'
+    | 'Overworld'
+    | 'Bird Statue'
+    | 'Faron Region Entrance'
+    | 'Eldin Region Entrance'
+    | 'Lanayru Region Entrance';
+
+export interface RawEntranceConnection {
+    type: RawEntranceShuffleType;
+    entrance: string;
+    primary: boolean;
+    reverse_exit?: string;
+    reverse_entrance?: string;
+    door_couple_tag?: string;
+}
+
 export interface RawCheck {
     type: string | null;
     short_name: string;
@@ -56,6 +78,13 @@ export interface RawLogic {
     gossip_stones: Record<string, string>;
     exits: Record<string, RawExit>;
     entrances: Record<string, RawEntrance>;
+    /** SSHD entrance-shuffle metadata, keyed by the source exit id. */
+    entrance_connections?: Record<string, RawEntranceConnection>;
+    /**
+     * Connections that only exist while another SSHD entrance keeps its
+     * vanilla destination, keyed by the conditional exit id.
+     */
+    conditional_vanilla_connections?: Record<string, string>;
     areas: RawArea;
     linked_entrances: {
         silent_realms: {

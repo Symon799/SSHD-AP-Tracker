@@ -98,4 +98,23 @@
 .exit {
     display: flex;
     flex-flow: column wrap;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.exitNavigationButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    margin-left: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+
+    &:disabled {
+        cursor: default;
+    }
 }

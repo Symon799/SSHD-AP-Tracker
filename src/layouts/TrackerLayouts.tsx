@@ -9,10 +9,7 @@ import {
     setStoredTrackerMapHeight,
     setStoredTrackerSidebarWidth,
 } from '../LocalStorage';
-import {
-    itemLayoutSelector,
-    locationLayoutSelector,
-} from '../customization/Selectors';
+import { itemLayoutSelector } from '../customization/Selectors';
 import { CompactTextClient } from '../hints/TextClient';
 import DungeonTracker from '../itemTracker/DungeonTracker';
 import GridTracker from '../itemTracker/GridTracker';
@@ -35,13 +32,16 @@ export function TrackerLayout({
     interfaceState,
     interfaceDispatch,
     footerContent,
+    mapOverlayContent,
 }: {
     interfaceState: InterfaceState;
     interfaceDispatch: Dispatch<InterfaceAction>;
     footerContent?: React.ReactNode;
+    mapOverlayContent?: React.ReactNode;
 }) {
     const itemLayout = useSelector(itemLayoutSelector);
-    const locationLayout = useSelector(locationLayoutSelector);
+    // The map layout is the only supported location layout.
+    const locationLayout: string = 'map';
     const [sidebarWidth, setSidebarWidth] = useState(
         () => getStoredTrackerSidebarWidth() ?? 390,
     );
@@ -326,6 +326,7 @@ export function TrackerLayout({
                             interfaceDispatch={interfaceDispatch}
                             interfaceState={interfaceState}
                         />
+                        {mapOverlayContent}
                     </div>
                 </div>
             </div>
@@ -471,7 +472,10 @@ function ListLayoutRightColumn({
     const [isResizingList, setIsResizingList] = useState(false);
     const { measuredHeight } = useElementSize(ref);
     const minListPanelHeight = 220;
-    const maxListPanelHeight = Math.max(minListPanelHeight, measuredHeight - 240);
+    const maxListPanelHeight = Math.max(
+        minListPanelHeight,
+        measuredHeight - 240,
+    );
     const defaultListPanelHeight = Math.min(
         Math.max(minListPanelHeight, measuredHeight * 0.42),
         maxListPanelHeight,

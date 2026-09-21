@@ -93,7 +93,12 @@ export function Marker({
     };
 
     if (selected) {
-        markerStyle.boxShadow = `0 0 20px var(--scheme-${color})`;
+        const selectedColor = '#ffffff';
+        markerStyle.borderColor = 'transparent';
+        markerStyle.boxShadow =
+            '0 0 0 3px #ffffff, 0 0 22px 6px rgba(255, 255, 255, 0.95)';
+        markerStyle.outline = `2px solid ${selectedColor}`;
+        markerStyle.outlineOffset = '2px';
     }
 
     if (layoutMoveActive) {
@@ -104,7 +109,12 @@ export function Marker({
         ev: React.PointerEvent<HTMLDivElement>,
         parentRect: DOMRect,
     ) => {
-        if (!debugPath || !onDebugMove || parentRect.width <= 0 || parentRect.height <= 0) {
+        if (
+            !debugPath ||
+            !onDebugMove ||
+            parentRect.width <= 0 ||
+            parentRect.height <= 0
+        ) {
             return;
         }
         const nextX = ((ev.clientX - parentRect.left) / parentRect.width) * 100;

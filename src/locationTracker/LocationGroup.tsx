@@ -6,6 +6,7 @@ export default function LocationGroup({
     wide,
     locations,
     onChooseEntrance,
+    onGoToEntrance,
     forceFullName = false,
 }: {
     compact: boolean;
@@ -13,6 +14,7 @@ export default function LocationGroup({
     /* the list of locations this group contains */
     locations: string[];
     onChooseEntrance: (exitId: string) => void;
+    onGoToEntrance: (exitId: string) => void;
     forceFullName?: boolean;
 }) {
     return (
@@ -23,6 +25,7 @@ export default function LocationGroup({
                     compact={compact}
                     forceFullName={forceFullName}
                     onChooseEntrance={onChooseEntrance}
+                    onGoToEntrance={onGoToEntrance}
                     id={l}
                 />
             ))}

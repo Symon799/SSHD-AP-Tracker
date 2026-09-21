@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { colorSchemeSelector } from '../customization/Selectors';
 import {
     getStoredTrackerLocationFilter,
     setStoredTrackerLocationFilter,
     type TrackerLocationFilter,
 } from '../LocalStorage';
+import { areaGraphSelector } from '../logic/Selectors';
 import {
     displayAreasSelector,
+    exitsByIdSelector,
     OTHERS_HINT_REGION,
     unmappedAreaNamesSelector,
 } from '../tracker/Selectors';
@@ -30,10 +33,14 @@ export function LocationsEntrancesList({
     interfaceDispatch: React.Dispatch<InterfaceAction>;
 }) {
     const areas = useSelector(displayAreasSelector);
+    const colorScheme = useSelector(colorSchemeSelector);
+    const exits = useSelector(exitsByIdSelector);
+    const areaGraph = useSelector(areaGraphSelector);
     const unmappedAreaNames = useSelector(unmappedAreaNamesSelector);
     const [locationFilter, setLocationFilter] = useState<TrackerLocationFilter>(
         () => getStoredTrackerLocationFilter() ?? 'all',
     );
+    const isDarkScheme = colorScheme.background === '#000000';
     const activeArea =
         interfaceState.type === 'viewingChecks'
             ? interfaceState.hintRegion
@@ -49,6 +56,16 @@ export function LocationsEntrancesList({
         undefined;
     const onChooseEntrance = (exitId: string) =>
         interfaceDispatch({ type: 'chooseEntrance', exitId });
+
+    const onGoToEntrance = (exitId: string) => {
+        const entranceId = exits[exitId]?.entrance?.id;
+        const hintRegion = entranceId
+            ? areaGraph.entranceHintRegions[entranceId]
+            : undefined;
+        if (hintRegion !== undefined) {
+            interfaceDispatch({ type: 'selectHintRegion', hintRegion });
+        }
+    };
 
     const setActiveArea = (hintRegion: string) =>
         interfaceDispatch({ type: 'selectHintRegion', hintRegion });
@@ -97,6 +114,12 @@ export function LocationsEntrancesList({
                                                         locationFilter === value
                                                             ? 700
                                                             : 600,
+                                                    color:
+                                                        locationFilter ===
+                                                            value &&
+                                                        isDarkScheme
+                                                            ? '#000000'
+                                                            : undefined,
                                                     background:
                                                         locationFilter === value
                                                             ? 'color-mix(in srgb, var(--scheme-text) 18%, white)'
@@ -128,6 +151,7 @@ export function LocationsEntrancesList({
                             filter={locationFilter}
                             wide={wide}
                             onChooseEntrance={onChooseEntrance}
+                            onGoToEntrance={onGoToEntrance}
                             hintRegion={selectedArea}
                         />
                     </div>
@@ -141,6 +165,12 @@ export function LocationsEntrancesList({
                         interfaceDispatch({
                             type: 'cancelChooseEntrance',
                             selectedEntrance: entranceId,
+                        })
+                    }
+                    onCancel={() =>
+                        interfaceDispatch({
+                            type: 'cancelChooseEntrance',
+                            selectedEntrance: undefined,
                         })
                     }
                 />

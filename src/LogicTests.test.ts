@@ -1,5 +1,4 @@
 import {
-    setCounterBasis,
     setEnabledSemilogicTricks,
     setTrickSemiLogic,
 } from './customization/Slice';
@@ -217,24 +216,6 @@ describe('full logic tests', () => {
         dispatch(checkOrUncheckAll('Upper Skyloft', false));
         area = tester.findArea('Upper Skyloft');
         expect(area.checks.numRemaining).toEqual(area.checks.numTotal);
-    });
-
-    it('handles semilogic counters', () => {
-        const area = tester.findArea("Batreaux's House");
-        expect(area.checks.numRemaining).toBeGreaterThan(0);
-        expect(area.checks.numAccessible).toBe(0);
-        const totalCounter = readSelector(totalCountersSelector).numAccessible;
-
-        dispatch(setCounterBasis('semilogic'));
-
-        const areaWithSemilogic = tester.findArea("Batreaux's House");
-        expect(areaWithSemilogic.checks.numRemaining).toBeGreaterThan(0);
-        expect(areaWithSemilogic.checks.numAccessible).toBe(2);
-
-        const totalCounterWithSemilogic = readSelector(
-            totalCountersSelector,
-        ).numAccessible;
-        expect(totalCounterWithSemilogic).toBeGreaterThan(totalCounter);
     });
 
     it('handles starting items', () => {

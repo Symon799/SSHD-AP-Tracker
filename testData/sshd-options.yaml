@@ -613,15 +613,13 @@
 - name: Demise Count
   command: demise-count
   type: int
-  default: 1
   min: 1
   max: 10
+  default: 1
   bits: 4
   help: >-
-    Determines how many demises appear in the final fight of the game. **WARNING**: Enabling more
-    than one makes the fight very difficult. **DOUBLE WARNING**: Enabling more than 3 demises
-    produces a lot of lag and can make the game unplayable.
-  ui: option_demise_count
+    1-10: Choose how many Demise bosses will spawn in the final fight arena. Setting this higher
+    than 1 spawns additional Demise bosses.
 - name: Randomize Music
   command: music-rando
   type: singlechoice
@@ -1482,14 +1480,38 @@
   help: >-
     off: When Chest Type Matches Contents is not off, Small Keys will appear in big blue chests. on:
     When Chest Type Matches Contents is not off, Small Keys will appear in fancy chests.
-- name: Path Hints
+- name: Key Rings In The Pool
+  command: key-rings-in-pool
+  type: singlechoice
+  choices:
+    - 'off'
+    - 'on'
+  default: 'off'
+  bits: 1
+  help: >-
+    off: Do not add dungeon Key Ring items to the item pool. on: Replace each dungeon's small keys
+    with a single Key Ring for that dungeon.
+- name: Skeleton Key In The Pool
+  command: skeleton-key-in-pool
+  type: singlechoice
+  choices:
+    - 'off'
+    - 'on'
+  default: 'off'
+  bits: 1
+  help: >-
+    off: Do not add the Skeleton Key to the item pool. on: Replace all dungeon small keys with a
+    single Skeleton Key.
+- name: Number of Path Hints
   command: path-hints
   type: int
   min: 0
   max: 7
   default: 3
   bits: 3
-  help: '0-7: Select the number of path hints you would like to generate.'
+  help: >-
+    0-7: How many path hints to place. Path hints tell you a location has an item required to beat
+    one of your goals.
 - name: On Fi
   command: path-hints-on-fi
   type: singlechoice
@@ -1498,10 +1520,7 @@
     - 'on'
   default: 'off'
   bits: 1
-  help: >-
-    off: Path hints will not be placed on Fi. on: Path hints will be placed on Fi and can be seen by
-    calling Fi and asking her for hints. If path hints are also on placed on gossip stones, then the
-    hints will be split evenly between the two options.
+  help: 'off: Path hints will not be placed on Fi. on: Path hints can be placed on Fi.'
 - name: On Gossip Stones
   command: path-hints-on-gossip-stones
   type: singlechoice
@@ -1752,6 +1771,17 @@
     vanilla game will lead to its vanilla location. on: Entering a doorway, pushup door, or loadzone
     that leads to an overworld location in the vanilla game will lead to a random overworld
     location.
+- name: Randomize Gate of Time
+  command: randomize-gate-of-time
+  type: singlechoice
+  choices:
+    - 'off'
+    - 'on'
+  default: 'off'
+  bits: 1
+  help: >-
+    off: The Gate of Time will lead to its vanilla destination (Temple of Hylia). on: The Gate of
+    Time entrance will be randomized and may lead to a different location.
 - name: Decouple Entrances
   command: decouple-entrances
   type: singlechoice
@@ -1788,6 +1818,19 @@
     off: You will not be able to fly at night. If the Require Natural Night Connections setting is
     disabled, night flying will be enabled to facilitate this. on: You will be able to call your
     loftwing and fly in The Sky at night.
+- name: Start with Loftwing
+  command: randomize-loftwing
+  type: singlechoice
+  choices:
+    - 'off'
+    - 'on'
+    - random
+  default: 'on'
+  bits: 2
+  help: >-
+    off: You will not start with your Loftwing unlocked. This can break expected progression and may
+    put checks out of logic. on: You will start with your Loftwing unlocked. random: The randomizer
+    will choose whether you start with your Loftwing unlocked when generating the seed.
 - name: Required Dungeons
   command: required-dungeons
   type: int
@@ -2172,6 +2215,26 @@
     on: The background music will continue to play when you get near to enemies. Additionally, the
     intense music when Scaldera and Tentalus are vulnerable will not play and the background music
     will continue uninterrupted.
+- name: Text Shuffle
+  command: text-shuffle
+  type: singlechoice
+  choices:
+    - 'off'
+    - baby
+    - crazy
+    - extreme
+    - european_extreme
+    - psychopath
+  default: 'off'
+  bits: 3
+  help: >-
+    off: All in-game text will be unchanged. baby: English text will be shuffled, but shop text and
+    other important functional text will be left intact. crazy: All English text will be shuffled.
+    Text will be shuffled in sentences and paragraphs to maintain some readability. extreme: All
+    English text will be fully shuffled. european_extreme: Text from all Latin-script languages
+    (English, French, Spanish, German, Italian, Dutch) will be shuffled. Text will be shuffled in
+    sentences and paragraphs to maintain some readability. psychopath: Text from all Latin-script
+    languages (English, French, Spanish, German, Italian, Dutch) will be fully shuffled.
 - name: Low Health Beeping Speed
   command: low-health-beeping-speed
   type: singlechoice
@@ -2706,6 +2769,19 @@
     distant switches and you will only be expected to use nearby bomb flowers with the Hook Beetle
     to blow up distant rocks. on: You may need to use the Bomb Bag and time bomb throws to activate
     switches or blow up distant rocks or towers.
+- name: Precise Falls
+  command: logic-precise-falls
+  type: singlechoice
+  choices:
+    - 'off'
+    - 'on'
+  default: 'off'
+  bits: 1
+  help: >-
+    off: You will never be expected to make precise adjustments when falling from a high place to
+    avoid or take less damage. on: You will be expected to make adjustments when falling to minimize
+    the amount of damage taken (e.g. landing on the frog's head when diving into the frog's mouth in
+    Fire Sanctuary).
 - name: Faron Woods with Groosenator
   command: logic-faron-woods-with-groosenator
   type: singlechoice
@@ -3114,3 +3190,17 @@
   help: >-
     off: You will start the game without any treasures in your inventory. on: You will start the
     game with 99 of each treasure in your inventory.
+- name: Archipelago Item Model
+  command: archipelago-item-model
+  type: singlechoice
+  choices:
+    - letter
+    - archipelago_logo
+    - unofficial_archipelago_logo
+  default: archipelago_logo
+  bits: 2
+  help: >-
+    letter: Uses the vanilla Cawlin's Letter model for items from other Archipelago worlds.
+    archipelago_logo: Uses a custom Archipelago logo model for items from other Archipelago worlds.
+    unofficial_archipelago_logo: Uses a custom unofficial Archipelago logo model for items from
+    other Archipelago worlds.

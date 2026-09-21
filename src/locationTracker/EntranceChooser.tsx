@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { formatEntranceName } from '../logic/Entrances';
 import {
     entrancePoolsSelector,
     exitsByIdSelector,
@@ -18,10 +19,12 @@ export default function EntranceChooser({
     wide,
     exitId,
     onChoose,
+    onCancel,
 }: {
     wide: boolean;
     exitId: string;
-    onChoose: (entranceId: string) => void;
+    onChoose: (entranceId: string | undefined) => void;
+    onCancel: () => void;
 }) {
     const dispatch = useDispatch();
     const exits = useSelector(exitsByIdSelector);
@@ -53,7 +56,7 @@ export default function EntranceChooser({
                 )
                 .map(({ id, name }) => ({
                     value: id,
-                    label: name,
+                    label: formatEntranceName(name),
                 }));
 
             if (exit.entrance) {
@@ -77,21 +80,32 @@ export default function EntranceChooser({
         } else {
             dispatch(mapEntrance({ from: exitId, to: value }));
         }
-        onChoose(value);
+        onChoose(value === RESET_OPTION ? undefined : value);
     };
 
     return (
         <div className={styles.entranceChooser}>
             <span className={styles.query}>
-                Where does {exit.exit.name} lead to?
+                Where does {formatEntranceName(exit.exit.name)} lead to?
             </span>
-            <input
-                className="tracker-input"
-                placeholder="Filter entrances..."
-                autoFocus
-                value={filterText}
-                onChange={(e) => setFilterText(e.target.value)}
-            />
+            <div className={styles.filterRow}>
+                <button
+                    type="button"
+                    className="tracker-button"
+                    onClick={onCancel}
+                    title="Cancel entrance selection"
+                    aria-label="Cancel entrance selection"
+                >
+                    ←
+                </button>
+                <input
+                    className="tracker-input"
+                    placeholder="Filter entrances..."
+                    autoFocus
+                    value={filterText}
+                    onChange={(e) => setFilterText(e.target.value)}
+                />
+            </div>
             <div className={styles.entrances}>
                 <LocationGrid compact={false} wide={wide}>
                     {entranceOptions?.map(({ value, label }) => (

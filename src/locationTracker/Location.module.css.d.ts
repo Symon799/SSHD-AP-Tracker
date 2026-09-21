@@ -13,5 +13,6 @@ declare const classNames: {
     readonly debugSection: 'debugSection';
     readonly debugLine: 'debugLine';
     readonly exit: 'exit';
+    readonly exitNavigationButton: 'exitNavigationButton';
 };
 export = classNames;

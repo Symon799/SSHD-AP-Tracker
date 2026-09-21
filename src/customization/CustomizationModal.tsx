@@ -10,7 +10,6 @@ import {
 import Tooltip from '../additionalComponents/Tooltip';
 import { isLogicLoadedSelector, optionsSelector } from '../logic/Selectors';
 import { useAppDispatch } from '../store/Store';
-import ColorBlock from './ColorBlock';
 import {
     type ColorScheme,
     darkColorScheme,
@@ -19,25 +18,16 @@ import {
 import styles from './CustomizationModal.module.css';
 import {
     autoRegionLoadingSelector,
-    colorSchemeSelector,
-    counterBasisSelector,
     itemLayoutSelector,
-    locationLayoutSelector,
     trickSemiLogicSelector,
     trickSemiLogicTrickListSelector,
-    tumbleweedSelector,
 } from './Selectors';
 import {
-    type CounterBasis,
     type ItemLayout,
-    type LocationLayout,
     setAutoRegionLoading,
     setColorScheme,
-    setCounterBasis,
     setEnabledSemilogicTricks,
     setItemLayout,
-    setLocationLayout,
-    setTrackTumbleweed,
     setTrickSemiLogic,
 } from './Slice';
 
@@ -46,40 +36,10 @@ const defaultColorSchemes = {
     Dark: darkColorScheme,
 };
 
-const locationLayouts: SelectValue<LocationLayout>[] = [
-    { value: 'list', payload: 'list', label: 'List Layout' },
-    { value: 'map', payload: 'map', label: 'Map Layout' },
-];
 const itemLayouts: SelectValue<ItemLayout>[] = [
     { value: 'inventory', payload: 'inventory', label: 'In-Game Inventory' },
     { value: 'grid', payload: 'grid', label: 'Grid Layout' },
 ];
-const counterBases: SelectValue<CounterBasis>[] = [
-    { value: 'logic', payload: 'logic', label: 'In Logic' },
-    { value: 'semilogic', payload: 'semilogic', label: 'Semi-Logic' },
-];
-
-const colors: { key: keyof ColorScheme; name: string }[] = [
-    { key: 'background', name: 'Background' },
-    { key: 'text', name: 'Foreground' },
-    { key: 'interact', name: 'Interact' },
-    { key: 'inLogic', name: 'In Logic Check' },
-    { key: 'outLogic', name: 'Out of Logic Check' },
-    { key: 'semiLogic', name: 'Semi-Logic Check' },
-    { key: 'trickLogic', name: 'Trick Logic Check' },
-    { key: 'unrequired', name: 'Unrequired Dungeon' },
-    { key: 'required', name: 'Required Dungeon' },
-    { key: 'checked', name: 'Completed Check' },
-    { key: 'apProgression', name: 'Archipelago Progression Item' },
-    { key: 'apTrap', name: 'Archipelago Trap Item' },
-    { key: 'apUseful', name: 'Archipelago Useful Item' },
-    { key: 'apFiller', name: 'Archipelago Filler Item' },
-    { key: 'apLocation', name: 'Archipelago Location' },
-    { key: 'apEntrance', name: 'Archipelago Entrance' },
-    { key: 'apThisPlayer', name: 'Archipelago This Player Slot' },
-    { key: 'apOtherPlayer', name: 'Archipelago Other Player Slot' },
-];
-
 function Setting({
     name,
     tooltip,
@@ -107,12 +67,8 @@ export default function CustomizationModal({
     onOpenChange: (open: boolean) => void;
 }) {
     const dispatch = useAppDispatch();
-    const colorScheme = useSelector(colorSchemeSelector);
     const layout = useSelector(itemLayoutSelector);
-    const locationLayout = useSelector(locationLayoutSelector);
     const trickSemiLogic = useSelector(trickSemiLogicSelector);
-    const counterBasis = useSelector(counterBasisSelector);
-    const tumbleweed = useSelector(tumbleweedSelector);
     const autoRegionLoading = useSelector(autoRegionLoadingSelector);
     const isLogicLoaded = useSelector(isLogicLoadedSelector);
 
@@ -136,16 +92,6 @@ export default function CustomizationModal({
                     label="Item Layout"
                 />
             </Setting>
-            <Setting name="Location Tracker Settings">
-                <Select
-                    selectedValue={locationLayouts.find(
-                        (l) => l.value === locationLayout,
-                    )}
-                    onValueChange={(e) => e && dispatch(setLocationLayout(e))}
-                    options={locationLayouts}
-                    label="Location Layout"
-                />
-            </Setting>
             <Setting
                 name="Trick Logic"
                 tooltip="Choose whether checks reachable only with tricks should be highlighted in a separate color, and which checks should be shown. An empty tricks list shows all tricks."
@@ -164,28 +110,7 @@ export default function CustomizationModal({
                     "Cannot customize tricks here because logic isn't loaded"
                 )}
             </Setting>
-            <Setting
-                name="Counter Basis"
-                tooltip="Choose whether the Area/Total Locations Accessible counters should include items in semi-logic."
-            >
-                <Select
-                    selectedValue={counterBases.find(
-                        (l) => l.value === counterBasis,
-                    )}
-                    onValueChange={(e) => e && dispatch(setCounterBasis(e))}
-                    options={counterBases}
-                    label="Counter Basis"
-                />
-            </Setting>
             <Setting name="Additional Settings">
-                <div className={styles.labeledCheckbox}>
-                    <Checkbox
-                        id="trackTim"
-                        checked={tumbleweed}
-                        onCheckedChange={(e) => dispatch(setTrackTumbleweed(e))}
-                    />
-                    <label htmlFor="trackTim">Track Tim</label>
-                </div>
                 <div className={styles.labeledCheckbox}>
                     <Checkbox
                         id="autoRegionChange"
@@ -195,12 +120,11 @@ export default function CustomizationModal({
                         }
                     />
                     <label htmlFor="autoRegionChange">
-                        Automatically switch regions on reload (AP)
+                        Automatically follow current region (AP)
                     </label>
                 </div>
             </Setting>
-            <div className={styles.colorCustomizationSection}>
-                <Setting name="Presets">
+            <Setting name="Presets">
                 <div className={styles.colorPresets}>
                     {Object.entries(defaultColorSchemes).map(
                         ([key, scheme]) => (
@@ -222,18 +146,6 @@ export default function CustomizationModal({
                     )}
                 </div>
             </Setting>
-            <Setting name="Colors">
-                {colors.map(({ key, name }) => (
-                    <ColorBlock
-                        key={key}
-                        colorName={name}
-                        schemeKey={key}
-                        colorScheme={colorScheme}
-                        updateColorScheme={updateColorScheme}
-                    />
-                ))}
-            </Setting>
-            </div>
         </Dialog>
     );
 }

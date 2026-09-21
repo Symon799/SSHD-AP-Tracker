@@ -62,8 +62,6 @@ export const itemMaxes = {
     'Sandship Small Key': 2,
     'Fire Sanctuary Small Key': 3,
     'Sky Keep Small Key': 1,
-
-    Tumbleweed: 1,
 };
 
 export type InventoryItem = keyof typeof itemMaxes;

@@ -7,9 +7,6 @@ export const colorSchemeSelector = (state: RootState) =>
 export const itemLayoutSelector = (state: RootState) =>
     state.customization.itemLayout;
 
-export const locationLayoutSelector = (state: RootState) =>
-    state.customization.locationLayout;
-
 export const debugModeSelector = (state: RootState) =>
     state.customization.debugMode;
 
@@ -20,12 +17,6 @@ export const trickSemiLogicTrickListSelector = createSelector(
     [(state: RootState) => state.customization.enabledTrickLogicTricks],
     (tricks) => new Set(tricks),
 );
-
-export const counterBasisSelector = (state: RootState) =>
-    state.customization.counterBasis;
-
-export const tumbleweedSelector = (state: RootState) =>
-    state.customization.tumbleweed;
 
 export const autoRegionLoadingSelector = (state: RootState) =>
     state.customization.autoRegionLoading;

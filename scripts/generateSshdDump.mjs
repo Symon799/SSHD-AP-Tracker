@@ -224,6 +224,16 @@ function loadWorldAreas(randoRoot) {
     return areas;
 }
 
+function loadEntranceShuffleData(randoRoot) {
+    const entranceDataPath = path.join(
+        randoRoot,
+        'data',
+        'entrance_shuffle_data.yaml',
+    );
+    requireFile(entranceDataPath, 'SSHD entrance shuffle data');
+    return readYaml(entranceDataPath);
+}
+
 function buildLocationAccesses(worldAreas) {
     const accesses = new Map();
     for (const area of worldAreas) {
@@ -438,7 +448,15 @@ function inferHintRegion(area, accessLocationNames, apworldLocationsByName) {
         }
     }
 
-    return null;
+    return (
+        {
+            Skyloft: 'Upper Skyloft',
+            Sky: 'Sky',
+            Faron: 'Faron Woods',
+            Eldin: 'Eldin Volcano',
+            Lanayru: 'Lanayru Desert',
+        }[area.worldName] ?? area.worldName
+    );
 }
 
 function getPrimaryAccessByLocation(apworldLocations, locationAccesses) {
@@ -455,6 +473,26 @@ function getPrimaryAccessByLocation(apworldLocations, locationAccesses) {
     return result;
 }
 
+function addSkyTravelRequirements(area, targetAreaName, requirement) {
+    const terms = [];
+    if (area.name === 'The Sky' || targetAreaName === 'The Sky') {
+        terms.push('Loftwing');
+    }
+    if (
+        area.name === 'The Sky' &&
+        (targetAreaName.endsWith(' Pillar') ||
+            ['Upper Skyloft', 'Central Skyloft', 'Skyloft Village'].includes(
+                targetAreaName,
+            ))
+    ) {
+        terms.push('Sailcloth');
+    }
+    if (terms.length === 0) {
+        return String(requirement);
+    }
+    return `${terms.join(' and ')} and (${String(requirement)})`;
+}
+
 function buildSshdDump() {
     const apworldLocations = parseApworldLocations(sshdApworldLocationsPath);
     const apworldLocationsByName = new Map(
@@ -462,6 +500,7 @@ function buildSshdDump() {
     );
     const randoLocations = loadRandoLocations(sshdRandoRoot);
     const worldAreas = loadWorldAreas(sshdRandoRoot);
+    const entranceShuffleData = loadEntranceShuffleData(sshdRandoRoot);
     const locationAccesses = buildLocationAccesses(worldAreas);
     const eventAliasesByToken = buildEventAliases(worldAreas);
     const primaryAccessByLocation = getPrimaryAccessByLocation(
@@ -500,6 +539,9 @@ function buildSshdDump() {
             itemNameAliases.get(itemName) ?? itemName,
         );
     }
+    // Loftwing is an AP item even in backend revisions where it is not yet
+    // present in data/items.yaml.
+    rawItems.add('Loftwing');
 
     const locationNameToCheckId = new Map();
     for (const location of apworldLocations) {
@@ -540,6 +582,157 @@ function buildSshdDump() {
             areasByWorld.set(area.worldName, []);
         }
         areasByWorld.get(area.worldName).push(area);
+    }
+
+    const uniqueAreaByName = new Map();
+    for (const [areaName, matches] of areasByName) {
+        if (matches.length !== 1) {
+            throw new Error(
+                `Entrance shuffle area ${areaName} is ambiguous (${matches.length} matches)`,
+            );
+        }
+        uniqueAreaByName.set(areaName, matches[0]);
+    }
+
+    const shuffleDirections = [];
+    const shuffleDirectionByConnection = new Map();
+    for (const entry of entranceShuffleData) {
+        const entryDirections = [];
+        for (const [directionName, primary] of [
+            ['forward', true],
+            ['return', false],
+        ]) {
+            const data = entry[directionName];
+            if (!data) {
+                continue;
+            }
+            const [sourceName, targetName, ...extra] = data.connection.split(
+                ' -> ',
+            );
+            if (!sourceName || !targetName || extra.length > 0) {
+                throw new Error(
+                    `Invalid entrance connection: ${data.connection}`,
+                );
+            }
+            const sourceArea = uniqueAreaByName.get(sourceName);
+            const targetArea = uniqueAreaByName.get(targetName);
+            if (!sourceArea || !targetArea) {
+                throw new Error(
+                    `Entrance connection area not found: ${data.connection}`,
+                );
+            }
+            if (!Object.hasOwn(sourceArea.exits ?? {}, targetName)) {
+                throw new Error(
+                    `Entrance connection has no matching world exit: ${data.connection}`,
+                );
+            }
+
+            const sourceAreaId = areaIdByRandoArea.get(sourceArea);
+            const targetAreaId = areaIdByRandoArea.get(targetArea);
+            const exitId = `${sourceAreaId}\\Exit to ${targetName}`;
+            const entranceName = `Entrance from ${sourceName}`;
+            const entranceId = `${targetAreaId}\\${entranceName}`;
+            if (shuffleDirectionByConnection.has(data.connection)) {
+                throw new Error(
+                    `Duplicate entrance connection: ${data.connection}`,
+                );
+            }
+            const direction = {
+                type: entry.type,
+                primary,
+                sourceArea,
+                targetArea,
+                exitId,
+                entranceId,
+                entranceName,
+                connection: data.connection,
+                alias: data.alias ?? data.connection,
+                canStartAt: data.can_start_at ?? true,
+                stage:
+                    data.exit_infos?.[0]?.stage ??
+                    data.spawn_info?.[0]?.stage,
+                doorCoupleTag: entry.door_couple_tag,
+                conditionalVanillaConnections:
+                    data.conditional_vanilla_connections ?? [],
+            };
+            entryDirections.push(direction);
+            shuffleDirections.push(direction);
+            shuffleDirectionByConnection.set(data.connection, direction);
+        }
+        if (entryDirections.length === 2) {
+            entryDirections[0].reverse = entryDirections[1];
+            entryDirections[1].reverse = entryDirections[0];
+        }
+    }
+
+    const shuffleDirectionsByTargetArea = new Map();
+    for (const direction of shuffleDirections) {
+        const directions =
+            shuffleDirectionsByTargetArea.get(direction.targetArea) ?? [];
+        directions.push(direction);
+        shuffleDirectionsByTargetArea.set(direction.targetArea, directions);
+        rawItems.add(direction.exitId);
+        rawItems.add(direction.entranceId);
+        rawItems.add(`${direction.entranceId}_DAY`);
+        rawItems.add(`${direction.entranceId}_NIGHT`);
+    }
+
+    const conditionalVanillaDirections = [];
+    const conditionalVanillaByConnection = new Map();
+    for (const controller of shuffleDirections) {
+        for (const connection of controller.conditionalVanillaConnections) {
+            const [sourceName, targetName, ...extra] = connection.split(' -> ');
+            if (!sourceName || !targetName || extra.length > 0) {
+                throw new Error(
+                    `Invalid conditional vanilla connection: ${connection}`,
+                );
+            }
+            const sourceArea = uniqueAreaByName.get(sourceName);
+            const targetArea = uniqueAreaByName.get(targetName);
+            if (
+                !sourceArea ||
+                !targetArea ||
+                !Object.hasOwn(sourceArea.exits ?? {}, targetName)
+            ) {
+                throw new Error(
+                    `Conditional vanilla connection not found in world: ${connection}`,
+                );
+            }
+            if (conditionalVanillaByConnection.has(connection)) {
+                throw new Error(
+                    `Duplicate conditional vanilla connection: ${connection}`,
+                );
+            }
+            const sourceAreaId = areaIdByRandoArea.get(sourceArea);
+            const targetAreaId = areaIdByRandoArea.get(targetArea);
+            const direction = {
+                sourceArea,
+                targetArea,
+                exitId: `${sourceAreaId}\\Exit to ${targetName}`,
+                entranceId: `${targetAreaId}\\Entrance from ${sourceName}`,
+                entranceName: `Entrance from ${sourceName}`,
+                controllerExitId: controller.exitId,
+            };
+            conditionalVanillaDirections.push(direction);
+            conditionalVanillaByConnection.set(connection, direction);
+            rawItems.add(direction.exitId);
+            rawItems.add(direction.entranceId);
+            rawItems.add(`${direction.entranceId}_DAY`);
+            rawItems.add(`${direction.entranceId}_NIGHT`);
+        }
+    }
+
+    const conditionalVanillaDirectionsByTargetArea = new Map();
+    for (const direction of conditionalVanillaDirections) {
+        const directions =
+            conditionalVanillaDirectionsByTargetArea.get(
+                direction.targetArea,
+            ) ?? [];
+        directions.push(direction);
+        conditionalVanillaDirectionsByTargetArea.set(
+            direction.targetArea,
+            directions,
+        );
     }
 
     const startArea = worldAreas.find(
@@ -611,14 +804,44 @@ function buildSshdDump() {
         if (area === startArea) {
             rawArea.entrances.push('Start Entrance');
         }
+        for (const direction of shuffleDirectionsByTargetArea.get(area) ?? []) {
+            rawArea.entrances.push(direction.entranceName);
+        }
+        for (const direction of
+            conditionalVanillaDirectionsByTargetArea.get(area) ?? []) {
+            rawArea.entrances.push(direction.entranceName);
+        }
 
         for (const [exitName, requirement] of Object.entries(
             area.exits ?? {},
         )) {
+            const adjustedRequirement = addSkyTravelRequirements(
+                area,
+                exitName,
+                requirement,
+            );
+            const shuffleDirection = shuffleDirectionByConnection.get(
+                `${area.name} -> ${exitName}`,
+            );
+            if (shuffleDirection) {
+                rawArea.exits[shuffleDirection.exitId] = convertRequirement(
+                    adjustedRequirement,
+                );
+                continue;
+            }
+            const conditionalDirection =
+                conditionalVanillaByConnection.get(
+                    `${area.name} -> ${exitName}`,
+                );
+            if (conditionalDirection) {
+                rawArea.exits[conditionalDirection.exitId] =
+                    convertRequirement(adjustedRequirement);
+                continue;
+            }
             const targetArea = resolveExitTarget(exitName);
             if (targetArea) {
                 rawArea.exits[areaIdByRandoArea.get(targetArea)] =
-                    convertRequirement(String(requirement));
+                    convertRequirement(adjustedRequirement);
             }
         }
 
@@ -753,33 +976,98 @@ function buildSshdDump() {
         };
     }
 
+    const rawExits = {
+        '\\Start': {
+            type: 'exit',
+            'can-start-at': undefined,
+            allowed_time_of_day: timeOfDay.All,
+            subtype: undefined,
+            stage: undefined,
+            province: undefined,
+            short_name: 'Start',
+            vanilla: startEntranceId,
+        },
+    };
+    const rawEntrances = {
+        [startEntranceId]: {
+            type: 'entrance',
+            'can-start-at': true,
+            allowed_time_of_day: timeOfDay.All,
+            subtype: undefined,
+            stage: undefined,
+            province: undefined,
+            short_name: 'SSHD Start Entrance',
+        },
+    };
+    const entranceConnections = {};
+    for (const direction of shuffleDirections) {
+        rawExits[direction.exitId] = {
+            type: 'exit',
+            allowed_time_of_day:
+                timeOfDay[
+                    direction.sourceArea.allowed_time_of_day ?? 'All'
+                ] ?? timeOfDay.All,
+            stage: direction.stage,
+            short_name: direction.alias,
+            vanilla: direction.entranceId,
+        };
+        rawEntrances[direction.entranceId] = {
+            type: 'entrance',
+            'can-start-at': direction.canStartAt,
+            allowed_time_of_day:
+                timeOfDay[
+                    direction.targetArea.allowed_time_of_day ?? 'All'
+                ] ?? timeOfDay.All,
+            subtype:
+                direction.type === 'Bird Statue'
+                    ? 'bird-statue-entrance'
+                    : undefined,
+            stage: direction.stage,
+            province: direction.targetArea.worldName,
+            short_name: direction.alias,
+        };
+        entranceConnections[direction.exitId] = {
+            type: direction.type,
+            entrance: direction.entranceId,
+            primary: direction.primary,
+            reverse_exit: direction.reverse?.exitId,
+            reverse_entrance: direction.reverse?.entranceId,
+            door_couple_tag: direction.doorCoupleTag,
+        };
+    }
+    const conditionalVanillaConnections = {};
+    for (const direction of conditionalVanillaDirections) {
+        rawExits[direction.exitId] = {
+            type: 'exit',
+            allowed_time_of_day:
+                timeOfDay[
+                    direction.sourceArea.allowed_time_of_day ?? 'All'
+                ] ?? timeOfDay.All,
+            short_name: `${direction.sourceArea.name} -> ${direction.targetArea.name}`,
+            vanilla: direction.entranceId,
+        };
+        rawEntrances[direction.entranceId] = {
+            type: 'entrance',
+            'can-start-at': false,
+            allowed_time_of_day:
+                timeOfDay[
+                    direction.targetArea.allowed_time_of_day ?? 'All'
+                ] ?? timeOfDay.All,
+            province: direction.targetArea.worldName,
+            short_name: direction.targetArea.name,
+        };
+        conditionalVanillaConnections[direction.exitId] =
+            direction.controllerExitId;
+    }
+
     return {
         items: [...rawItems].sort(),
         checks,
         gossip_stones: {},
-        exits: {
-            '\\Start': {
-                type: 'exit',
-                'can-start-at': undefined,
-                allowed_time_of_day: timeOfDay.All,
-                subtype: undefined,
-                stage: undefined,
-                province: undefined,
-                short_name: 'Start',
-                vanilla: 'SSHD Start Entrance',
-            },
-        },
-        entrances: {
-            [startEntranceId]: {
-                type: 'entrance',
-                'can-start-at': true,
-                allowed_time_of_day: timeOfDay.All,
-                subtype: undefined,
-                stage: undefined,
-                province: undefined,
-                short_name: 'SSHD Start Entrance',
-            },
-        },
+        exits: rawExits,
+        entrances: rawEntrances,
+        entrance_connections: entranceConnections,
+        conditional_vanilla_connections: conditionalVanillaConnections,
         areas,
         linked_entrances: {
             silent_realms: {},

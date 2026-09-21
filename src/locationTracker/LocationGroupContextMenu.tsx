@@ -225,9 +225,14 @@ function LocationGroupContextMenu({
         settingSelector('randomize-dungeon-entrances'),
     );
     const randomSilentRealms = useSelector(settingSelector('randomize-trials'));
+    const randomSshdTrialGates = useSelector(
+        settingSelector('randomize-trial-gate-entrances'),
+    );
 
     const dungeonEntranceSetting = randomDungeonEntrances ?? randomEntrances;
     const areDungeonEntrancesRandomized = dungeonEntranceSetting !== 'None';
+    const areTrialEntrancesRandomized =
+        Boolean(randomSilentRealms) || randomSshdTrialGates === 'on';
 
     const areaMenuItems = useAreaContextMenuItems();
     const mapLayoutDebugMenuElements = useMapLayoutDebugMenuElements();
@@ -253,7 +258,7 @@ function LocationGroupContextMenu({
             <BoundEntranceMenu
                 menuId="trial-context"
                 pool="silent_realms"
-                canChooseEntrance={randomSilentRealms}
+                canChooseEntrance={areTrialEntrancesRandomized}
                 interfaceDispatch={interfaceDispatch}
             />
         </>
@@ -275,11 +280,15 @@ function BoundEntranceMenu({
     const mapLayoutDebugMenuElements = useMapLayoutDebugMenuElements();
 
     const manageEntrance = useCallback(
-        (params: ExitCtxProps) =>
+        (params: ExitCtxProps) => {
+            if (!params.props?.exitMapping.canAssign) {
+                return;
+            }
             interfaceDispatch({
                 type: 'chooseEntrance',
-                exitId: params.props!.exitMapping.exit.id,
-            }),
+                exitId: params.props.exitMapping.exit.id,
+            });
+        },
         [interfaceDispatch],
     );
 

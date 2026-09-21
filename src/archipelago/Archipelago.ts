@@ -453,7 +453,7 @@ export function parseApCustomStartingItems(
     return items;
 }
 
-function optionIndicesToOptions(
+export function optionIndicesToOptions(
     optionDefs: OptionDefs,
     loadedOptions: Record<string, number | string | string[]>,
 ): AllTypedOptions {
@@ -500,12 +500,59 @@ function optionIndicesToOptions(
             }
         }
     }
+    const applySingleChoiceAlias = (source: string, destination: string) => {
+        const loadedVal =
+            loadedOptions[source] ?? loadedOptions[`option_${source}`];
+        const option = optionDefs.find(
+            (candidate) => candidate.command === destination,
+        );
+        if (
+            loadedVal === undefined ||
+            Array.isArray(loadedVal) ||
+            option?.type !== 'singlechoice'
+        ) {
+            return;
+        }
+        settings[destination] =
+            typeof loadedVal === 'string'
+                ? loadedVal
+                : option.choices[loadedVal];
+    };
+
+    // AP exposes the short option names while the SSHD backend and generated
+    // tracker logic use the full entrance-shuffle setting names.
+    applySingleChoiceAlias('randomize_dungeons', 'randomize-dungeon-entrances');
+    applySingleChoiceAlias(
+        'randomize_trials',
+        'randomize-trial-gate-entrances',
+    );
+
+    const randomStartingSpawn =
+        loadedOptions.random_starting_spawn ??
+        loadedOptions.option_random_starting_spawn;
+    if (randomStartingSpawn !== undefined) {
+        // The AP option currently has only vanilla=0 and anywhere=1, whereas
+        // the backend also exposes two intermediate choices.
+        settings['random-starting-spawn'] =
+            randomStartingSpawn === 0 || randomStartingSpawn === 'vanilla'
+                ? 'vanilla'
+                : 'anywhere';
+    }
     const customStartingItems =
         loadedOptions.custom_starting_items ??
         loadedOptions.option_custom_starting_items;
     const parsedStartingItems = parseApCustomStartingItems(customStartingItems);
     if (parsedStartingItems !== undefined) {
         settings['starting-items'] = parsedStartingItems;
+    }
+    // `randomize_entrances` is a legacy multi-choice option in the SS tracker,
+    // but a separate AP toggle in SSHD. SSHD entrance handling uses the
+    // specific dungeon/trial/door/interior/overworld options below instead.
+    if (
+        loadedOptions.randomize_entrances !== undefined ||
+        loadedOptions.option_randomize_entrances !== undefined
+    ) {
+        settings['randomize-entrances'] = 'None';
     }
     // console.log(settings);
     return settings as AllTypedOptions;

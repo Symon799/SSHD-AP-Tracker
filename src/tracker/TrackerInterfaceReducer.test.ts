@@ -54,8 +54,8 @@ describe('tracker interface reducer', () => {
 
         expect(result.current[0]).toMatchInlineSnapshot(`
           {
-            "hintRegion": "Sealed Grounds",
-            "mapView": "faronSubmap",
+            "hintRegion": undefined,
+            "mapView": undefined,
             "type": "viewingChecks",
           }
         `);

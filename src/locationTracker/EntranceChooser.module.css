@@ -9,6 +9,23 @@
         flex-grow: 0;
     }
 
+    .filterRow {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 4px;
+
+        button {
+            flex: 0 0 auto;
+            min-width: 38px;
+            padding-inline: 0;
+        }
+
+        input {
+            margin-bottom: 0;
+        }
+    }
+
     .entrances {
         color: var(--scheme-inLogic);
         flex-grow: 1;
@@ -16,7 +33,7 @@
     }
 
     .query {
-        font-size: 1.75rem;
+        font-size: 1.3rem;
         margin: 2%;
     }
 }

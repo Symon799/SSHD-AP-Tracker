@@ -1,4 +1,7 @@
+import { load } from 'js-yaml';
+import fs from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import type { OptionDefs } from '../permalink/SettingsTypes';
 import {
     AP_ITEM_ID_GRATITUDE_CRYSTAL,
     AP_ITEM_ID_GRATITUDE_CRYSTAL_PACK,
@@ -6,12 +9,37 @@ import {
     formatRequiredDungeonsDebugSummary,
     isApBottleSlotItem,
     mergeApInventoryWithSeedItems,
+    optionIndicesToOptions,
     parseApCustomStartingItems,
     parseGratitudeCrystalCountsFromReceivedItems,
     parseGratitudeCrystalDataStorage,
     parseProgressiveSwordDataStorage,
     type RequiredDungeonDiagnostic,
 } from './Archipelago';
+
+describe('optionIndicesToOptions', () => {
+    const options = load(
+        fs.readFileSync('testData/sshd-options.yaml', 'utf8'),
+    ) as OptionDefs;
+
+    it('maps AP dungeon and trial aliases to SSHD entrance settings', () => {
+        const settings = optionIndicesToOptions(options, {
+            option_randomize_dungeons: 1,
+            option_randomize_trials: 1,
+        });
+
+        expect(settings['randomize-dungeon-entrances']).toBe('on');
+        expect(settings['randomize-trial-gate-entrances']).toBe('on');
+    });
+
+    it('maps AP random spawn index 1 to anywhere', () => {
+        const settings = optionIndicesToOptions(options, {
+            option_random_starting_spawn: 1,
+        });
+
+        expect(settings['random-starting-spawn']).toBe('anywhere');
+    });
+});
 
 describe('formatRequiredDungeonsDebugSummary', () => {
     const baseDiagnostic = {

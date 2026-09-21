@@ -1,9 +1,8 @@
 declare const classNames: {
     readonly modal: 'modal';
-    readonly colorCustomizationSection: 'colorCustomizationSection';
+    readonly colorPresets: 'colorPresets';
     readonly setting: 'setting';
     readonly header: 'header';
-    readonly colorPresets: 'colorPresets';
     readonly contents: 'contents';
     readonly labeledCheckbox: 'labeledCheckbox';
 };

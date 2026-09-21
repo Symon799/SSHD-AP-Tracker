@@ -49,11 +49,9 @@ import noSmallKey from '../assets/dungeons/noSmallKey.png';
 import noSSHBK from '../assets/dungeons/ssh_noBossKey.png';
 import noSVBK from '../assets/dungeons/sv_noBossKey.png';
 import hylianShield from '../assets/junk/hylianShield.png';
-import notumbleweed from '../assets/junk/no_tumbleweed.png';
 import rareTreasure from '../assets/junk/rareTreasure.png';
 import rupees from '../assets/junk/rupees.png';
 import semiRareTreasure from '../assets/junk/semiRareTreasure.png';
-import tumbleweed from '../assets/junk/tumbleweed.png';
 import woodenShield from '../assets/junk/woodenShield.png';
 import oneTriforce from '../assets/main quest/1_Triforce.png';
 import oneTriforceGrid from '../assets/main quest/1_Triforce_Grid.png';
@@ -275,7 +273,6 @@ const images: Images = {
         tadtones,
         tadtones,
     ],
-    Tumbleweed: [notumbleweed, tumbleweed],
     Scrapper: [noScrapper, scrapper],
     "Cawlin's Letter Grid": [noLetterGrid, letter],
     'Horned Colossus Beetle Grid': [noCBeetleGrid, cBeetle],

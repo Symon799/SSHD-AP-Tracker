@@ -52,6 +52,8 @@ export function exploreAreaGraph(
     const visitedNodes: Record<string, ExplorationNode> = {};
     visitedNodes[nodeKey(startingNode)] = startingNode;
     const workList = [startingNode];
+    const requireSshdExitAccess =
+        Object.keys(areaGraph.entranceConnections).length > 0;
 
     const reachableChecks: Record<string, ExplorationNode> = {};
 
@@ -110,7 +112,10 @@ export function exploreAreaGraph(
                         reachableChecks[location.id] = workItem;
                     }
                     const entrance = mappingsByExitId[location.id]?.entrance;
-                    if (entrance) {
+                    if (
+                        entrance &&
+                        (!requireSshdExitAccess || condition.eval(logicBits))
+                    ) {
                         const destArea = areaGraph.areasByEntrance[entrance.id];
                         const nextNode = {
                             timeOfDay: currentTimeOfDay,

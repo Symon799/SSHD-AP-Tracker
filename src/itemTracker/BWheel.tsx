@@ -1,6 +1,4 @@
-import { useSelector } from 'react-redux';
 import wheel from '../assets/b wheel.png';
-import { tumbleweedSelector } from '../customization/Selectors';
 import Item from './Item';
 import { ProgressiveItem } from './items/ProgressiveItem';
 
@@ -13,9 +11,6 @@ export default function BWheel({ width }: { width: number }) {
     const clawshotsWidth = width / 4.6;
     const whipWidth = width / 5.5;
     const bellowsWidth = width / 5.2;
-    const tumbleweedWidth = width / 6;
-
-    const tumbleWeed = useSelector(tumbleweedSelector);
 
     return (
         <div>
@@ -72,7 +67,10 @@ export default function BWheel({ width }: { width: number }) {
                     left: width / 2.4,
                 }}
             >
-                <ProgressiveItem itemName="Progressive Bow" imgWidth={bowWidth} />
+                <ProgressiveItem
+                    itemName="Progressive Bow"
+                    imgWidth={bowWidth}
+                />
             </div>
             <div
                 style={{
@@ -101,17 +99,6 @@ export default function BWheel({ width }: { width: number }) {
             >
                 <Item itemName="Gust Bellows" imgWidth={bellowsWidth} />
             </div>
-            {tumbleWeed && (
-                <div
-                    style={{
-                        position: 'relative',
-                        bottom: width / 1.75,
-                        left: width / 2.4,
-                    }}
-                >
-                    <Item itemName="Tumbleweed" imgWidth={tumbleweedWidth} />
-                </div>
-            )}
         </div>
     );
 }

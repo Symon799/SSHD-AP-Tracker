@@ -15,6 +15,7 @@ import {
     trickSemiLogicTrickListSelector,
 } from '../customization/Selectors';
 import { mergeRequirements } from '../logic/bitlogic/BitLogic';
+import { formatEntranceName } from '../logic/Entrances';
 import type { ExplorationNode } from '../logic/Pathfinding';
 import { logicSelector, optionsSelector } from '../logic/Selectors';
 import {
@@ -254,7 +255,10 @@ export function useTooltipDebug(
             return undefined;
         }
 
-        const startEntrance = exitsById['\\Start']?.entrance?.name;
+        const startEntranceRaw = exitsById['\\Start']?.entrance?.name;
+        const startEntrance = startEntranceRaw
+            ? formatEntranceName(startEntranceRaw)
+            : undefined;
         const area = logic.checks[checkId]?.area;
         const checkBit = logic.itemBits[checkId];
         const rawSettings = settings as Record<
@@ -268,7 +272,7 @@ export function useTooltipDebug(
                     return `${exitId}: missing exit mapping`;
                 }
                 const status = exit.entrance
-                    ? `mapped to ${exit.entrance.name}`
+                    ? `mapped to ${formatEntranceName(exit.entrance.name)}`
                     : exit.canAssign
                       ? 'unmapped random exit'
                       : 'vanilla';

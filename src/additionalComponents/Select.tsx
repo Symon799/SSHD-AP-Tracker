@@ -80,6 +80,7 @@ export function Select<T>({
             filterOption={(option, search) =>
                 matches(option.data.label.toLowerCase(), search.toLowerCase())
             }
+            menuShouldScrollIntoView={false}
             aria-label={label}
             id={id}
             placeholder={placeholder}

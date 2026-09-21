@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import type { TriggerEvent } from 'react-contexify';
 import { useSelector } from 'react-redux';
 import { decodeHint } from '../hints/Hints';
+import { formatEntranceName } from '../logic/Entrances';
 import { areaGraphSelector } from '../logic/Selectors';
 import type { RootState } from '../store/Store';
 import {
@@ -101,7 +102,7 @@ export function SubmapMarker({
             {birdStatueExit && (
                 <div>
                     {birdStatueExit.entrance
-                        ? `↳${birdStatueExit.entrance.name}`
+                        ? `↳${formatEntranceName(birdStatueExit.entrance.name)}`
                         : '↳Right-click to choose Starting Statue'}
                 </div>
             )}

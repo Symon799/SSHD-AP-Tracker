@@ -1,5 +1,6 @@
 import { useSelector } from 'react-redux';
 import type { ColorScheme } from '../../customization/ColorScheme';
+import { formatEntranceName } from '../../logic/Entrances';
 import { exitsByIdSelector, settingSelector } from '../../tracker/Selectors';
 import { Marker } from './Marker';
 
@@ -30,7 +31,7 @@ function StartingEntranceMarker({
             <div>
                 ↳
                 {startMapping.entrance
-                    ? startMapping.entrance.name
+                    ? formatEntranceName(startMapping.entrance.name)
                     : 'Click to choose starting entrance'}
             </div>
         </center>

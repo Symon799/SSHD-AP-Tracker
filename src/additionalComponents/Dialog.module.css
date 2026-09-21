@@ -12,6 +12,7 @@
 }
 
 .content {
+    box-sizing: border-box;
     background-color: var(--scheme-background);
     color: var(--scheme-text);
 
@@ -33,9 +34,15 @@
     display: flex;
     flex-flow: column;
     gap: 8px;
+    overflow: hidden;
 
     &.narrow {
         width: 600px;
+    }
+
+    &.extraWide {
+        width: 1200px;
+        max-width: 95vw;
     }
 
     &[data-state='closed'] {

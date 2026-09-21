@@ -174,24 +174,14 @@ function interfaceReducer(
                             : undefined,
                 };
             case 'cancelChooseEntrance': {
-                const hintRegion = action.selectedEntrance
-                    ? getHintRegionForEntrance(
-                          action.selectedEntrance,
-                          areaGraph,
-                      )
-                    : state.type === 'choosingEntrance'
-                      ? state.previousHintRegion
-                      : undefined;
-                const owningProvince = hintRegion
-                    ? getOwningProvince(mapModel, hintRegion)
-                    : undefined;
+                const hintRegion =
+                    state.type === 'choosingEntrance'
+                        ? state.previousHintRegion
+                        : undefined;
                 return {
                     type: 'viewingChecks',
                     hintRegion,
-                    mapView:
-                        owningProvince?.type === 'ok'
-                            ? owningProvince.result
-                            : state.mapView,
+                    mapView: state.mapView,
                 };
             }
         }

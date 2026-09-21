@@ -73,6 +73,7 @@ const exitRules = getExitRules(
     settings['random-start-statues'],
     settings['empty-unrequired-dungeons'],
     [],
+    settings,
 );
 const exits = getExits(logic, exitRules, {});
 const startExit = exits.find((exit) => exit.exit.id === '\\Start');

@@ -1,7 +1,6 @@
 import { createSelector, lruMemoize } from '@reduxjs/toolkit';
 import { compact, groupBy, isEqual, keyBy, partition, sumBy } from 'es-toolkit';
 import {
-    counterBasisSelector,
     trickSemiLogicSelector,
     trickSemiLogicTrickListSelector,
 } from '../customization/Selectors';
@@ -208,9 +207,7 @@ export const totalGratitudeCrystalsSelector = createSelector(
     ],
     (rawInventory, packCount, apGratitudeCrystals) => {
         if (apGratitudeCrystals) {
-            return (
-                apGratitudeCrystals.singles + apGratitudeCrystals.packs * 5
-            );
+            return apGratitudeCrystals.singles + apGratitudeCrystals.packs * 5;
         }
 
         const singles = rawInventory['Gratitude Crystal'] ?? 0;
@@ -220,7 +217,7 @@ export const totalGratitudeCrystalsSelector = createSelector(
 );
 
 const allowedStartingEntrancesSelector = createSelector(
-    [logicSelector, settingSelector('random-start-entrance')],
+    [logicSelector, settingSelector('random-start-entrance'), settingsSelector],
     getAllowedStartingEntrances,
 );
 
@@ -273,6 +270,7 @@ export const entrancePoolsSelector = createSelector(
         settingSelector('randomize-entrances'),
         settingSelector('randomize-dungeon-entrances'),
         requiredDungeonsSelector,
+        settingsSelector,
     ],
     getEntrancePools,
 );
@@ -290,6 +288,7 @@ const exitRulesSelector = createSelector(
         settingSelector('random-start-statues'),
         settingSelector('empty-unrequired-dungeons'),
         requiredDungeonsSelector,
+        settingsSelector,
     ],
     getExitRules,
 );
@@ -845,7 +844,6 @@ export const areasSelector = createSelector(
         getRequirementLogicalStateSelector,
         areaNonprogressSelector,
         areaHiddenSelector,
-        counterBasisSelector,
     ],
     (
         logic,
@@ -855,7 +853,6 @@ export const areasSelector = createSelector(
         getLogicalState,
         isAreaNonprogress,
         isAreaHidden,
-        counterBasis,
     ): HintRegion[] => {
         const exitsById = keyBy(allExits, (e) => e.exit.id);
         return compact(
@@ -876,9 +873,7 @@ export const areasSelector = createSelector(
                 const hidden = isAreaHidden(area);
                 const regularChecks = nonProgress ? [] : regularChecks_;
                 const shouldCount = (state: LogicalState) =>
-                    counterBasis === 'logic'
-                        ? state === 'inLogic'
-                        : state !== 'outLogic';
+                    state === 'inLogic';
 
                 const checkGroup = (checks: string[]): CheckGroup => {
                     const nonBannedChecks = checks.filter(

@@ -1,6 +1,8 @@
 declare const classNames: {
     readonly shell: 'shell';
     readonly mainArea: 'mainArea';
+    readonly trackerView: 'trackerView';
+    readonly entranceOverlayButton: 'entranceOverlayButton';
     readonly toolsLayout: 'toolsLayout';
     readonly toolsSidebar: 'toolsSidebar';
     readonly toolsOverviewCard: 'toolsOverviewCard';

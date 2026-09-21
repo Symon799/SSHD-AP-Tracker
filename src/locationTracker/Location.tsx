@@ -8,6 +8,7 @@ import goddessCubeImg from '../assets/sidequests/goddess_cube.png';
 import gossipStoneImg from '../assets/sidequests/gossip_stone.png';
 import { useDroppable } from '../dragAndDrop/DragAndDrop';
 import { findRepresentativeIcon } from '../itemTracker/Images';
+import { formatEntranceName } from '../logic/Entrances';
 import type { InventoryItem } from '../logic/Inventory';
 import type { Check } from '../logic/Locations';
 import { isRegularItemCheck } from '../logic/Logic';
@@ -40,11 +41,13 @@ export default function Location({
     compact,
     id,
     onChooseEntrance,
+    onGoToEntrance,
     forceFullName = false,
 }: {
     compact: boolean;
     id: string;
     onChooseEntrance: (exitId: string) => void;
+    onGoToEntrance: (exitId: string) => void;
     forceFullName?: boolean;
 }) {
     const check = useSelector(checkSelector(id));
@@ -54,6 +57,7 @@ export default function Location({
                 compact={compact}
                 forceFullName={forceFullName}
                 onChooseEntrance={onChooseEntrance}
+                onGoToEntrance={onGoToEntrance}
                 id={id}
             />
         );
@@ -315,12 +319,14 @@ function Exit({
     compact,
     id,
     onChooseEntrance,
+    onGoToEntrance,
     forceFullName,
     // setActiveArea,
 }: {
     compact: boolean;
     id: string;
     onChooseEntrance: (exitId: string) => void;
+    onGoToEntrance: (exitId: string) => void;
     forceFullName: boolean;
     // TODO
     // setActiveArea: (area: string) => void;
@@ -330,7 +336,9 @@ function Exit({
         (state: RootState) => exitsByIdSelector(state)[id],
     );
     const check = useSelector(checkSelector(id));
-    const displayName = forceFullName ? exit.exit.name : check.checkName;
+    const displayName = formatEntranceName(
+        forceFullName ? exit.exit.name : check.checkName,
+    );
 
     const style = {
         color: check.checked
@@ -376,10 +384,28 @@ function Exit({
                     <div className={clsx(styles.exit, styles.text)}>
                         <span style={style}>{displayName}</span>
                         <span>
-                            ↳{exit.entrance?.name ?? 'Select entrance...'}
+                            ↳
+                            {exit.entrance
+                                ? formatEntranceName(exit.entrance.name)
+                                : 'Select entrance...'}
                         </span>
                     </div>
-                    <CheckIcon check={check} compact={compact} />
+                    <Tooltip content="Go to destination" placement="top">
+                        <button
+                            type="button"
+                            className={styles.exitNavigationButton}
+                            disabled={!exit.entrance}
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                if (exit.entrance) {
+                                    onGoToEntrance(id);
+                                }
+                            }}
+                            aria-label="Go to destination"
+                        >
+                            <CheckIcon check={check} compact={compact} />
+                        </button>
+                    </Tooltip>
                 </div>
             </Tooltip>
         </>

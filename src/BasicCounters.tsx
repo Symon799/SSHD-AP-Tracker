@@ -2,7 +2,6 @@ import clsx from 'clsx';
 import { useSelector } from 'react-redux';
 import Tooltip from './additionalComponents/Tooltip';
 import styles from './BasicCounters.module.css';
-import { counterBasisSelector } from './customization/Selectors';
 import type { ExitMapping, LogicalState } from './logic/Locations';
 import {
     exitsSelector,
@@ -24,21 +23,24 @@ export default function BasicCounters({
 
     const exits = useSelector(exitsSelector);
     const getLogicalState = useSelector(getRequirementLogicalStateSelector);
-    const counterBasis = useSelector(counterBasisSelector);
     const settings = useSelector(settingsSelector) as Record<
         string,
         string | number | boolean | string[] | undefined
     >;
-    const shouldCount = (state: LogicalState) =>
-        counterBasis === 'logic' ? state === 'inLogic' : state !== 'outLogic';
+    const shouldCount = (state: LogicalState) => state === 'inLogic';
     const showEntrancesCounter = [
         settings['randomize-entrances'],
         settings['randomize-dungeon-entrances'],
         settings['randomize-interior-entrances'],
         settings['randomize-overworld-entrances'],
         settings['randomize-trials'],
+        settings['randomize-trial-gate-entrances'],
+        settings['randomize-door-entrances'],
+        settings['randomize-gate-of-time'],
         settings['random-start-entrance'],
         settings['random-start-statues'],
+        settings['random-starting-spawn'],
+        settings['random-starting-statues'],
     ].some(
         (value) =>
             value !== undefined &&
