@@ -1,6 +1,10 @@
 import { type ChangeEvent, useCallback, useContext, useRef } from 'react';
+import type {
+    ApServerDataExport,
+    ApSnapshotArchipelagoData,
+} from './archipelago/Archipelago';
 import { ClientManagerContext } from './archipelago/ClientHooks';
-import type { ApServerDataExport, ApSnapshotArchipelagoData } from './archipelago/Archipelago';import { logicSelector } from './logic/Selectors';
+import { logicSelector } from './logic/Selectors';
 import { type ThunkResult, useAppDispatch } from './store/Store';
 import {
     apCountedCheckIdsSelector,
@@ -218,7 +222,9 @@ function downloadJson(filename: string, value: unknown) {
     window.URL.revokeObjectURL(url);
 }
 
-function doExportUtSnapshot(archipelago?: ApSnapshotArchipelagoData): ThunkResult {
+function doExportUtSnapshot(
+    archipelago?: ApSnapshotArchipelagoData,
+): ThunkResult {
     return (_dispatch, getState) => {
         const state = getState();
         const logic = logicSelector(state);

@@ -3,10 +3,10 @@ import { useSelector } from 'react-redux';
 import { totalGratitudeCrystalsSelector } from '../../../tracker/Selectors';
 import { BasicItem } from '../../BasicItem';
 import allImages from '../../Images';
-import counterStyles from '../CounterItem.module.css';
-import { ItemCounterOverlay } from '../ItemCounterOverlay';
 import inGameStyles from '../../inGame/InGameInventoryOverlay.module.css';
 import { InGameItemSlot } from '../../inGame/InGameItemSlot';
+import counterStyles from '../CounterItem.module.css';
+import { ItemCounterOverlay } from '../ItemCounterOverlay';
 
 export function GratitudeCrystals({
     className,

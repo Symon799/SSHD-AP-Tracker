@@ -31,10 +31,10 @@ export default function Guide() {
                 <Section>
                     <p>
                         Ce tracker est dédié à <strong>Skyward Sword HD</strong>{' '}
-                        en multijoueur <strong>Archipelago</strong>. Il reconstruit
-                        la logique locale à partir des réglages de la seed, suit
-                        les emplacements cochés, les donjons requis et l’état
-                        des objets reçus depuis le serveur.
+                        en multijoueur <strong>Archipelago</strong>. Il
+                        reconstruit la logique locale à partir des réglages de
+                        la seed, suit les emplacements cochés, les donjons
+                        requis et l’état des objets reçus depuis le serveur.
                     </p>
                     <p>
                         <Link to="/">← Retour à la connexion</Link>
@@ -58,8 +58,8 @@ export default function Guide() {
                         </li>
                         <li>
                             Utilisez <strong>Launch New Tracker</strong> pour
-                            repartir de zéro avec les réglages et la
-                            progression Archipelago actuels du serveur.
+                            repartir de zéro avec les réglages et la progression
+                            Archipelago actuels du serveur.
                         </li>
                         <li>
                             Marquez manuellement les donjons requis tant que la
@@ -94,8 +94,9 @@ export default function Guide() {
                 <Section>
                     <p>
                         Le mode carte est le mode principal. Le mode liste
-                        conserve la même logique, avec un séparateur redimensionnable
-                        entre la liste des régions et la liste des emplacements.
+                        conserve la même logique, avec un séparateur
+                        redimensionnable entre la liste des régions et la liste
+                        des emplacements.
                     </p>
                     <p>
                         Un clic gauche sur une région ouvre ses emplacements.
@@ -110,9 +111,9 @@ export default function Guide() {
                 <Section>
                     <p>
                         Le panneau <strong>Customization</strong> permet de
-                        choisir la disposition des objets et des lieux, d’activer
-                        la semi-logique et les tricks, et d’ajuster les couleurs
-                        en bas du panneau.
+                        choisir la disposition des objets et des lieux,
+                        d’activer la semi-logique et les tricks, et d’ajuster
+                        les couleurs en bas du panneau.
                     </p>
                 </Section>
 

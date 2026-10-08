@@ -2,8 +2,8 @@ import type { CSSProperties } from 'react';
 import miscItemBlock from '../assets/misc_items_block.png';
 import Item from './Item';
 import { InGameCounterItem } from './inGame/InGameCounterItem';
-import { InGameItemLabel } from './inGame/InGameItemLabel';
 import inGameStyles from './inGame/InGameInventoryOverlay.module.css';
+import { InGameItemLabel } from './inGame/InGameItemLabel';
 import { InGameItemSlot } from './inGame/InGameItemSlot';
 
 const MISC_BLOCK_HEIGHT_RATIO = 140 / 280;
@@ -101,10 +101,7 @@ export default function AdditionalItems({ width }: { width: number }) {
                     size={keyWidth}
                     className={inGameStyles.labelSlot}
                 >
-                    <Item
-                        itemName="Lanayru Caves Small Key"
-                        imgWidth="100%"
-                    />
+                    <Item itemName="Lanayru Caves Small Key" imgWidth="100%" />
                     <InGameItemLabel>Caves</InGameItemLabel>
                 </InGameItemSlot>
             </div>

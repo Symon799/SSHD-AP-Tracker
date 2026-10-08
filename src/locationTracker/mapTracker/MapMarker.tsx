@@ -15,8 +15,8 @@ import {
 import HintDescription from '../HintsDescription';
 import type { LocationGroupContextMenuProps } from '../LocationGroupContextMenu';
 import { useContextMenu } from '../context-menu';
-import { getMarkerColor, getRegionData, getSubmarkerData } from './MapUtils';
 import { useMapLayoutDebugEnabled } from './MapLayoutDebugMenuItems';
+import { getMarkerColor, getRegionData, getSubmarkerData } from './MapUtils';
 import { Marker } from './Marker';
 
 function MapMarker({

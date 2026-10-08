@@ -33,7 +33,9 @@ describe('tracker inventory overrides', () => {
         );
         expect(state.inventory['Skyview Small Key']).toBe(1);
         expect(state.inventory['Skyview Boss Key']).toBe(1);
-        expect(state.manualInventoryOverrides['Skyview Boss Key']).toBeUndefined();
+        expect(
+            state.manualInventoryOverrides['Skyview Boss Key'],
+        ).toBeUndefined();
 
         state = reducer(
             state,
@@ -43,7 +45,9 @@ describe('tracker inventory overrides', () => {
             ]),
         );
         expect(state.inventory['Skyview Boss Key']).toBe(0);
-        expect(state.manualInventoryOverrides['Skyview Boss Key']).toBeUndefined();
+        expect(
+            state.manualInventoryOverrides['Skyview Boss Key'],
+        ).toBeUndefined();
     });
 
     it('keeps a positive delta when AP increments from a non-zero count', () => {
@@ -104,12 +108,12 @@ describe('tracker inventory overrides', () => {
         );
         expect(state.inventory['Skyview Boss Key'] ?? 0).toBe(0);
 
-        state = reducer(
-            state,
-            clickItem({ item: 'Key Piece', take: false }),
-        );
+        state = reducer(state, clickItem({ item: 'Key Piece', take: false }));
         for (let i = 0; i < 10; i++) {
-            state = reducer(state, clickItem({ item: 'Key Piece', take: false }));
+            state = reducer(
+                state,
+                clickItem({ item: 'Key Piece', take: false }),
+            );
         }
         expect(state.inventory['Key Piece']).toBe(5);
         expect(state.manualInventoryOverrides['Key Piece']).toBe(5);

@@ -5,9 +5,12 @@ import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { MakeClientAvailable } from './archipelago/ClientHooks';
 import type { ColorScheme } from './customization/ColorScheme';
 import { colorSchemeSelector } from './customization/Selectors';
+import {
+    persistRootStateToLocalStorage,
+    useSyncTrackerStateToLocalStorage,
+} from './LocalStorage';
 import ErrorPage from './miscPages/ErrorPage';
 import Guide from './miscPages/guide/Guide';
-import { persistRootStateToLocalStorage, useSyncTrackerStateToLocalStorage } from './LocalStorage';
 import Options from './options/Options';
 import type { RootState } from './store/Store';
 import Tracker from './Tracker';

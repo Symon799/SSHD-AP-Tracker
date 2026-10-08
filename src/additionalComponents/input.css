@@ -36,13 +36,21 @@
                 var(--scheme-text) 7%,
                 var(--scheme-background)
             );
-            border-color: color-mix(in srgb, var(--scheme-text) 12%, transparent);
+            border-color: color-mix(
+                in srgb,
+                var(--scheme-text) 12%,
+                transparent
+            );
             cursor: not-allowed;
             box-shadow: none;
         }
 
         &:disabled:focus {
-            border-color: color-mix(in srgb, var(--scheme-text) 12%, transparent);
+            border-color: color-mix(
+                in srgb,
+                var(--scheme-text) 12%,
+                transparent
+            );
             box-shadow: none;
         }
 

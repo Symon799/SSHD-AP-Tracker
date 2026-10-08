@@ -6,8 +6,8 @@ import {
     useEffect,
     useState,
 } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useStore } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import {
     ClientManagerContext,
     useApConnectionStatus,
@@ -23,8 +23,8 @@ import {
 } from '../LocalStorage';
 import { loadLogic } from '../logic/Slice';
 import type { OptionDefs } from '../permalink/SettingsTypes';
-import { useAppDispatch } from '../store/Store';
 import type { RootState } from '../store/Store';
+import { useAppDispatch } from '../store/Store';
 import { acceptSettings, loadTracker, reset } from '../tracker/Slice';
 import Acknowledgement from './Acknowledgment';
 import styles from './Options.module.css';
@@ -81,7 +81,15 @@ export default function Options() {
             }
             navigate('/tracker');
         },
-        [appDispatch, clientManager, isClientConnected, loaded, navigate, settings, store],
+        [
+            appDispatch,
+            clientManager,
+            isClientConnected,
+            loaded,
+            navigate,
+            settings,
+            store,
+        ],
     );
 
     return (
@@ -259,7 +267,9 @@ function ConnectionCard({
                     readOnly={isConnected}
                     aria-readonly={isConnected}
                     title={
-                        isConnected ? 'Disconnect to edit the slot name' : undefined
+                        isConnected
+                            ? 'Disconnect to edit the slot name'
+                            : undefined
                     }
                     value={
                         apStatus.state === 'loggedIn'

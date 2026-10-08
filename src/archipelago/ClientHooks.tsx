@@ -7,9 +7,7 @@ import {
     type ReactNode,
 } from 'react';
 import { noop } from '../utils/Function';
-import {
-    APClientManager,
-} from './Archipelago';
+import { APClientManager } from './Archipelago';
 
 export const ClientManagerContext = createContext<APClientManager | null>(null);
 

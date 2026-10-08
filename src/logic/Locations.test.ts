@@ -22,7 +22,10 @@ describe('parseRequiredDungeonsFromGoalDungeonLocationCodes', () => {
             ),
         ).toBeUndefined();
         expect(
-            parseRequiredDungeonsFromGoalDungeonLocationCodes([], ID_TO_LOCATION),
+            parseRequiredDungeonsFromGoalDungeonLocationCodes(
+                [],
+                ID_TO_LOCATION,
+            ),
         ).toBeUndefined();
     });
 

@@ -1,10 +1,10 @@
 import type { TriggerEvent } from 'react-contexify';
 import { useSelector } from 'react-redux';
-import { debugModeSelector } from '../../customization/Selectors';
 import leaveEldin from '../../assets/maps/leaveEldin.png';
 import leaveFaron from '../../assets/maps/leaveFaron.png';
 import leaveLanayru from '../../assets/maps/leaveLanayru.png';
 import leaveSkyloft from '../../assets/maps/leaveSkyloft.png';
+import { debugModeSelector } from '../../customization/Selectors';
 import { areaGraphSelector } from '../../logic/Selectors';
 import keyDownWrapper from '../../utils/KeyDownWrapper';
 import EntranceMarker from './EntranceMarker';
@@ -54,9 +54,9 @@ function Submap({
     exitParams: ExitParams;
     currentRegionOrExit: string | undefined;
 }) {
+    const debugMode = useSelector(debugModeSelector);
     const areaGraph = useSelector(areaGraphSelector);
-    const mapLayoutDebugEnabled =
-        ENABLE_MAP_LAYOUT_DEBUG || useSelector(debugModeSelector);
+    const mapLayoutDebugEnabled = ENABLE_MAP_LAYOUT_DEBUG || debugMode;
     const applyOverride = (debugPath: string, x: number, y: number) =>
         setLayoutOverride(debugPath, { x, y });
 

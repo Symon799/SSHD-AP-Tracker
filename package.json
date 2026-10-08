@@ -35,8 +35,10 @@
   "scripts": {
     "start": "vite",
     "build": "vite build",
+    "audit:sshdDump": "node ./scripts/auditSshdDump.mjs",
     "serve": "vite preview",
     "test": "vitest",
+    "check": "npm run audit:sshdDump && npm run test -- --run && npm run lint:ts && npm run build",
     "coverage": "vitest run --coverage",
     "lint": "npm run lint:ts && npm run lint:eslint && npm run lint:prettier",
     "generate:testData": "node ./scripts/downloadTestData.mjs",

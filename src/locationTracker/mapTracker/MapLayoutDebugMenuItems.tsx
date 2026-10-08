@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Item, Separator } from 'react-contexify';
+import {
+    Item,
+    type ItemParams,
+    type PredicateParams,
+    Separator,
+} from 'react-contexify';
 import { useSelector } from 'react-redux';
 import { debugModeSelector } from '../../customization/Selectors';
 import {
@@ -12,6 +17,12 @@ import {
 export interface MapLayoutDebugContextMenuProps {
     layoutDebugPath?: string;
 }
+
+type LayoutDebugParams = PredicateParams<MapLayoutDebugContextMenuProps>;
+type LayoutDebugItemParams = ItemParams<MapLayoutDebugContextMenuProps>;
+
+const layoutDebugPath = ({ props }: LayoutDebugParams) =>
+    props?.layoutDebugPath;
 
 function useActiveLayoutMovePath() {
     const [activePath, setActivePath] = useState(getActiveLayoutMovePath);
@@ -44,12 +55,14 @@ export function useMapLayoutDebugMenuElements() {
         return [
             <Item
                 key="map-layout-debug-move"
-                disabled={({ props }) => !props?.layoutDebugPath}
-                hidden={({ props }) =>
-                    activeLayoutMovePath === props?.layoutDebugPath
+                disabled={(params: LayoutDebugParams) =>
+                    !layoutDebugPath(params)
                 }
-                onClick={(params) => {
-                    const path = params.props?.layoutDebugPath;
+                hidden={(params: LayoutDebugParams) =>
+                    activeLayoutMovePath === layoutDebugPath(params)
+                }
+                onClick={(params: LayoutDebugItemParams) => {
+                    const path = layoutDebugPath(params);
                     if (path) {
                         toggleActiveLayoutMovePath(path);
                     }
@@ -59,12 +72,14 @@ export function useMapLayoutDebugMenuElements() {
             </Item>,
             <Item
                 key="map-layout-debug-stop"
-                disabled={({ props }) => !props?.layoutDebugPath}
-                hidden={({ props }) =>
-                    activeLayoutMovePath !== props?.layoutDebugPath
+                disabled={(params: LayoutDebugParams) =>
+                    !layoutDebugPath(params)
                 }
-                onClick={(params) => {
-                    const path = params.props?.layoutDebugPath;
+                hidden={(params: LayoutDebugParams) =>
+                    activeLayoutMovePath !== layoutDebugPath(params)
+                }
+                onClick={(params: LayoutDebugItemParams) => {
+                    const path = layoutDebugPath(params);
                     if (path) {
                         toggleActiveLayoutMovePath(path);
                     }
@@ -74,7 +89,7 @@ export function useMapLayoutDebugMenuElements() {
             </Item>,
             <Separator
                 key="map-layout-debug-separator"
-                hidden={({ props }) => !props?.layoutDebugPath}
+                hidden={(params: LayoutDebugParams) => !layoutDebugPath(params)}
             />,
         ];
     }, [activeLayoutMovePath, mapLayoutDebugEnabled]);

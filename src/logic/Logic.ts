@@ -1317,7 +1317,9 @@ function getCheckType(
         return 'regular';
     }
 
-    if (checkType.includes('Rupee')) {
+    if (checkType.includes('Loose Crystals')) {
+        return 'loose_crystal';
+    } else if (checkType.includes('Rupee')) {
         return 'rupee';
     } else if (checkType.includes('silent realm')) {
         return 'trial_treasure';

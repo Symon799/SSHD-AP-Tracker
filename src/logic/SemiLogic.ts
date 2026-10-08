@@ -1,5 +1,9 @@
 import type { OptionDefs, TypedOptions } from '../permalink/SettingsTypes';
-import { type InventoryItem, inventoryItemFromCheckHint, itemMaxes } from './Inventory';
+import {
+    type InventoryItem,
+    inventoryItemFromCheckHint,
+    itemMaxes,
+} from './Inventory';
 import { type PotentialLocations, getSemiLogicKeys } from './KeyLogic';
 import { type Logic, isRegularItemCheck } from './Logic';
 import { LogicBuilder } from './LogicBuilder';

@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { debugModeSelector } from '../../customization/Selectors';
 import eldinMap from '../../assets/maps/Eldin.png';
 import faronMap from '../../assets/maps/Faron.png';
 import lanayruMap from '../../assets/maps/Lanayru.png';
 import skyMap from '../../assets/maps/Sky.png';
 import skyloftMap from '../../assets/maps/Skyloft.png';
+import { debugModeSelector } from '../../customization/Selectors';
 import mapData from '../../data/mapData.json';
 import type { HintRegion } from '../../logic/Locations';
 import {
@@ -73,12 +73,12 @@ function WorldMap({
     const mapModel = useSelector(mapModelSelector);
     const displayAreas = useSelector(displayAreasSelector);
     const unmappedAreaNames = useSelector(unmappedAreaNamesSelector);
+    const debugMode = useSelector(debugModeSelector);
     // Preload large images since we don't render all maps at the
     // same time
     usePrefetchImages(imagesToPrefetch);
 
-    const mapLayoutDebugEnabled =
-        ENABLE_MAP_LAYOUT_DEBUG || useSelector(debugModeSelector);
+    const mapLayoutDebugEnabled = ENABLE_MAP_LAYOUT_DEBUG || debugMode;
     const activeSubmap = interfaceState.mapView;
     const [, setLayoutVersion] = useState(0);
     useEffect(() => {

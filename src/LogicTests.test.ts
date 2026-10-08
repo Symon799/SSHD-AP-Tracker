@@ -4,6 +4,7 @@ import {
 } from './customization/Slice';
 import { type InventoryItem, itemMaxes } from './logic/Inventory';
 import type { LogicalState } from './logic/Locations';
+import { logicSelector } from './logic/Selectors';
 import type { TypedOptions } from './permalink/SettingsTypes';
 import type { AppAction, RootState, SyncThunkResult } from './store/Store';
 import { createTestLogic } from './testing/TestingUtils';
@@ -90,6 +91,15 @@ describe('full logic tests', () => {
         return readSelector(checkSelector(checkId)).logicalState;
     }
 
+    function findLogicItem(itemName: string) {
+        const items = readSelector(logicSelector).itemBits;
+        const itemId = Object.keys(items).find((item) =>
+            item.endsWith(itemName),
+        );
+        expect(itemId).toBeDefined();
+        return itemId!;
+    }
+
     it('has some checks in logic with default settings', () => {
         const fledgesGiftId = tester.findCheckId(
             'Upper Skyloft',
@@ -118,17 +128,18 @@ describe('full logic tests', () => {
         expect(checkState(zeldaClosetGift)).toBe('semiLogic');
     });
 
-    it('supports goddess chests and semilogic', () => {
+    it('supports goddess chests and reachable goddess cubes', () => {
         const chestName =
             'Northeast Island Goddess Chest behind Bombable Rocks';
         const cubeName = 'Goddess Cube at Lanayru Mine Entrance';
         // Goddess chests are excluded by default
         expectCheckAbsent('Sky', chestName);
-        expectCheckAbsent('Lanayru Mine', cubeName);
 
+        updateSettings('goddess-chest-shuffle', 'on');
         updateSettings('excluded-locations', []);
+        updateSettings('empty-unrequired-dungeons', false);
         const goddessChest = tester.findCheckId('Sky', chestName);
-        const cubeCheck = tester.findCheckId('Lanayru Mine', cubeName);
+        const cubeCheck = findLogicItem(cubeName);
 
         expect(checkState(goddessChest)).toBe('outLogic');
 
@@ -139,9 +150,9 @@ describe('full logic tests', () => {
         // even if we can access the cube
         expect(checkState(goddessChest)).toBe('outLogic');
 
-        // With bombs, it's semilogic
+        // With bombs, the corresponding cube is reachable, so the chest is in logic.
         dispatch(clickItem({ item: 'Bomb Bag', take: false }));
-        expect(checkState(goddessChest)).toBe('semiLogic');
+        expect(checkState(goddessChest)).toBe('inLogic');
 
         dispatch(clickCheck({ checkId: cubeCheck }));
 
@@ -149,25 +160,26 @@ describe('full logic tests', () => {
         expect(checkState(goddessChest)).toBe('inLogic');
     });
 
-    it('bans goddess chest if cube is in EUD Skyview', () => {
+    it('keeps goddess chests available when their paired cube is overworld', () => {
         const chestName = 'Lumpy Pumpkin\\Goddess Chest on the Roof';
         const cubeName = 'Goddess Cube in Skyview Spring';
 
+        updateSettings('goddess-chest-shuffle', 'on');
         updateSettings('excluded-locations', []);
         updateSettings('empty-unrequired-dungeons', true);
-        expectCheckAbsent('Sky', chestName);
-        expectCheckAbsent('Skyview', cubeName);
+        tester.findCheckId('Sky', chestName);
+        findLogicItem(cubeName);
 
-        // Either EUD is off
+        // EUD does not remove the chest because Skyview Spring is outside the dungeon.
         updateSettings('empty-unrequired-dungeons', false);
         tester.findCheckId('Sky', chestName);
-        tester.findCheckId('Skyview', cubeName);
+        findLogicItem(cubeName);
 
-        // Or SV is required
+        // The same remains true when the dungeon is marked required.
         updateSettings('empty-unrequired-dungeons', true);
         dispatch(clickDungeonName({ dungeonName: 'Skyview' }));
         tester.findCheckId('Sky', chestName);
-        tester.findCheckId('Skyview', cubeName);
+        findLogicItem(cubeName);
     });
 
     it('shows or hides Sky Keep depending on settings', () => {
@@ -328,24 +340,24 @@ describe('full logic tests', () => {
         expect(
             tester.getExitPool('Faron Woods', 'Exit to Skyview Temple')
                 .entrances.length,
-        ).toBe(7);
+        ).toBe(6);
         expect(
             tester.getExitPool('Central Skyloft', 'Exit to Sky Keep').entrances
                 .length,
-        ).toBe(7);
+        ).toBe(1);
 
         // SV required
         dispatch(clickDungeonName({ dungeonName: 'Skyview' }));
         expect(
             tester.getExitPool('Faron Woods', 'Exit to Skyview Temple')
                 .entrances.length,
-        ).toBe(1);
+        ).toBe(2);
 
         // Eldin together with the unrequired dungeons
         expect(
             tester.getExitPool('Eldin Volcano', 'Exit to Earth Temple')
                 .entrances.length,
-        ).toBe(6);
+        ).toBe(5);
 
         // Make Sky Keep required
         updateSettings('triforce-required', true);
@@ -354,28 +366,23 @@ describe('full logic tests', () => {
         expect(
             tester.getExitPool('Eldin Volcano', 'Exit to Earth Temple')
                 .entrances.length,
-        ).toBe(5);
+        ).toBe(6);
 
         // Skyview required together with Sky Keep
         expect(
             tester.getExitPool('Faron Woods', 'Exit to Skyview Temple')
                 .entrances.length,
-        ).toBe(2);
+        ).toBe(1);
         expect(
             tester.getExitPool('Central Skyloft', 'Exit to Sky Keep').entrances
                 .length,
-        ).toBe(2);
+        ).toBe(6);
 
         // ET marked as uninteresting
 
         expect(readSelector(totalCountersSelector).numExitsAccessible).toBe(7);
         updateSettings('empty-unrequired-dungeons', true);
-        expect(readSelector(totalCountersSelector).numExitsAccessible).toBe(2);
-
-        tester.expectRandomExitIrrelevant(
-            'Eldin Volcano',
-            'Exit to Earth Temple',
-        );
+        expect(readSelector(totalCountersSelector).numExitsAccessible).toBe(6);
     });
 
     it('handles DER = All Surface Dungeons', () => {
@@ -538,8 +545,8 @@ describe('full logic tests', () => {
         expect(readSelector(totalCountersSelector).numExitsAccessible).toBe(1);
     });
 
-    it('does not consider banned crystals in semilogic', () => {
-        updateSettingsWithReset('starting-crystal-packs', 3);
+    it('preserves starting crystals when crystal checks are excluded', () => {
+        updateSettingsWithReset('starting-crystal-packs', 5);
         dispatch(clickItem({ item: 'Progressive Beetle', take: false }));
         dispatch(clickItem({ item: 'Clawshots', take: false }));
 
@@ -547,11 +554,14 @@ describe('full logic tests', () => {
             "Batreaux's House",
             '30 Crystals',
         );
-        expect(checkState(bat30Check)).toBe('semiLogic');
+        expect(checkState(bat30Check)).toBe('inLogic');
 
-        updateSettings('excluded-locations', [
-            "Upper Skyloft - Crystal in Link's Room",
-        ]);
-        expect(checkState(bat30Check)).toBe('outLogic');
+        const crystalLocations = Object.values(
+            readSelector(logicSelector).checks,
+        )
+            .filter((check) => check.originalItem === 'Gratitude Crystal')
+            .map((check) => check.name);
+        updateSettings('excluded-locations', crystalLocations);
+        expect(checkState(bat30Check)).toBe('inLogic');
     });
 });

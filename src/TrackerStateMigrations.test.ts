@@ -2,9 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { migrateTrackerState } from './TrackerStateMigrations';
 import type { TrackerState } from './tracker/Slice';
 
-function makeTrackerState(
-    overrides: Partial<TrackerState>,
-): TrackerState {
+function makeTrackerState(overrides: Partial<TrackerState>): TrackerState {
     return {
         checkedChecks: [],
         apCheckedChecks: [],
@@ -38,8 +36,12 @@ describe('migrateTrackerState', () => {
         );
 
         expect(migrated.requiredDungeons).toEqual(['Skyview', 'Sandship']);
-        expect([...migrated.apRequiredDungeons].sort()).toEqual(
-            ['Earth Temple', 'Sandship', 'Skyview'].sort(),
+        expect(
+            [...migrated.apRequiredDungeons].sort((a, b) => a.localeCompare(b)),
+        ).toEqual(
+            ['Earth Temple', 'Sandship', 'Skyview'].sort((a, b) =>
+                a.localeCompare(b),
+            ),
         );
     });
 

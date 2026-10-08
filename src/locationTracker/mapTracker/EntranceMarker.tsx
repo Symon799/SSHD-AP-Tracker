@@ -24,8 +24,8 @@ import type {
     MapExitContextMenuProps,
 } from '../LocationGroupContextMenu';
 import RequirementsTooltip from '../RequirementsTooltip';
-import { getMarkerColor, getRegionData, getSubmarkerData } from './MapUtils';
 import { useMapLayoutDebugEnabled } from './MapLayoutDebugMenuItems';
+import { getMarkerColor, getRegionData, getSubmarkerData } from './MapUtils';
 import { Marker } from './Marker';
 
 function EntranceMarker({

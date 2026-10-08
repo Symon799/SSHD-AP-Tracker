@@ -6,10 +6,10 @@ import { rawItemCountSelector } from '../tracker/Selectors';
 // import { clickItem } from '../tracker/Slice';
 import keyDownWrapper from '../utils/KeyDownWrapper';
 import allImages from './Images';
-import Item from './Item';
-import { ProgressiveItem } from './items/ProgressiveItem';
 import inGameStyles from './inGame/InGameInventoryOverlay.module.css';
 import { InGameItemSlot } from './inGame/InGameItemSlot';
+import Item from './Item';
+import { ProgressiveItem } from './items/ProgressiveItem';
 
 export default function SwordBlock({ width }: { width: number }) {
     // const dispatch = useDispatch();
