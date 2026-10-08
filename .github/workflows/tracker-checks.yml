@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   quality:
-    name: Data, tests, TypeScript and build
+    name: Data, tests, browser tests, TypeScript and build
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -23,6 +23,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Install Playwright browser dependencies
+        run: npx playwright install --with-deps chromium
 
       - name: Run project checks
         run: npm run check

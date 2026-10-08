@@ -1,10 +1,10 @@
 # Testing the SSHD AP Tracker
 
-This project uses Vitest for automated tests. The tests are split into three practical layers:
+This project uses Vitest and Playwright for automated tests. The tests are split into three practical layers:
 
 - logic and data tests, which run without a browser or Archipelago server;
 - tracker synchronization tests, which replay deterministic client events;
-- browser tests, to be added only for interactions that cannot be verified by the first two layers.
+- browser tests, which exercise the real React application in Chromium.
 
 ## Local checks
 
@@ -31,16 +31,38 @@ This checks that the dump parses, every check is represented in the item index, 
 supported sanity options are present.
 
 The combined validation command is `npm run check`. It runs the data audit, tests, TypeScript check,
-and production build.
+ESLint, Prettier, browser tests, and the production build.
 
 `run-checks.bat` runs `npm run check` from the repository root and keeps the Windows terminal open so
 the output can be reviewed after the command finishes.
 
 The current baseline passes `npm run check`: the SSHD data audit passes, all 115 Vitest tests pass,
-TypeScript passes, and the production build succeeds.
+the Playwright browser tests pass, TypeScript passes, and the production build succeeds.
 
 The broader `npm run lint` command is separate from the functional check so formatting and static
 analysis can also be run independently. ESLint and Prettier currently pass across the repository.
+
+## Browser tests
+
+Browser tests use Playwright with Chromium and start both a local Vite development server and a small
+simulated Archipelago WebSocket server automatically. The simulator implements the connection handshake,
+data package, checked locations, received items, and the location-count data needed by the tracker.
+Run only these tests with:
+
+```text
+npm run test:e2e
+```
+
+The first run downloads the Chromium test browser. The current tests verify that the options page loads
+the local SSHD logic without browser errors, keeps the disconnected connection form editable, connects
+to the simulator, launches the tracker, renders the map, applies checked-location counts, and displays
+the received Progressive Sword progression in its tooltip. They never connect to a real Archipelago server.
+
+The simulator lives in `tests/e2e/mock-archipelago-server.mjs`. Keep its fixture small and deterministic;
+add a new packet or state only when a browser test needs to cover that behavior.
+
+When a browser test fails, Playwright keeps a screenshot, video, and trace in `test-results/` so the
+failure can be inspected locally. CI publishes the test output through the GitHub Actions job.
 
 ## What the tests should protect
 
