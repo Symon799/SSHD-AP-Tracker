@@ -74,6 +74,9 @@ export interface LogicalCheck {
         | 'beedle_shop'
         | 'gear_shop'
         | 'potion_shop'
+        | 'pot'
+        | 'pumpkin'
+        | 'barrel'
         | 'tr_cube'
         | 'tr_dummy';
     name: string;
@@ -111,6 +114,9 @@ export function isRegularItemCheck(type: LogicalCheck['type']) {
         case 'beedle_shop':
         case 'gear_shop':
         case 'potion_shop':
+        case 'pot':
+        case 'pumpkin':
+        case 'barrel':
             return true;
         case 'loose_crystal':
         case 'gossip_stone':
@@ -1341,6 +1347,12 @@ function getCheckType(
         return 'goddess_cube';
     } else if (checkType.includes('Gossip Stone Treasures')) {
         return 'gossip_stone_treasure';
+    } else if (checkType.includes('Pots')) {
+        return 'pot';
+    } else if (checkType.includes('Pumpkins')) {
+        return 'pumpkin';
+    } else if (checkType.includes('Barrels')) {
+        return 'barrel';
     } else {
         return 'regular';
     }

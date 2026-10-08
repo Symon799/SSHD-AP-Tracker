@@ -43,7 +43,7 @@ describe('SSHD generated dump', () => {
         ) as RawLogic;
         const logic = parseLogic(raw);
 
-        expect(Object.keys(raw.checks)).toHaveLength(893);
+        expect(Object.keys(raw.checks)).toHaveLength(1437);
         expect(
             logic.checks[
                 "\\Skyloft\\Knight Academy\\Knight Academy - Fledge's Gift"
@@ -68,6 +68,37 @@ describe('SSHD generated dump', () => {
             name: "Knight Academy - Owlan's Closet",
             area: 'Upper Skyloft',
         });
+        expect(
+            logic.checks[
+                '\\Sky Keep\\SK Earth Temple Room North\\SK Earth Temple Room North - Pot 1'
+            ],
+        ).toMatchObject({
+            type: 'pot',
+        });
+        expect(
+            logic.checks[
+                '\\Skyloft\\Skyloft Village\\Skyloft Village - Pumpkin 1'
+            ],
+        ).toMatchObject({
+            type: 'pumpkin',
+        });
+        expect(
+            logic.checks[
+                '\\Skyloft\\Central Skyloft\\Central Skyloft - Barrel 1'
+            ],
+        ).toMatchObject({
+            type: 'barrel',
+        });
+        const sanityCounts = Object.values(raw.checks).reduce(
+            (counts, check) => {
+                if (check.type === 'Pots, Custom Flag') counts.pots++;
+                if (check.type === 'Pumpkins, Custom Flag') counts.pumpkins++;
+                if (check.type === 'Barrels, Custom Flag') counts.barrels++;
+                return counts;
+            },
+            { pots: 0, pumpkins: 0, barrels: 0 },
+        );
+        expect(sanityCounts).toEqual({ pots: 309, pumpkins: 73, barrels: 162 });
         expect(
             Object.keys(logic.areaGraph.entranceConnections).length,
         ).toBeGreaterThan(180);

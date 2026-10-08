@@ -451,6 +451,9 @@ export const isCheckBannedSelector = createSelector(
         settingSelector('treasuresanity-in-silent-realms'),
         settingSelector('trial-treasure-amount'),
         settingSelector('hint-distribution'),
+        settingSelector('pot-shuffle'),
+        settingSelector('pumpkin-shuffle'),
+        settingSelector('barrel-shuffle'),
     ],
     (
         logic,
@@ -466,6 +469,9 @@ export const isCheckBannedSelector = createSelector(
         silentRealmTreasuresanity,
         silentRealmTreasureAmount,
         hintDistro,
+        potShuffle,
+        pumpkinShuffle,
+        barrelShuffle,
     ) => {
         const allSettings = settings as Record<string, OptionValue | undefined>;
         const hdRupeeShuffle = allSettings['rupee-shuffle'];
@@ -514,6 +520,11 @@ export const isCheckBannedSelector = createSelector(
         const banClosets = hdNpcClosetShuffle === 'vanilla';
         const banGoddessCubes = hdGoddessChestShuffle === 'off';
         const banGossipStoneTreasures = hdGossipStoneTreasureShuffle === 'off';
+        const banPots = potShuffle !== undefined && potShuffle === 'off';
+        const banPumpkins =
+            pumpkinShuffle !== undefined && pumpkinShuffle === 'off';
+        const banBarrels =
+            barrelShuffle !== undefined && barrelShuffle === 'off';
 
         const trialTreasurePattern = /Relic (\d+)/;
         const isExcessRelic = (check: LogicalCheck) => {
@@ -570,6 +581,9 @@ export const isCheckBannedSelector = createSelector(
                 (banGoddessCubes && check.type === 'goddess_chest') ||
                 (banGossipStoneTreasures &&
                     check.type === 'gossip_stone_treasure') ||
+                (banPots && check.type === 'pot') ||
+                (banPumpkins && check.type === 'pumpkin') ||
+                (banBarrels && check.type === 'barrel') ||
                 (check.type === 'gossip_stone' && !gossipStoneUsed(checkId))
             );
         };
@@ -589,6 +603,9 @@ const isCheckCountedByApSelector = createSelector(
         settingSelector('tadtonesanity'),
         settingSelector('treasuresanity-in-silent-realms'),
         settingSelector('trial-treasure-amount'),
+        settingSelector('pot-shuffle'),
+        settingSelector('pumpkin-shuffle'),
+        settingSelector('barrel-shuffle'),
     ],
     (
         logic,
@@ -602,6 +619,9 @@ const isCheckCountedByApSelector = createSelector(
         tadtoneSanity,
         silentRealmTreasuresanity,
         silentRealmTreasureAmount,
+        potShuffle,
+        pumpkinShuffle,
+        barrelShuffle,
     ) => {
         const allSettings = settings as Record<string, OptionValue | undefined>;
         const hdRupeeShuffle = allSettings['rupee-shuffle'];
@@ -650,6 +670,11 @@ const isCheckCountedByApSelector = createSelector(
         const banClosets = hdNpcClosetShuffle === 'vanilla';
         const banGoddessCubes = hdGoddessChestShuffle === 'off';
         const banGossipStoneTreasures = hdGossipStoneTreasureShuffle === 'off';
+        const banPots = potShuffle !== undefined && potShuffle === 'off';
+        const banPumpkins =
+            pumpkinShuffle !== undefined && pumpkinShuffle === 'off';
+        const banBarrels =
+            barrelShuffle !== undefined && barrelShuffle === 'off';
 
         const trialTreasurePattern = /Relic (\d+)/;
         const isExcessRelic = (check: LogicalCheck) => {
@@ -686,7 +711,10 @@ const isCheckCountedByApSelector = createSelector(
                 check.type === 'goddess_cube' ||
                 (banGoddessCubes && check.type === 'goddess_chest') ||
                 (banGossipStoneTreasures &&
-                    check.type === 'gossip_stone_treasure')
+                    check.type === 'gossip_stone_treasure') ||
+                (banPots && check.type === 'pot') ||
+                (banPumpkins && check.type === 'pumpkin') ||
+                (banBarrels && check.type === 'barrel')
             );
         };
     },

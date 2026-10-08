@@ -3204,3 +3204,38 @@
     archipelago_logo: Uses a custom Archipelago logo model for items from other Archipelago worlds.
     unofficial_archipelago_logo: Uses a custom unofficial Archipelago logo model for items from
     other Archipelago worlds.
+- name: Pot Shuffle
+  command: pot-shuffle
+  type: singlechoice
+  choices:
+    - 'off'
+    - 'on'
+  default: 'off'
+  bits: 1
+  help: >-
+    off: Pots will drop their vanilla items. on: Breaking a pot can give a randomized item. Pots
+    revert to their vanilla drop after the item has been collected.
+- name: Pumpkin Shuffle
+  command: pumpkin-shuffle
+  type: singlechoice
+  choices:
+    - 'off'
+    - 'on'
+  default: 'off'
+  bits: 1
+  help: >-
+    off: Pumpkins will drop their vanilla items. on: Breaking a pumpkin in the Skyloft pumpkin
+    patches or at Lumpy Pumpkin can give a randomized item. Pumpkins revert to their vanilla drop
+    after the item has been collected.
+- name: Barrel Shuffle
+  command: barrel-shuffle
+  type: singlechoice
+  choices:
+    - 'off'
+    - 'on'
+  default: 'off'
+  bits: 1
+  help: >-
+    off: Barrels will drop their vanilla items. on: Breaking a barrel can give a randomized item.
+    The exploding barrels in the Sand Sea are not included. Barrels revert to their vanilla drop
+    after the item has been collected.
