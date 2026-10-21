@@ -129,6 +129,7 @@ function WorldMap({
             {...{ [MAP_LAYOUT_ROOT_ATTR]: true }}
             style={{
                 position: 'relative',
+                isolation: 'isolate',
                 userSelect: 'none',
                 width,
                 height: width / WORLD_MAP_ASPECT_RATIO,

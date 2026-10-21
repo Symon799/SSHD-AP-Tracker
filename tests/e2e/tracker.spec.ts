@@ -140,6 +140,25 @@ test.describe('tracker with simulated Archipelago server', () => {
             name: 'Bird Statue Unlocks',
         });
         await expect(dialog).toBeFocused();
+        const dialogCoversPointer = await page
+            .getByTestId('selected-map-arrow')
+            .evaluate((pointer) => {
+                // Include the decorative arrow in hit testing to detect stacking
+                // regressions despite its normal pointer-events: none.
+                const previous = pointer.style.pointerEvents;
+                pointer.style.pointerEvents = 'auto';
+                try {
+                    const bounds = pointer.getBoundingClientRect();
+                    const topElement = document.elementFromPoint(
+                        bounds.x + bounds.width / 2,
+                        bounds.bottom - 2,
+                    );
+                    return Boolean(topElement?.closest('[role="dialog"]'));
+                } finally {
+                    pointer.style.pointerEvents = previous;
+                }
+            });
+        expect(dialogCoversPointer).toBe(true);
         await expect(dialog.locator('section').first()).toHaveCSS(
             'row-gap',
             '2px',
