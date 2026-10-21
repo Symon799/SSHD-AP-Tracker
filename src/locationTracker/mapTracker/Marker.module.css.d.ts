@@ -3,6 +3,7 @@ declare const classNames: {
     readonly square: 'square';
     readonly rounded: 'rounded';
     readonly circle: 'circle';
+    readonly selectionArrow: 'selectionArrow';
     readonly droppableOutline: 'droppableOutline';
     readonly droppableOutlineHover: 'droppableOutlineHover';
     readonly submarkers: 'submarkers';

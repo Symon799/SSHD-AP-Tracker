@@ -1,0 +1,243 @@
+{
+    "source": "https://github.com/LonLon-Labs/SSHD_APWorld/tree/feature/rust-client/sshd-rando-backend/data",
+    "statues": [
+        {
+            "location": "Sealed Grounds - Sealed Grounds Bird Statue",
+            "area": "Sealed Grounds Statue",
+            "world": "Faron",
+            "item": "Sealed Grounds Statue Unlock"
+        },
+        {
+            "location": "Sealed Grounds - Behind the Temple Bird Statue",
+            "area": "Behind the Temple Statue",
+            "world": "Faron",
+            "item": "Behind the Temple Statue Unlock"
+        },
+        {
+            "location": "Faron Woods - Faron Woods Entry Bird Statue",
+            "area": "Faron Woods Entry Statue",
+            "world": "Faron",
+            "item": "Faron Woods Entry Statue Unlock"
+        },
+        {
+            "location": "Faron Woods - In the Woods Bird Statue",
+            "area": "In the Woods Statue",
+            "world": "Faron",
+            "item": "In the Woods Statue Unlock"
+        },
+        {
+            "location": "Faron Woods - Viewing Platform Bird Statue",
+            "area": "Viewing Platform Statue",
+            "world": "Faron",
+            "item": "Viewing Platform Statue Unlock"
+        },
+        {
+            "location": "Deep Woods - Deep Woods Bird Statue",
+            "area": "Deep Woods Statue",
+            "world": "Faron",
+            "item": "Deep Woods Statue Unlock"
+        },
+        {
+            "location": "Deep Woods - Forest Temple Bird Statue",
+            "area": "Forest Temple Statue",
+            "world": "Faron",
+            "item": "Forest Temple Statue Unlock"
+        },
+        {
+            "location": "Faron Woods - Great Tree Bird Statue",
+            "area": "The Great Tree Statue",
+            "world": "Faron",
+            "item": "The Great Tree Statue Unlock"
+        },
+        {
+            "location": "Lake Floria - Lake Floria Bird Statue",
+            "area": "Lake Floria Statue",
+            "world": "Faron",
+            "item": "Lake Floria Statue Unlock"
+        },
+        {
+            "location": "Floria Waterfall - Floria Waterfall Bird Statue",
+            "area": "Floria Waterfall Statue",
+            "world": "Faron",
+            "item": "Floria Waterfall Statue Unlock"
+        },
+        {
+            "location": "Eldin Volcano - Volcano Entrance Bird Statue",
+            "area": "Volcano Entrance Statue",
+            "world": "Eldin",
+            "item": "Volcano Entrance Statue Unlock"
+        },
+        {
+            "location": "Eldin Volcano - Volcano East Bird Statue",
+            "area": "Volcano East Statue",
+            "world": "Eldin",
+            "item": "Volcano East Statue Unlock"
+        },
+        {
+            "location": "Eldin Volcano - Volcano Ascent Bird Statue",
+            "area": "Volcano Ascent Statue",
+            "world": "Eldin",
+            "item": "Volcano Ascent Statue Unlock"
+        },
+        {
+            "location": "Eldin Volcano - Temple Entrance Bird Statue",
+            "area": "Temple Entrance Statue",
+            "world": "Eldin",
+            "item": "Temple Entrance Statue Unlock"
+        },
+        {
+            "location": "Lanayru Mine - Mine Entry Bird Statue",
+            "area": "Lanayru Mine Entry Statue",
+            "world": "Lanayru",
+            "item": "Lanayru Mine Entry Statue Unlock"
+        },
+        {
+            "location": "Lanayru Desert - Desert Entrance Bird Statue",
+            "area": "Desert Entrance Statue",
+            "world": "Lanayru",
+            "item": "Desert Entrance Statue Unlock"
+        },
+        {
+            "location": "Lanayru Desert - West Desert Bird Statue",
+            "area": "West Desert Statue",
+            "world": "Lanayru",
+            "item": "West Desert Statue Unlock"
+        },
+        {
+            "location": "Lanayru Desert - Desert Gorge Bird Statue",
+            "area": "Desert Gorge Statue",
+            "world": "Lanayru",
+            "item": "Desert Gorge Statue Unlock"
+        },
+        {
+            "location": "Temple of Time - Temple of Time Bird Statue",
+            "area": "Temple of Time Statue",
+            "world": "Lanayru",
+            "item": "Temple of Time Statue Unlock"
+        },
+        {
+            "location": "Lanayru Desert - North Desert Bird Statue",
+            "area": "North Desert Statue",
+            "world": "Lanayru",
+            "item": "North Desert Statue Unlock"
+        },
+        {
+            "location": "Lanayru Desert - Stone Cache Bird Statue",
+            "area": "Stone Cache Statue",
+            "world": "Lanayru",
+            "item": "Stone Cache Statue Unlock"
+        },
+        {
+            "location": "Ancient Harbour - Ancient Harbour Bird Statue",
+            "area": "Ancient Harbour Statue",
+            "world": "Lanayru",
+            "item": "Ancient Harbour Statue Unlock"
+        },
+        {
+            "location": "Skipper's Retreat - Skipper's Retreat Bird Statue",
+            "area": "Skipper's Retreat Statue",
+            "world": "Lanayru",
+            "item": "Skipper's Retreat Statue Unlock"
+        },
+        {
+            "location": "Shipyard - Shipyard Bird Statue",
+            "area": "Shipyard Statue",
+            "world": "Lanayru",
+            "item": "Shipyard Statue Unlock"
+        },
+        {
+            "location": "Pirate Stronghold - Pirate Stronghold Bird Statue",
+            "area": "Pirate Stronghold Statue",
+            "world": "Lanayru",
+            "item": "Pirate Stronghold Statue Unlock"
+        },
+        {
+            "location": "Lanayru Gorge - Lanayru Gorge Bird Statue",
+            "area": "Lanayru Gorge Statue",
+            "world": "Lanayru",
+            "item": "Lanayru Gorge Statue Unlock"
+        }
+    ],
+    "settings": [
+        {
+            "name": "goddess_chest_unlock",
+            "tracker_important": true,
+            "default_option": "locked_until_struck",
+            "pretty_name": "Goddess Chest Unlock",
+            "pretty_options": [
+                "Locked Until Struck",
+                "Unlocked After Goddess Sword",
+                "Unlocked From Start"
+            ],
+            "options": [
+                {
+                    "locked_until_struck": "Goddess Chests are activated by Skyward Striking their corresponding Goddess Cube (vanilla behaviour)."
+                },
+                {
+                    "unlocked_after_goddess_sword": "All Goddess Chests are activated as soon as you obtain the Goddess Sword."
+                },
+                {
+                    "unlocked_from_start": "All Goddess Chests are activated from the start of the game."
+                }
+            ]
+        },
+        {
+            "name": "decouple_goddess_cubes_and_chests",
+            "tracker_important": true,
+            "default_option": "off",
+            "pretty_name": "Decouple Goddess Cubes and Chests",
+            "pretty_options": ["Off", "On"],
+            "options": [
+                {
+                    "off": "Goddess Cubes only activate their corresponding Goddess Chest (or do nothing if Goddess Chests are already unlocked)."
+                },
+                {
+                    "on": "Goddess Cubes become checks that give a randomized item when Skyward Struck. If Goddess Chest Unlock is Locked Until Struck, striking a cube also activates its Goddess Chest as in vanilla."
+                }
+            ]
+        },
+        {
+            "name": "bird_statues_give_items",
+            "default_option": "off",
+            "pretty_name": "Bird Statues Give Items",
+            "pretty_options": ["Off", "On"],
+            "options": [
+                {
+                    "off": "Bird Statues will not give items."
+                },
+                {
+                    "on": "Unlocking a Bird Statue for the first time will give an item. This applies to every Bird Statue. Statues are not gated unless Bird Statues Need to be Unlocked is also enabled."
+                }
+            ]
+        },
+        {
+            "name": "bird_statues_need_unlock",
+            "default_option": "off",
+            "pretty_name": "Bird Statues Need to be Unlocked",
+            "pretty_options": ["Off", "On"],
+            "options": [
+                {
+                    "off": "Bird Statues can be dropped down to as normal."
+                },
+                {
+                    "on": "Each Bird Statue has an unlock item in the item pool. You cannot drop down to a Bird Statue until its item is obtained, but you can still use it to fly up to the sky."
+                }
+            ]
+        },
+        {
+            "name": "start_with_region_bird_statues",
+            "default_option": "off",
+            "pretty_name": "Start with a Bird Statue in Each Region",
+            "pretty_options": ["Off", "On"],
+            "options": [
+                {
+                    "off": "You will not start with any extra Bird Statues unlocked."
+                },
+                {
+                    "on": "Only applies when Bird Statues Need to be Unlocked is on. You start with one Bird Statue unlocked in each of Faron, Eldin and Lanayru, and those unlock items are removed from the item pool."
+                }
+            ]
+        }
+    ],
+    "sourceRevision": "b23aac88851d05eddb07d130489eb87b9fb560e5"
+}

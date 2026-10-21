@@ -3,6 +3,7 @@ import type { Logic } from './Logic';
 import {
     cubeCheckToCubeCollected,
     dungeonCompletionItems,
+    mapToCubeCollectedRequirement,
 } from './TrackerModifications';
 
 export function getAdditionalItems(
@@ -37,7 +38,11 @@ export function getAdditionalItems(
     // If this is a goddess cube check, mark the requirement as checked
     // since this is the requirement used by the goddess chests.
     for (const check of checkedChecks) {
-        const cubeCollectedItem = cubeCheckToCubeCollected[check];
+        const cubeCollectedItem =
+            cubeCheckToCubeCollected[check] ??
+            (logic.checks[check]?.type === 'goddess_cube'
+                ? mapToCubeCollectedRequirement(check)
+                : undefined);
         if (cubeCollectedItem) {
             result[cubeCollectedItem] = 1;
         }

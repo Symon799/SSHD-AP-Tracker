@@ -4240,6 +4240,69 @@ items:
   - \bottletypes
   - \filledbottletypes
   - not_tracker
+  - \SSHD Setting\goddess_chest_unlock == locked_until_struck
+  - \SSHD Setting\goddess_chest_unlock == unlocked_after_goddess_sword
+  - \SSHD Setting\goddess_chest_unlock == unlocked_from_start
+  - \SSHD Setting\decouple_goddess_cubes_and_chests == off
+  - \SSHD Setting\decouple_goddess_cubes_and_chests == on
+  - \SSHD Setting\bird_statues_give_items == off
+  - \SSHD Setting\bird_statues_give_items == on
+  - \SSHD Setting\bird_statues_need_unlock == off
+  - \SSHD Setting\bird_statues_need_unlock == on
+  - \SSHD Setting\start_with_region_bird_statues == off
+  - \SSHD Setting\start_with_region_bird_statues == on
+  - \Faron\Sealed Grounds Statue\Sealed Grounds - Sealed Grounds Bird Statue
+  - Sealed Grounds Statue Unlock
+  - \Faron\Behind the Temple Statue\Sealed Grounds - Behind the Temple Bird Statue
+  - Behind the Temple Statue Unlock
+  - \Faron\Faron Woods Entry Statue\Faron Woods - Faron Woods Entry Bird Statue
+  - Faron Woods Entry Statue Unlock
+  - \Faron\In the Woods Statue\Faron Woods - In the Woods Bird Statue
+  - In the Woods Statue Unlock
+  - \Faron\Viewing Platform Statue\Faron Woods - Viewing Platform Bird Statue
+  - Viewing Platform Statue Unlock
+  - \Faron\Deep Woods Statue\Deep Woods - Deep Woods Bird Statue
+  - Deep Woods Statue Unlock
+  - \Faron\Forest Temple Statue\Deep Woods - Forest Temple Bird Statue
+  - Forest Temple Statue Unlock
+  - \Faron\The Great Tree Statue\Faron Woods - Great Tree Bird Statue
+  - The Great Tree Statue Unlock
+  - \Faron\Lake Floria Statue\Lake Floria - Lake Floria Bird Statue
+  - Lake Floria Statue Unlock
+  - \Faron\Floria Waterfall Statue\Floria Waterfall - Floria Waterfall Bird Statue
+  - Floria Waterfall Statue Unlock
+  - \Eldin\Volcano Entrance Statue\Eldin Volcano - Volcano Entrance Bird Statue
+  - Volcano Entrance Statue Unlock
+  - \Eldin\Volcano East Statue\Eldin Volcano - Volcano East Bird Statue
+  - Volcano East Statue Unlock
+  - \Eldin\Volcano Ascent Statue\Eldin Volcano - Volcano Ascent Bird Statue
+  - Volcano Ascent Statue Unlock
+  - \Eldin\Temple Entrance Statue\Eldin Volcano - Temple Entrance Bird Statue
+  - Temple Entrance Statue Unlock
+  - \Lanayru\Lanayru Mine Entry Statue\Lanayru Mine - Mine Entry Bird Statue
+  - Lanayru Mine Entry Statue Unlock
+  - \Lanayru\Desert Entrance Statue\Lanayru Desert - Desert Entrance Bird Statue
+  - Desert Entrance Statue Unlock
+  - \Lanayru\West Desert Statue\Lanayru Desert - West Desert Bird Statue
+  - West Desert Statue Unlock
+  - \Lanayru\Desert Gorge Statue\Lanayru Desert - Desert Gorge Bird Statue
+  - Desert Gorge Statue Unlock
+  - \Lanayru\Temple of Time Statue\Temple of Time - Temple of Time Bird Statue
+  - Temple of Time Statue Unlock
+  - \Lanayru\North Desert Statue\Lanayru Desert - North Desert Bird Statue
+  - North Desert Statue Unlock
+  - \Lanayru\Stone Cache Statue\Lanayru Desert - Stone Cache Bird Statue
+  - Stone Cache Statue Unlock
+  - \Lanayru\Ancient Harbour Statue\Ancient Harbour - Ancient Harbour Bird Statue
+  - Ancient Harbour Statue Unlock
+  - \Lanayru\Skipper's Retreat Statue\Skipper's Retreat - Skipper's Retreat Bird Statue
+  - Skipper's Retreat Statue Unlock
+  - \Lanayru\Shipyard Statue\Shipyard - Shipyard Bird Statue
+  - Shipyard Statue Unlock
+  - \Lanayru\Pirate Stronghold Statue\Pirate Stronghold - Pirate Stronghold Bird Statue
+  - Pirate Stronghold Statue Unlock
+  - \Lanayru\Lanayru Gorge Statue\Lanayru Gorge - Lanayru Gorge Bird Statue
+  - Lanayru Gorge Statue Unlock
 checks:
   \Skyloft\Knight Academy\Knight Academy - Link's Closet:
     original item: Blue Rupee
@@ -9989,6 +10052,110 @@ checks:
     original item: Green Rupee
     type: Barrels, Custom Flag
     short_name: Shipyard End of Minecart Ride - Barrel 4
+  \Faron\Sealed Grounds Statue\Sealed Grounds - Sealed Grounds Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Sealed Grounds - Sealed Grounds Bird Statue
+  \Faron\Behind the Temple Statue\Sealed Grounds - Behind the Temple Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Sealed Grounds - Behind the Temple Bird Statue
+  \Faron\Faron Woods Entry Statue\Faron Woods - Faron Woods Entry Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Faron Woods - Faron Woods Entry Bird Statue
+  \Faron\In the Woods Statue\Faron Woods - In the Woods Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Faron Woods - In the Woods Bird Statue
+  \Faron\Viewing Platform Statue\Faron Woods - Viewing Platform Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Faron Woods - Viewing Platform Bird Statue
+  \Faron\Deep Woods Statue\Deep Woods - Deep Woods Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Deep Woods - Deep Woods Bird Statue
+  \Faron\Forest Temple Statue\Deep Woods - Forest Temple Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Deep Woods - Forest Temple Bird Statue
+  \Faron\The Great Tree Statue\Faron Woods - Great Tree Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Faron Woods - Great Tree Bird Statue
+  \Faron\Lake Floria Statue\Lake Floria - Lake Floria Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Lake Floria - Lake Floria Bird Statue
+  \Faron\Floria Waterfall Statue\Floria Waterfall - Floria Waterfall Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Floria Waterfall - Floria Waterfall Bird Statue
+  \Eldin\Volcano Entrance Statue\Eldin Volcano - Volcano Entrance Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Eldin Volcano - Volcano Entrance Bird Statue
+  \Eldin\Volcano East Statue\Eldin Volcano - Volcano East Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Eldin Volcano - Volcano East Bird Statue
+  \Eldin\Volcano Ascent Statue\Eldin Volcano - Volcano Ascent Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Eldin Volcano - Volcano Ascent Bird Statue
+  \Eldin\Temple Entrance Statue\Eldin Volcano - Temple Entrance Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Eldin Volcano - Temple Entrance Bird Statue
+  \Lanayru\Lanayru Mine Entry Statue\Lanayru Mine - Mine Entry Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Lanayru Mine - Mine Entry Bird Statue
+  \Lanayru\Desert Entrance Statue\Lanayru Desert - Desert Entrance Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Lanayru Desert - Desert Entrance Bird Statue
+  \Lanayru\West Desert Statue\Lanayru Desert - West Desert Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Lanayru Desert - West Desert Bird Statue
+  \Lanayru\Desert Gorge Statue\Lanayru Desert - Desert Gorge Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Lanayru Desert - Desert Gorge Bird Statue
+  \Lanayru\Temple of Time Statue\Temple of Time - Temple of Time Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Temple of Time - Temple of Time Bird Statue
+  \Lanayru\North Desert Statue\Lanayru Desert - North Desert Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Lanayru Desert - North Desert Bird Statue
+  \Lanayru\Stone Cache Statue\Lanayru Desert - Stone Cache Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Lanayru Desert - Stone Cache Bird Statue
+  \Lanayru\Ancient Harbour Statue\Ancient Harbour - Ancient Harbour Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Ancient Harbour - Ancient Harbour Bird Statue
+  \Lanayru\Skipper's Retreat Statue\Skipper's Retreat - Skipper's Retreat Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Skipper's Retreat - Skipper's Retreat Bird Statue
+  \Lanayru\Shipyard Statue\Shipyard - Shipyard Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Shipyard - Shipyard Bird Statue
+  \Lanayru\Pirate Stronghold Statue\Pirate Stronghold - Pirate Stronghold Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Pirate Stronghold - Pirate Stronghold Bird Statue
+  \Lanayru\Lanayru Gorge Statue\Lanayru Gorge - Lanayru Gorge Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Lanayru Gorge - Lanayru Gorge Bird Statue
 gossip_stones: {}
 exits:
   \Start:
@@ -14855,6 +15022,7 @@ areas:
           sub_areas: {}
           locations:
             \Unlock Volcano Entrance Statue: 'True'
+            Eldin Volcano - Volcano Entrance Bird Statue: 'True'
         Volcano East Statue:
           name: \Eldin\Volcano East Statue
           abstract: false
@@ -14869,6 +15037,7 @@ areas:
           sub_areas: {}
           locations:
             \Unlock Volcano East Statue: 'True'
+            Eldin Volcano - Volcano East Bird Statue: 'True'
         Volcano Ascent Statue:
           name: \Eldin\Volcano Ascent Statue
           abstract: false
@@ -14883,6 +15052,7 @@ areas:
           sub_areas: {}
           locations:
             \Unlock Volcano Ascent Statue: 'True'
+            Eldin Volcano - Volcano Ascent Bird Statue: 'True'
         Temple Entrance Statue:
           name: \Eldin\Temple Entrance Statue
           abstract: false
@@ -14897,6 +15067,7 @@ areas:
           sub_areas: {}
           locations:
             \Unlock Temple Entrance Statue: 'True'
+            Eldin Volcano - Temple Entrance Bird Statue: 'True'
         Inside the Volcano Statue:
           name: \Eldin\Inside the Volcano Statue
           abstract: false
@@ -15618,7 +15789,7 @@ areas:
           name: \Faron\Sealed Grounds Statue
           abstract: false
           can_sleep: false
-          hint_region: Faron Woods
+          hint_region: Sealed Grounds
           allowed_time_of_day: 3
           entrances:
             - Entrance from Faron Pillar
@@ -15629,11 +15800,12 @@ areas:
           sub_areas: {}
           locations:
             \Unlock Sealed Grounds Statue: 'True'
+            Sealed Grounds - Sealed Grounds Bird Statue: 'True'
         Behind the Temple Statue:
           name: \Faron\Behind the Temple Statue
           abstract: false
           can_sleep: false
-          hint_region: Faron Woods
+          hint_region: Sealed Grounds
           allowed_time_of_day: 3
           entrances:
             - Entrance from Faron Pillar
@@ -15643,6 +15815,7 @@ areas:
           sub_areas: {}
           locations:
             \Unlock Behind the Temple Statue: 'True'
+            Sealed Grounds - Behind the Temple Bird Statue: 'True'
         Faron Woods Entry Statue:
           name: \Faron\Faron Woods Entry Statue
           abstract: false
@@ -15657,6 +15830,7 @@ areas:
           sub_areas: {}
           locations:
             \Unlock Faron Woods Entry Statue: 'True'
+            Faron Woods - Faron Woods Entry Bird Statue: 'True'
         Viewing Platform Statue:
           name: \Faron\Viewing Platform Statue
           abstract: false
@@ -15671,6 +15845,7 @@ areas:
           sub_areas: {}
           locations:
             \Unlock Viewing Platform Statue: 'True'
+            Faron Woods - Viewing Platform Bird Statue: 'True'
         In the Woods Statue:
           name: \Faron\In the Woods Statue
           abstract: false
@@ -15685,11 +15860,12 @@ areas:
           sub_areas: {}
           locations:
             \Unlock In the Woods Statue: 'True'
+            Faron Woods - In the Woods Bird Statue: 'True'
         Deep Woods Statue:
           name: \Faron\Deep Woods Statue
           abstract: false
           can_sleep: false
-          hint_region: Faron Woods
+          hint_region: Deep Woods
           allowed_time_of_day: 3
           entrances:
             - Entrance from Faron Pillar
@@ -15699,11 +15875,12 @@ areas:
           sub_areas: {}
           locations:
             \Unlock Deep Woods Statue: 'True'
+            Deep Woods - Deep Woods Bird Statue: 'True'
         Forest Temple Statue:
           name: \Faron\Forest Temple Statue
           abstract: false
           can_sleep: false
-          hint_region: Faron Woods
+          hint_region: Deep Woods
           allowed_time_of_day: 3
           entrances:
             - Entrance from Faron Pillar
@@ -15713,6 +15890,7 @@ areas:
           sub_areas: {}
           locations:
             \Unlock Forest Temple Statue: 'True'
+            Deep Woods - Forest Temple Bird Statue: 'True'
         The Great Tree Statue:
           name: \Faron\The Great Tree Statue
           abstract: false
@@ -15727,11 +15905,12 @@ areas:
           sub_areas: {}
           locations:
             \Unlock The Great Tree Statue: 'True'
+            Faron Woods - Great Tree Bird Statue: 'True'
         Lake Floria Statue:
           name: \Faron\Lake Floria Statue
           abstract: false
           can_sleep: false
-          hint_region: Faron Woods
+          hint_region: Lake Floria
           allowed_time_of_day: 3
           entrances:
             - Entrance from Faron Pillar
@@ -15741,11 +15920,12 @@ areas:
           sub_areas: {}
           locations:
             \Unlock Lake Floria Statue: 'True'
+            Lake Floria - Lake Floria Bird Statue: 'True'
         Floria Waterfall Statue:
           name: \Faron\Floria Waterfall Statue
           abstract: false
           can_sleep: false
-          hint_region: Faron Woods
+          hint_region: Floria Waterfall
           allowed_time_of_day: 3
           entrances:
             - Entrance from Faron Pillar
@@ -15755,6 +15935,7 @@ areas:
           sub_areas: {}
           locations:
             \Unlock Floria Waterfall Statue: 'True'
+            Floria Waterfall - Floria Waterfall Bird Statue: 'True'
       locations: {}
     Fire Sanctuary:
       name: \Fire Sanctuary
@@ -17625,7 +17806,7 @@ areas:
           name: \Lanayru\Lanayru Mine Entry Statue
           abstract: false
           can_sleep: false
-          hint_region: Lanayru Desert
+          hint_region: Lanayru Mine
           allowed_time_of_day: 3
           entrances:
             - Entrance from Lanayru Pillar
@@ -17636,6 +17817,7 @@ areas:
           sub_areas: {}
           locations:
             \Unlock Lanayru Mine Entry Statue: 'True'
+            Lanayru Mine - Mine Entry Bird Statue: 'True'
         Desert Entrance Statue:
           name: \Lanayru\Desert Entrance Statue
           abstract: false
@@ -17650,6 +17832,7 @@ areas:
           sub_areas: {}
           locations:
             \Unlock Desert Entrance Statue: 'True'
+            Lanayru Desert - Desert Entrance Bird Statue: 'True'
         West Desert Statue:
           name: \Lanayru\West Desert Statue
           abstract: false
@@ -17664,6 +17847,7 @@ areas:
           sub_areas: {}
           locations:
             \Unlock West Desert Statue: 'True'
+            Lanayru Desert - West Desert Bird Statue: 'True'
         Desert Gorge Statue:
           name: \Lanayru\Desert Gorge Statue
           abstract: false
@@ -17678,11 +17862,12 @@ areas:
           sub_areas: {}
           locations:
             \Unlock Desert Gorge Statue: 'True'
+            Lanayru Desert - Desert Gorge Bird Statue: 'True'
         Temple of Time Statue:
           name: \Lanayru\Temple of Time Statue
           abstract: false
           can_sleep: false
-          hint_region: Lanayru Desert
+          hint_region: Temple of Time
           allowed_time_of_day: 3
           entrances:
             - Entrance from Lanayru Pillar
@@ -17692,6 +17877,7 @@ areas:
           sub_areas: {}
           locations:
             \Unlock Temple of Time Statue: 'True'
+            Temple of Time - Temple of Time Bird Statue: 'True'
         North Desert Statue:
           name: \Lanayru\North Desert Statue
           abstract: false
@@ -17706,6 +17892,7 @@ areas:
           sub_areas: {}
           locations:
             \Unlock North Desert Statue: 'True'
+            Lanayru Desert - North Desert Bird Statue: 'True'
         Stone Cache Statue:
           name: \Lanayru\Stone Cache Statue
           abstract: false
@@ -17720,11 +17907,12 @@ areas:
           sub_areas: {}
           locations:
             \Unlock Stone Cache Statue: 'True'
+            Lanayru Desert - Stone Cache Bird Statue: 'True'
         Ancient Harbour Statue:
           name: \Lanayru\Ancient Harbour Statue
           abstract: false
           can_sleep: false
-          hint_region: Lanayru Desert
+          hint_region: Ancient Harbour
           allowed_time_of_day: 3
           entrances:
             - Entrance from Lanayru Pillar
@@ -17734,11 +17922,12 @@ areas:
           sub_areas: {}
           locations:
             \Unlock Ancient Harbour Statue: 'True'
+            Ancient Harbour - Ancient Harbour Bird Statue: 'True'
         Skipper's Retreat Statue:
           name: \Lanayru\Skipper's Retreat Statue
           abstract: false
           can_sleep: false
-          hint_region: Lanayru Desert
+          hint_region: Skipper's Retreat
           allowed_time_of_day: 3
           entrances:
             - Entrance from Lanayru Pillar
@@ -17748,11 +17937,12 @@ areas:
           sub_areas: {}
           locations:
             \Unlock Skippers Retreat Statue: 'True'
+            Skipper's Retreat - Skipper's Retreat Bird Statue: 'True'
         Shipyard Statue:
           name: \Lanayru\Shipyard Statue
           abstract: false
           can_sleep: false
-          hint_region: Lanayru Desert
+          hint_region: Shipyard
           allowed_time_of_day: 3
           entrances:
             - Entrance from Lanayru Pillar
@@ -17762,11 +17952,12 @@ areas:
           sub_areas: {}
           locations:
             \Unlock Shipyard Statue: 'True'
+            Shipyard - Shipyard Bird Statue: 'True'
         Pirate Stronghold Statue:
           name: \Lanayru\Pirate Stronghold Statue
           abstract: false
           can_sleep: false
-          hint_region: Lanayru Desert
+          hint_region: Pirate Stronghold
           allowed_time_of_day: 3
           entrances:
             - Entrance from Lanayru Pillar
@@ -17776,11 +17967,12 @@ areas:
           sub_areas: {}
           locations:
             \Unlock Pirate Stronghold Statue: 'True'
+            Pirate Stronghold - Pirate Stronghold Bird Statue: 'True'
         Lanayru Gorge Statue:
           name: \Lanayru\Lanayru Gorge Statue
           abstract: false
           can_sleep: false
-          hint_region: Lanayru Desert
+          hint_region: Lanayru Gorge
           allowed_time_of_day: 3
           entrances:
             - Entrance from Lanayru Pillar
@@ -17790,6 +17982,7 @@ areas:
           sub_areas: {}
           locations:
             \Unlock Lanayru Gorge Statue: 'True'
+            Lanayru Gorge - Lanayru Gorge Bird Statue: 'True'
       locations: {}
     Sandship:
       name: \Sandship
@@ -18415,17 +18608,37 @@ areas:
           allowed_time_of_day: 3
           entrances: []
           exits:
-            \Sky\Faron Region Entrance: 'True'
-            \Sky\Faron Pillar\Exit to Sealed Grounds Statue: \Unlock Sealed Grounds Statue
-            \Sky\Faron Pillar\Exit to Behind the Temple Statue: \Unlock Behind the Temple Statue
-            \Sky\Faron Pillar\Exit to Faron Woods Entry Statue: \Unlock Faron Woods Entry Statue
-            \Sky\Faron Pillar\Exit to Viewing Platform Statue: \Unlock Viewing Platform Statue
-            \Sky\Faron Pillar\Exit to In the Woods Statue: \Unlock In the Woods Statue
-            \Sky\Faron Pillar\Exit to Deep Woods Statue: \Unlock Deep Woods Statue
-            \Sky\Faron Pillar\Exit to Forest Temple Statue: \Unlock Forest Temple Statue
-            \Sky\Faron Pillar\Exit to The Great Tree Statue: \Unlock The Great Tree Statue
-            \Sky\Faron Pillar\Exit to Lake Floria Statue: \Unlock Lake Floria Statue
-            \Sky\Faron Pillar\Exit to Floria Waterfall Statue: \Unlock Floria Waterfall Statue
+            \Sky\Faron Region Entrance: \SSHD Setting\bird_statues_need_unlock == off
+            \Sky\Faron Pillar\Exit to Sealed Grounds Statue: >-
+              (\Unlock Sealed Grounds Statue & \SSHD Setting\bird_statues_need_unlock == off) |
+              (Sealed Grounds Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
+            \Sky\Faron Pillar\Exit to Behind the Temple Statue: >-
+              (\Unlock Behind the Temple Statue & \SSHD Setting\bird_statues_need_unlock == off) |
+              (Behind the Temple Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
+            \Sky\Faron Pillar\Exit to Faron Woods Entry Statue: >-
+              (\Unlock Faron Woods Entry Statue & \SSHD Setting\bird_statues_need_unlock == off) |
+              (Faron Woods Entry Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
+            \Sky\Faron Pillar\Exit to Viewing Platform Statue: >-
+              (\Unlock Viewing Platform Statue & \SSHD Setting\bird_statues_need_unlock == off) |
+              (Viewing Platform Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
+            \Sky\Faron Pillar\Exit to In the Woods Statue: >-
+              (\Unlock In the Woods Statue & \SSHD Setting\bird_statues_need_unlock == off) | (In
+              the Woods Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
+            \Sky\Faron Pillar\Exit to Deep Woods Statue: >-
+              (\Unlock Deep Woods Statue & \SSHD Setting\bird_statues_need_unlock == off) | (Deep
+              Woods Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
+            \Sky\Faron Pillar\Exit to Forest Temple Statue: >-
+              (\Unlock Forest Temple Statue & \SSHD Setting\bird_statues_need_unlock == off) |
+              (Forest Temple Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
+            \Sky\Faron Pillar\Exit to The Great Tree Statue: >-
+              (\Unlock The Great Tree Statue & \SSHD Setting\bird_statues_need_unlock == off) | (The
+              Great Tree Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
+            \Sky\Faron Pillar\Exit to Lake Floria Statue: >-
+              (\Unlock Lake Floria Statue & \SSHD Setting\bird_statues_need_unlock == off) | (Lake
+              Floria Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
+            \Sky\Faron Pillar\Exit to Floria Waterfall Statue: >-
+              (\Unlock Floria Waterfall Statue & \SSHD Setting\bird_statues_need_unlock == off) |
+              (Floria Waterfall Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
           sub_areas: {}
           locations: {}
         Faron Region Entrance:
@@ -18447,11 +18660,19 @@ areas:
           allowed_time_of_day: 3
           entrances: []
           exits:
-            \Sky\Eldin Region Entrance: 'True'
-            \Sky\Eldin Pillar\Exit to Volcano Entrance Statue: \Unlock Volcano Entrance Statue
-            \Sky\Eldin Pillar\Exit to Volcano East Statue: \Unlock Volcano East Statue
-            \Sky\Eldin Pillar\Exit to Volcano Ascent Statue: \Unlock Volcano Ascent Statue
-            \Sky\Eldin Pillar\Exit to Temple Entrance Statue: \Unlock Temple Entrance Statue
+            \Sky\Eldin Region Entrance: \SSHD Setting\bird_statues_need_unlock == off
+            \Sky\Eldin Pillar\Exit to Volcano Entrance Statue: >-
+              (\Unlock Volcano Entrance Statue & \SSHD Setting\bird_statues_need_unlock == off) |
+              (Volcano Entrance Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
+            \Sky\Eldin Pillar\Exit to Volcano East Statue: >-
+              (\Unlock Volcano East Statue & \SSHD Setting\bird_statues_need_unlock == off) |
+              (Volcano East Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
+            \Sky\Eldin Pillar\Exit to Volcano Ascent Statue: >-
+              (\Unlock Volcano Ascent Statue & \SSHD Setting\bird_statues_need_unlock == off) |
+              (Volcano Ascent Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
+            \Sky\Eldin Pillar\Exit to Temple Entrance Statue: >-
+              (\Unlock Temple Entrance Statue & \SSHD Setting\bird_statues_need_unlock == off) |
+              (Temple Entrance Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
             \Sky\Eldin Pillar\Exit to Inside the Volcano Statue: \Unlock Inside the Volcano Statue
             \Sky\Eldin Pillar\Exit to Inside the Fire Sanctuary Statue: \Unlock Inside the Fire Sanctuary Statue
           sub_areas: {}
@@ -18475,19 +18696,43 @@ areas:
           allowed_time_of_day: 3
           entrances: []
           exits:
-            \Sky\Lanayru Region Entrance: 'True'
-            \Sky\Lanayru Pillar\Exit to Lanayru Mine Entry Statue: \Unlock Lanayru Mine Entry Statue
-            \Sky\Lanayru Pillar\Exit to Desert Entrance Statue: \Unlock Desert Entrance Statue
-            \Sky\Lanayru Pillar\Exit to West Desert Statue: \Unlock West Desert Statue
-            \Sky\Lanayru Pillar\Exit to Desert Gorge Statue: \Unlock Desert Gorge Statue
-            \Sky\Lanayru Pillar\Exit to Temple of Time Statue: \Unlock Temple of Time Statue
-            \Sky\Lanayru Pillar\Exit to North Desert Statue: \Unlock North Desert Statue
-            \Sky\Lanayru Pillar\Exit to Stone Cache Statue: \Unlock Stone Cache Statue
-            \Sky\Lanayru Pillar\Exit to Ancient Harbour Statue: \Unlock Ancient Harbour Statue
-            \Sky\Lanayru Pillar\Exit to Skipper's Retreat Statue: Unlock_Skippers_Retreat_Statue'
-            \Sky\Lanayru Pillar\Exit to Shipyard Statue: \Unlock Shipyard Statue
-            \Sky\Lanayru Pillar\Exit to Pirate Stronghold Statue: \Unlock Pirate Stronghold Statue
-            \Sky\Lanayru Pillar\Exit to Lanayru Gorge Statue: \Unlock Lanayru Gorge Statue
+            \Sky\Lanayru Region Entrance: \SSHD Setting\bird_statues_need_unlock == off
+            \Sky\Lanayru Pillar\Exit to Lanayru Mine Entry Statue: >-
+              (\Unlock Lanayru Mine Entry Statue & \SSHD Setting\bird_statues_need_unlock == off) |
+              (Lanayru Mine Entry Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
+            \Sky\Lanayru Pillar\Exit to Desert Entrance Statue: >-
+              (\Unlock Desert Entrance Statue & \SSHD Setting\bird_statues_need_unlock == off) |
+              (Desert Entrance Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
+            \Sky\Lanayru Pillar\Exit to West Desert Statue: >-
+              (\Unlock West Desert Statue & \SSHD Setting\bird_statues_need_unlock == off) | (West
+              Desert Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
+            \Sky\Lanayru Pillar\Exit to Desert Gorge Statue: >-
+              (\Unlock Desert Gorge Statue & \SSHD Setting\bird_statues_need_unlock == off) |
+              (Desert Gorge Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
+            \Sky\Lanayru Pillar\Exit to Temple of Time Statue: >-
+              (\Unlock Temple of Time Statue & \SSHD Setting\bird_statues_need_unlock == off) |
+              (Temple of Time Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
+            \Sky\Lanayru Pillar\Exit to North Desert Statue: >-
+              (\Unlock North Desert Statue & \SSHD Setting\bird_statues_need_unlock == off) | (North
+              Desert Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
+            \Sky\Lanayru Pillar\Exit to Stone Cache Statue: >-
+              (\Unlock Stone Cache Statue & \SSHD Setting\bird_statues_need_unlock == off) | (Stone
+              Cache Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
+            \Sky\Lanayru Pillar\Exit to Ancient Harbour Statue: >-
+              (\Unlock Ancient Harbour Statue & \SSHD Setting\bird_statues_need_unlock == off) |
+              (Ancient Harbour Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
+            \Sky\Lanayru Pillar\Exit to Skipper's Retreat Statue: >-
+              (\Unlock Skippers Retreat Statue & \SSHD Setting\bird_statues_need_unlock == off) |
+              (Skipper's Retreat Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
+            \Sky\Lanayru Pillar\Exit to Shipyard Statue: >-
+              (\Unlock Shipyard Statue & \SSHD Setting\bird_statues_need_unlock == off) | (Shipyard
+              Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
+            \Sky\Lanayru Pillar\Exit to Pirate Stronghold Statue: >-
+              (\Unlock Pirate Stronghold Statue & \SSHD Setting\bird_statues_need_unlock == off) |
+              (Pirate Stronghold Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
+            \Sky\Lanayru Pillar\Exit to Lanayru Gorge Statue: >-
+              (\Unlock Lanayru Gorge Statue & \SSHD Setting\bird_statues_need_unlock == off) |
+              (Lanayru Gorge Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
           sub_areas: {}
           locations: {}
         Lanayru Region Entrance:
@@ -18517,7 +18762,11 @@ areas:
             Bamboo Island - Slingshot Left Lantern: \Slingshot
             Bamboo Island - Slingshot Middle Lantern: \Slingshot
             Bamboo Island - Slingshot Right Lantern: \Slingshot
-            Bamboo Island - Goddess Chest behind Entrance: Eldin Volcano Goddess Cube West of Temple
+            Bamboo Island - Goddess Chest behind Entrance: >-
+              ((Eldin Volcano Goddess Cube West of Temple & \SSHD Setting\goddess_chest_unlock ==
+              locked_until_struck) | (\Goddess Sword & \SSHD Setting\goddess_chest_unlock ==
+              unlocked_after_goddess_sword) | \SSHD Setting\goddess_chest_unlock ==
+              unlocked_from_start)
         Bamboo Island Interior:
           name: \Sky\Bamboo Island Interior
           abstract: false
@@ -18550,8 +18799,16 @@ areas:
           sub_areas: {}
           locations:
             \Can Collect Water: \Bottle
-            Island near Bamboo Island - Top Goddess Chest: Eldin Volcano Goddess Cube near Mogma Turf Entrance
-            Island near Bamboo Island - Goddess Chest in Cave: \Water Dragon's Scale & Lanayru Desert Goddess Cube in Secret Passageway
+            Island near Bamboo Island - Top Goddess Chest: >-
+              ((Eldin Volcano Goddess Cube near Mogma Turf Entrance & \SSHD
+              Setting\goddess_chest_unlock == locked_until_struck) | (\Goddess Sword & \SSHD
+              Setting\goddess_chest_unlock == unlocked_after_goddess_sword) | \SSHD
+              Setting\goddess_chest_unlock == unlocked_from_start)
+            Island near Bamboo Island - Goddess Chest in Cave: >-
+              \Water Dragon's Scale &((Lanayru Desert Goddess Cube in Secret Passageway & \SSHD
+              Setting\goddess_chest_unlock == locked_until_struck) | (\Goddess Sword & \SSHD
+              Setting\goddess_chest_unlock == unlocked_after_goddess_sword) | \SSHD
+              Setting\goddess_chest_unlock == unlocked_from_start)
         Beedle's Island:
           name: \Sky\Beedle's Island
           abstract: false
@@ -18566,11 +18823,17 @@ areas:
           locations:
             Beedle's Island - Crystal on Airshop Propeller: Night & \Beetle
             Beedle's Island - Deliver Beedle's Insect Cage: Night & Beedle's Insect Cage
-            Beedle's Island - Top Goddess Chest: (Day | \SSHD Setting\natural_night_connections == off) & Temple of Time Goddess Cube
+            Beedle's Island - Top Goddess Chest: >-
+              (Day | \SSHD Setting\natural_night_connections == off) &((Temple of Time Goddess Cube
+              & \SSHD Setting\goddess_chest_unlock == locked_until_struck) | (\Goddess Sword & \SSHD
+              Setting\goddess_chest_unlock == unlocked_after_goddess_sword) | \SSHD
+              Setting\goddess_chest_unlock == unlocked_from_start)
             Beedle's Island - Goddess Chest in Cage: >-
               (Night | ((Day | \SSHD Setting\natural_night_connections == off) & \SSHD
-              Setting\logic_beedles_island_cage_chest_dive == on)) & Deep Woods Goddess Cube on top
-              of Temple
+              Setting\logic_beedles_island_cage_chest_dive == on)) &((Deep Woods Goddess Cube on top
+              of Temple & \SSHD Setting\goddess_chest_unlock == locked_until_struck) | (\Goddess
+              Sword & \SSHD Setting\goddess_chest_unlock == unlocked_after_goddess_sword) | \SSHD
+              Setting\goddess_chest_unlock == unlocked_from_start)
         Northeast Island:
           name: \Sky\Northeast Island
           abstract: false
@@ -18582,8 +18845,16 @@ areas:
             \Sky\The Sky: Loftwing & (Day | \SSHD Setting\natural_night_connections == off)
           sub_areas: {}
           locations:
-            Northeast Island - Goddess Chest behind Bombable Rocks: Bomb Bag & Lanayru Mine Goddess Cube behind First Landing Robot
-            Northeast Island - Goddess Chest in Cage: Eldin Volcano Goddess Cube East of Temple
+            Northeast Island - Goddess Chest behind Bombable Rocks: >-
+              Bomb Bag &((Lanayru Mine Goddess Cube behind First Landing Robot & \SSHD
+              Setting\goddess_chest_unlock == locked_until_struck) | (\Goddess Sword & \SSHD
+              Setting\goddess_chest_unlock == unlocked_after_goddess_sword) | \SSHD
+              Setting\goddess_chest_unlock == unlocked_from_start)
+            Northeast Island - Goddess Chest in Cage: >-
+              ((Eldin Volcano Goddess Cube East of Temple & \SSHD Setting\goddess_chest_unlock ==
+              locked_until_struck) | (\Goddess Sword & \SSHD Setting\goddess_chest_unlock ==
+              unlocked_after_goddess_sword) | \SSHD Setting\goddess_chest_unlock ==
+              unlocked_from_start)
         Lumpy Pumpkin Exterior:
           name: \Sky\Lumpy Pumpkin Exterior
           abstract: false
@@ -18606,8 +18877,16 @@ areas:
             Lumpy Pumpkin - Slingshot Lantern Right of Main Door: \Slingshot
             Lumpy Pumpkin - Slingshot Lantern next to Back Door: \Slingshot
             Lumpy Pumpkin - Outside Crystal: Night
-            Lumpy Pumpkin - Goddess Chest near Gossip Stone: Deep Woods Goddess Cube near Goron
-            Lumpy Pumpkin - Goddess Chest on Roof: (Day | \SSHD Setting\natural_night_connections == off) & Skyview Spring Goddess Cube
+            Lumpy Pumpkin - Goddess Chest near Gossip Stone: >-
+              ((Deep Woods Goddess Cube near Goron & \SSHD Setting\goddess_chest_unlock ==
+              locked_until_struck) | (\Goddess Sword & \SSHD Setting\goddess_chest_unlock ==
+              unlocked_after_goddess_sword) | \SSHD Setting\goddess_chest_unlock ==
+              unlocked_from_start)
+            Lumpy Pumpkin - Goddess Chest on Roof: >-
+              (Day | \SSHD Setting\natural_night_connections == off) &((Skyview Spring Goddess Cube
+              & \SSHD Setting\goddess_chest_unlock == locked_until_struck) | (\Goddess Sword & \SSHD
+              Setting\goddess_chest_unlock == unlocked_after_goddess_sword) | \SSHD
+              Setting\goddess_chest_unlock == unlocked_from_start)
             Lumpy Pumpkin - Deliver Mogma to Kina: Day & \Pick up Guld
             Lumpy Pumpkin - Gossip Stone Treasure near Back Door: >-
               (Goddess's_Harp & Ballad of the Goddess) | \SSHD Setting\gossip_stone_treasure_shuffle
@@ -18766,7 +19045,11 @@ areas:
             \Sky\The Sky: Loftwing & (Day | \SSHD Setting\natural_night_connections == off)
           sub_areas: {}
           locations:
-            Island Closest to Faron Pillar - Goddess Chest: Deep Woods Goddess Cube in front of Temple
+            Island Closest to Faron Pillar - Goddess Chest: >-
+              ((Deep Woods Goddess Cube in front of Temple & \SSHD Setting\goddess_chest_unlock ==
+              locked_until_struck) | (\Goddess Sword & \SSHD Setting\goddess_chest_unlock ==
+              unlocked_after_goddess_sword) | \SSHD Setting\goddess_chest_unlock ==
+              unlocked_from_start)
         Volcanic Island:
           name: \Sky\Volcanic Island
           abstract: false
@@ -18779,10 +19062,17 @@ areas:
           sub_areas: {}
           locations:
             \Can Collect Mushroom Spores: \Bottle
-            Volcanic Island - Outside Goddess Chest: Lanayru Desert Goddess Cube in Sand Oasis
+            Volcanic Island - Outside Goddess Chest: >-
+              ((Lanayru Desert Goddess Cube in Sand Oasis & \SSHD Setting\goddess_chest_unlock ==
+              locked_until_struck) | (\Goddess Sword & \SSHD Setting\goddess_chest_unlock ==
+              unlocked_after_goddess_sword) | \SSHD Setting\goddess_chest_unlock ==
+              unlocked_from_start)
             Volcanic Island - Inside Goddess Chest: >-
-              (Clawshots | \SSHD Setting\logic_volcanic_island_dive == on) & Faron Woods Goddess
-              Cube on East Great Tree with Clawshots Target
+              (Clawshots | \SSHD Setting\logic_volcanic_island_dive == on) &((Faron Woods Goddess
+              Cube on East Great Tree with Clawshots Target & \SSHD Setting\goddess_chest_unlock ==
+              locked_until_struck) | (\Goddess Sword & \SSHD Setting\goddess_chest_unlock ==
+              unlocked_after_goddess_sword) | \SSHD Setting\goddess_chest_unlock ==
+              unlocked_from_start)
             Volcanic Island - Gossip Stone Treasure inside Island: >-
               (Goddess's_Harp & Ballad of the Goddess) | \SSHD Setting\gossip_stone_treasure_shuffle
               == off
@@ -18815,8 +19105,10 @@ areas:
             Fun Fun Island - Deliver Party Wheel to Dodoh: Day & \Retrieve Party Wheel
             Fun Fun Island - 500 Rupees in Dodoh's High Dive: \Can Play Fun Fun Island Minigame
             Fun Fun Island - Goddess Chest below Island: >-
-              (Day | \SSHD Setting\natural_night_connections == off) & Floria Waterfall Goddess Cube
-              on High Ledge
+              (Day | \SSHD Setting\natural_night_connections == off) &((Floria Waterfall Goddess
+              Cube on High Ledge & \SSHD Setting\goddess_chest_unlock == locked_until_struck) |
+              (\Goddess Sword & \SSHD Setting\goddess_chest_unlock == unlocked_after_goddess_sword)
+              | \SSHD Setting\goddess_chest_unlock == unlocked_from_start)
         Triple Island:
           name: \Sky\Triple Island
           abstract: false
@@ -18828,9 +19120,21 @@ areas:
             \Sky\The Sky: Loftwing & (Day | \SSHD Setting\natural_night_connections == off)
           sub_areas: {}
           locations:
-            Triple Island - Upper Goddess Chest: Eldin Volcano Goddess Cube at Eldin Entrance
-            Triple Island - Lower Goddess Chest: Lanayru Desert Goddess Cube near Caged Robot
-            Triple Island - Goddess Chest in Cage: Clawshots & Skipper's Retreat Goddess Cube
+            Triple Island - Upper Goddess Chest: >-
+              ((Eldin Volcano Goddess Cube at Eldin Entrance & \SSHD Setting\goddess_chest_unlock ==
+              locked_until_struck) | (\Goddess Sword & \SSHD Setting\goddess_chest_unlock ==
+              unlocked_after_goddess_sword) | \SSHD Setting\goddess_chest_unlock ==
+              unlocked_from_start)
+            Triple Island - Lower Goddess Chest: >-
+              ((Lanayru Desert Goddess Cube near Caged Robot & \SSHD Setting\goddess_chest_unlock ==
+              locked_until_struck) | (\Goddess Sword & \SSHD Setting\goddess_chest_unlock ==
+              unlocked_after_goddess_sword) | \SSHD Setting\goddess_chest_unlock ==
+              unlocked_from_start)
+            Triple Island - Goddess Chest in Cage: >-
+              Clawshots &((Skipper's Retreat Goddess Cube & \SSHD Setting\goddess_chest_unlock ==
+              locked_until_struck) | (\Goddess Sword & \SSHD Setting\goddess_chest_unlock ==
+              unlocked_after_goddess_sword) | \SSHD Setting\goddess_chest_unlock ==
+              unlocked_from_start)
         Inside the Thunderhead:
           name: \Sky\Inside the Thunderhead
           abstract: false
@@ -18866,11 +19170,16 @@ areas:
           sub_areas: {}
           locations:
             Isle of Songs - Top Goddess Chest: >-
-              (Day | \SSHD Setting\natural_night_connections == off) & Volcano Summit Goddess Cube
-              near Fire Sanctuary Entrance
+              (Day | \SSHD Setting\natural_night_connections == off) &((Volcano Summit Goddess Cube
+              near Fire Sanctuary Entrance & \SSHD Setting\goddess_chest_unlock ==
+              locked_until_struck) | (\Goddess Sword & \SSHD Setting\goddess_chest_unlock ==
+              unlocked_after_goddess_sword) | \SSHD Setting\goddess_chest_unlock ==
+              unlocked_from_start)
             Isle of Songs - Lower Goddess Chest: >-
-              (Day | \SSHD Setting\natural_night_connections == off) & Mogma Turf Goddess Cube on
-              Raised Pillar
+              (Day | \SSHD Setting\natural_night_connections == off) &((Mogma Turf Goddess Cube on
+              Raised Pillar & \SSHD Setting\goddess_chest_unlock == locked_until_struck) | (\Goddess
+              Sword & \SSHD Setting\goddess_chest_unlock == unlocked_after_goddess_sword) | \SSHD
+              Setting\goddess_chest_unlock == unlocked_from_start)
         Isle of Songs Interior:
           name: \Sky\Isle of Songs Interior
           abstract: false
@@ -18898,7 +19207,11 @@ areas:
           sub_areas: {}
           locations:
             Inside the Thunderhead - Chest on East Island: (\Digging Mitts & Sailcloth) | \SSHD Setting\logic_east_island_dive == on
-            Inside the Thunderhead - Goddess Chest on East Island: Faron Woods Goddess Cube on East Great Tree with Rope
+            Inside the Thunderhead - Goddess Chest on East Island: >-
+              ((Faron Woods Goddess Cube on East Great Tree with Rope & \SSHD
+              Setting\goddess_chest_unlock == locked_until_struck) | (\Goddess Sword & \SSHD
+              Setting\goddess_chest_unlock == unlocked_after_goddess_sword) | \SSHD
+              Setting\goddess_chest_unlock == unlocked_from_start)
         Mogma Mitts Island:
           name: \Sky\Mogma Mitts Island
           abstract: false
@@ -18910,8 +19223,16 @@ areas:
             \Sky\Inside the Thunderhead: Day | \SSHD Setting\natural_night_connections == off
           sub_areas: {}
           locations:
-            Inside the Thunderhead - Mogma Mitts Island First Goddess Chest: \Mogma Mitts & Volcano Summit Goddess Cube in Lava Lake
-            Inside the Thunderhead - Mogma Mitts Island Second Goddess Chest: \Mogma Mitts & Lanayru Gorge Goddess Cube
+            Inside the Thunderhead - Mogma Mitts Island First Goddess Chest: >-
+              \Mogma Mitts &((Volcano Summit Goddess Cube in Lava Lake & \SSHD
+              Setting\goddess_chest_unlock == locked_until_struck) | (\Goddess Sword & \SSHD
+              Setting\goddess_chest_unlock == unlocked_after_goddess_sword) | \SSHD
+              Setting\goddess_chest_unlock == unlocked_from_start)
+            Inside the Thunderhead - Mogma Mitts Island Second Goddess Chest: >-
+              \Mogma Mitts &((Lanayru Gorge Goddess Cube & \SSHD Setting\goddess_chest_unlock ==
+              locked_until_struck) | (\Goddess Sword & \SSHD Setting\goddess_chest_unlock ==
+              unlocked_after_goddess_sword) | \SSHD Setting\goddess_chest_unlock ==
+              unlocked_from_start)
         Bug Heaven:
           name: \Sky\Bug Heaven
           abstract: false
@@ -18927,7 +19248,11 @@ areas:
             Bug Heaven - 10 Bugs in 3 Minutes: >-
               (\Bug Net & (\SSHD Setting\minigame_difficulty == vanilla | \SSHD
               Setting\minigame_difficulty == hard)) | \Big Bug Net
-            Bug Heaven - Goddess Chest: Volcano Summit Goddess Cube at Summit Waterfall
+            Bug Heaven - Goddess Chest: >-
+              ((Volcano Summit Goddess Cube at Summit Waterfall & \SSHD Setting\goddess_chest_unlock
+              == locked_until_struck) | (\Goddess Sword & \SSHD Setting\goddess_chest_unlock ==
+              unlocked_after_goddess_sword) | \SSHD Setting\goddess_chest_unlock ==
+              unlocked_from_start)
             Bug Heaven - Stamina Fruit near Start: 'True'
             Bug Heaven - Stamina Fruit in front of Wooden Plank: 'True'
             Bug Heaven - Stamina Fruit in Center Room: 'True'
@@ -19337,11 +19662,19 @@ areas:
             Central Skyloft - Bonk Tree Southeast of the Bazaar: 'True'
             Central Skyloft - Bonk Tree Left of Sky Keep Statue: 'True'
             Central Skyloft - Bonk Tree Right of Sky Keep Statue: 'True'
-            Central Skyloft - Goddess Chest on West Cliff Island: Faron Woods Goddess Cube on West Great Tree near Exit
+            Central Skyloft - Goddess Chest on West Cliff Island: >-
+              ((Faron Woods Goddess Cube on West Great Tree near Exit & \SSHD
+              Setting\goddess_chest_unlock == locked_until_struck) | (\Goddess Sword & \SSHD
+              Setting\goddess_chest_unlock == unlocked_after_goddess_sword) | \SSHD
+              Setting\goddess_chest_unlock == unlocked_from_start)
             Central Skyloft - Parrow's Gift: Day & \Talk to Orielle
             Central Skyloft - Parrow's Gratitude: Day & \Save Orielle
             Central Skyloft - Chest in Shed: \Water Dragon's Scale
-            Central Skyloft - Goddess Chest in Shed: \Water Dragon's Scale & Eldin Volcano Goddess Cube on Sand Slide
+            Central Skyloft - Goddess Chest in Shed: >-
+              \Water Dragon's Scale &((Eldin Volcano Goddess Cube on Sand Slide & \SSHD
+              Setting\goddess_chest_unlock == locked_until_struck) | (\Goddess Sword & \SSHD
+              Setting\goddess_chest_unlock == unlocked_after_goddess_sword) | \SSHD
+              Setting\goddess_chest_unlock == unlocked_from_start)
             Central Skyloft - Stamina Fruit between Wooden Planks: 'True'
             Central Skyloft - Stamina Fruit near Kukiel's House: 'True'
             Central Skyloft - Stamina Fruit near River: 'True'
@@ -19408,7 +19741,11 @@ areas:
             \Access Item Check: 'True'
             \Purchase Shield: 'True'
             Bazaar - Luv the Potion Lady's Gift: 'True'
-            Bazaar - Goddess Chest: Ancient Harbour Goddess Cube
+            Bazaar - Goddess Chest: >-
+              ((Ancient Harbour Goddess Cube & \SSHD Setting\goddess_chest_unlock ==
+              locked_until_struck) | (\Goddess Sword & \SSHD Setting\goddess_chest_unlock ==
+              unlocked_after_goddess_sword) | \SSHD Setting\goddess_chest_unlock ==
+              unlocked_from_start)
             Bazaar - Repair Gondo's Junk: \Ancient Flower Farming
         Bazaar North:
           name: \Skyloft\Bazaar North
@@ -19534,8 +19871,16 @@ areas:
           locations:
             \Can Collect Water: \Bottle
             \Skyloft\Central Skyloft\Central Skyloft - Crystal on Waterfall Island: Night
-            Central Skyloft - Goddess Chest on Waterfall Island: Pirate Stronghold Goddess Cube
-            Central Skyloft - Goddess Chest on Island near Waterfall: Lake Floria Goddess Cube
+            Central Skyloft - Goddess Chest on Waterfall Island: >-
+              ((Pirate Stronghold Goddess Cube & \SSHD Setting\goddess_chest_unlock ==
+              locked_until_struck) | (\Goddess Sword & \SSHD Setting\goddess_chest_unlock ==
+              unlocked_after_goddess_sword) | \SSHD Setting\goddess_chest_unlock ==
+              unlocked_from_start)
+            Central Skyloft - Goddess Chest on Island near Waterfall: >-
+              ((Lake Floria Goddess Cube & \SSHD Setting\goddess_chest_unlock ==
+              locked_until_struck) | (\Goddess Sword & \SSHD Setting\goddess_chest_unlock ==
+              unlocked_after_goddess_sword) | \SSHD Setting\goddess_chest_unlock ==
+              unlocked_from_start)
             Central Skyloft - Gossip Stone Treasure on Waterfall Island: >-
               (Goddess's_Harp & Ballad of the Goddess) | \SSHD Setting\gossip_stone_treasure_shuffle
               == off

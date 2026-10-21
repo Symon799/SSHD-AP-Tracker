@@ -39,6 +39,20 @@
     }
 }
 
+.selectionArrow {
+    position: absolute;
+    top: calc(var(--map-marker-y) + var(--map-marker-size) + 7px);
+    left: calc(var(--map-marker-x) + var(--map-marker-size) / 2);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 8px solid #000;
+    transform: translateX(-50%);
+    pointer-events: none;
+    z-index: 2;
+}
+
 .droppableOutline {
     position: absolute;
 

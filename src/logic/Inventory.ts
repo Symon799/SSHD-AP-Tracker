@@ -2,6 +2,32 @@
 export const itemMaxes = {
     Sailcloth: 1,
     Loftwing: 1,
+    'Sealed Grounds Statue Unlock': 1,
+    'Behind the Temple Statue Unlock': 1,
+    'Faron Woods Entry Statue Unlock': 1,
+    'In the Woods Statue Unlock': 1,
+    'Viewing Platform Statue Unlock': 1,
+    'Deep Woods Statue Unlock': 1,
+    'Forest Temple Statue Unlock': 1,
+    'The Great Tree Statue Unlock': 1,
+    'Lake Floria Statue Unlock': 1,
+    'Floria Waterfall Statue Unlock': 1,
+    'Volcano Entrance Statue Unlock': 1,
+    'Volcano East Statue Unlock': 1,
+    'Volcano Ascent Statue Unlock': 1,
+    'Temple Entrance Statue Unlock': 1,
+    'Lanayru Mine Entry Statue Unlock': 1,
+    'Desert Entrance Statue Unlock': 1,
+    'West Desert Statue Unlock': 1,
+    'Desert Gorge Statue Unlock': 1,
+    'Temple of Time Statue Unlock': 1,
+    'North Desert Statue Unlock': 1,
+    'Stone Cache Statue Unlock': 1,
+    'Ancient Harbour Statue Unlock': 1,
+    "Skipper's Retreat Statue Unlock": 1,
+    'Shipyard Statue Unlock': 1,
+    'Pirate Stronghold Statue Unlock': 1,
+    'Lanayru Gorge Statue Unlock': 1,
 
     'Emerald Tablet': 1,
     'Ruby Tablet': 1,
@@ -65,6 +91,11 @@ export const itemMaxes = {
 };
 
 export type InventoryItem = keyof typeof itemMaxes;
+
+export type BirdStatueItem = Extract<InventoryItem, `${string} Statue Unlock`>;
+export const birdStatueItems = Object.keys(itemMaxes).filter(
+    (item): item is BirdStatueItem => item.endsWith(' Statue Unlock'),
+);
 
 export function isItem(id: string): id is InventoryItem {
     return id in itemMaxes;

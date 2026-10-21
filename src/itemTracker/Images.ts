@@ -22,6 +22,7 @@ import noSlingshot from '../assets/Slingshot_Silhouette.png';
 import toughBeetle from '../assets/Tough_Beetle_Icon.png';
 import whip from '../assets/Whip_Icon.png';
 import noWhip from '../assets/Whip_Silhouette.png';
+import birdStatue from '../assets/bird_statue.png';
 import spiralCharge from '../assets/bird_statuette.png';
 import bottle from '../assets/bottle.png';
 import oneSmallKey from '../assets/dungeons/1_smallKey.png';
@@ -141,6 +142,7 @@ import giantWallet from '../assets/wallets/giantWallet.png';
 import mediumWallet from '../assets/wallets/mediumWallet.png';
 import smallWallet from '../assets/wallets/smallWallet.png';
 import tycoonWallet from '../assets/wallets/tycoonWallet.png';
+import { birdStatueItems } from '../logic/Inventory';
 
 import { last } from 'es-toolkit';
 
@@ -324,5 +326,9 @@ const images: Images = {
     ],
     'Sky Keep Small Key': [noSmallKey, oneSmallKey],
 };
+
+for (const item of birdStatueItems) {
+    images[item] = [birdStatue, birdStatue];
+}
 
 export default images;

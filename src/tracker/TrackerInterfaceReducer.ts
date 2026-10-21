@@ -5,10 +5,14 @@ import {
     type MapModel,
 } from '../locationTracker/mapTracker/MapModel';
 import { mapModelSelector } from '../locationTracker/mapTracker/Selectors';
-import type { ExitMapping } from '../logic/Locations';
+import type { ExitMapping, HintRegion } from '../logic/Locations';
 import type { AreaGraph, Logic } from '../logic/Logic';
 import { areaGraphSelector } from '../logic/Selectors';
-import { exitsByIdSelector } from './Selectors';
+import {
+    displayAreasSelector,
+    exitsByIdSelector,
+    OTHERS_HINT_REGION,
+} from './Selectors';
 
 export type InterfaceState =
     | {
@@ -30,7 +34,7 @@ export type InterfaceState =
           mapView: string | undefined;
       };
 
-type InterfaceStateInternal =
+type InterfaceView =
     | InterfaceState
     | {
           /**
@@ -40,6 +44,11 @@ type InterfaceStateInternal =
            */
           type: 'initial';
       };
+
+type InterfaceStateInternal = {
+    view: InterfaceView;
+    lastRegionsByMap: Record<string, string | undefined>;
+};
 
 export type InterfaceAction =
     | {
@@ -116,6 +125,7 @@ function interfaceReducer(
     mapModel: MapModel,
     areaGraph: AreaGraph,
     exits: Record<string, ExitMapping>,
+    displayedAreas: HintRegion[],
 ) {
     return (
         state_: InterfaceStateInternal,
@@ -123,25 +133,75 @@ function interfaceReducer(
     ): InterfaceStateInternal => {
         // Make sure initial state is resolved
         const state =
-            state_.type === 'initial'
+            state_.view.type === 'initial'
                 ? getInitialState(mapModel, areaGraph, exits)
-                : state_;
+                : state_.view;
+        const lastRegionsByMap = { ...state_.lastRegionsByMap };
+        const mapKey = (map: string | undefined) => map ?? 'world';
+        const areaByName = new Map(
+            displayedAreas.map((area) => [area.name, area]),
+        );
+        const hasContent = (area: HintRegion) =>
+            area.checks.numTotal > 0 ||
+            Object.values(area.extraLocations).some(
+                (group) => (group?.numTotal ?? 0) > 0,
+            );
+        const regionsOnMap = (map: string | undefined) => {
+            const markers =
+                map === undefined
+                    ? mapModel.regions
+                    : (mapModel.provinces.find(
+                          (province) => province.provinceId === map,
+                      )?.regions ?? []);
+            const regions = markers.flatMap((marker) =>
+                marker.hintRegion && areaByName.has(marker.hintRegion)
+                    ? [marker.hintRegion]
+                    : [],
+            );
+            const others = areaByName.get(OTHERS_HINT_REGION);
+            if (map === undefined && others && hasContent(others))
+                regions.push(OTHERS_HINT_REGION);
+            return regions;
+        };
+        const currentRegion =
+            state.type === 'viewingChecks'
+                ? state.hintRegion
+                : state.previousHintRegion;
+        if (
+            currentRegion &&
+            regionsOnMap(state.mapView).includes(currentRegion)
+        ) {
+            lastRegionsByMap[mapKey(state.mapView)] = currentRegion;
+        }
+        const onMap = (mapView: string | undefined) => {
+            const regions = regionsOnMap(mapView);
+            const remembered = lastRegionsByMap[mapKey(mapView)];
+            const hintRegion =
+                remembered && regions.includes(remembered)
+                    ? remembered
+                    : (regions.find((region) =>
+                          hasContent(areaByName.get(region)!),
+                      ) ?? regions[0]);
+            return { mapView, hintRegion };
+        };
+        const withView = (view: InterfaceState): InterfaceStateInternal => ({
+            view,
+            lastRegionsByMap,
+        });
         switch (action.type) {
             case 'selectMapView': {
+                const selection = onMap(action.province);
                 if (state.type === 'choosingEntrance') {
-                    return {
+                    return withView({
                         ...state,
-                        mapView: action.province,
-                    };
+                        mapView: selection.mapView,
+                        previousHintRegion: selection.hintRegion,
+                    });
                 }
-                return {
+                return withView({
                     type: 'viewingChecks',
-                    mapView: action.province,
-                    hintRegion:
-                        state.type === 'viewingChecks'
-                            ? state.hintRegion
-                            : undefined,
-                };
+                    ...selection,
+                });
             }
 
             case 'selectHintRegion': {
@@ -149,47 +209,55 @@ function interfaceReducer(
                     mapModel,
                     action.hintRegion,
                 );
-                return {
+                return withView({
                     type: 'viewingChecks',
                     mapView:
                         owningProvince.type === 'ok'
                             ? owningProvince.result
                             : state.mapView,
                     hintRegion: action.hintRegion,
-                };
+                });
             }
-            case 'leaveMapView':
-                return {
-                    ...state,
-                    mapView: undefined,
-                };
+            case 'leaveMapView': {
+                const selection = onMap(undefined);
+                return withView(
+                    state.type === 'choosingEntrance'
+                        ? {
+                              ...state,
+                              mapView: undefined,
+                              previousHintRegion: selection.hintRegion,
+                          }
+                        : { type: 'viewingChecks', ...selection },
+                );
+            }
             case 'chooseEntrance':
-                return {
+                return withView({
                     type: 'choosingEntrance',
                     exitId: action.exitId,
                     mapView: state.mapView,
                     previousHintRegion:
                         state.type === 'viewingChecks'
                             ? state.hintRegion
-                            : undefined,
-                };
+                            : state.previousHintRegion,
+                });
             case 'cancelChooseEntrance': {
                 const hintRegion =
                     state.type === 'choosingEntrance'
                         ? state.previousHintRegion
                         : undefined;
-                return {
+                return withView({
                     type: 'viewingChecks',
                     hintRegion,
                     mapView: state.mapView,
-                };
+                });
             }
         }
     };
 }
 
 const initialMapState: InterfaceStateInternal = {
-    type: 'initial',
+    view: { type: 'initial' },
+    lastRegionsByMap: {},
 };
 
 export function useTrackerInterfaceReducer(): [
@@ -199,16 +267,17 @@ export function useTrackerInterfaceReducer(): [
     const mapModel = useSelector(mapModelSelector);
     const areaGraph = useSelector(areaGraphSelector);
     const exits = useSelector(exitsByIdSelector);
+    const displayedAreas = useSelector(displayAreasSelector);
     const [internalTrackerState, dispatch] = useReducer(
-        interfaceReducer(mapModel, areaGraph, exits),
+        interfaceReducer(mapModel, areaGraph, exits, displayedAreas),
         undefined,
         () => initialMapState,
     );
 
-    if (internalTrackerState.type === 'initial') {
+    if (internalTrackerState.view.type === 'initial') {
         // Resolve initial state
         return [getInitialState(mapModel, areaGraph, exits), dispatch];
     }
 
-    return [internalTrackerState, dispatch];
+    return [internalTrackerState.view, dispatch];
 }

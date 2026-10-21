@@ -3,6 +3,7 @@ import { useCallback, type CSSProperties } from 'react';
 import type { TriggerEvent } from 'react-contexify';
 import { useDispatch, useSelector } from 'react-redux';
 import Tooltip from '../additionalComponents/Tooltip';
+import birdStatueImg from '../assets/bird_statue.png';
 import exitImg from '../assets/dungeons/entrance.png';
 import goddessCubeImg from '../assets/sidequests/goddess_cube.png';
 import gossipStoneImg from '../assets/sidequests/gossip_stone.png';
@@ -285,9 +286,12 @@ function CheckIcon({
     } else if (check.type === 'gossip_stone') {
         name = 'Gossip Stone';
         src = gossipStoneImg;
-    } else if (check.type === 'tr_cube') {
+    } else if (check.type === 'tr_cube' || check.type === 'goddess_cube') {
         name = 'Goddess Cube';
         src = goddessCubeImg;
+    } else if (check.type === 'bird_statue') {
+        name = 'Bird Statue';
+        src = birdStatueImg;
     } else {
         if (overrideHint) {
             hintItem = overrideHint;

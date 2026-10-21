@@ -36,7 +36,7 @@ ESLint, Prettier, browser tests, and the production build.
 `run-checks.bat` runs `npm run check` from the repository root and keeps the Windows terminal open so
 the output can be reviewed after the command finishes.
 
-The current baseline passes `npm run check`: the SSHD data audit passes, all 115 Vitest tests pass,
+The current baseline passes `npm run check`: the SSHD data audit passes, all 131 Vitest tests pass,
 the Playwright browser tests pass, TypeScript passes, and the production build succeeds.
 
 The broader `npm run lint` command is separate from the functional check so formatting and static

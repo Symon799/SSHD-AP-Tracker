@@ -518,7 +518,10 @@ export const isCheckBannedSelector = createSelector(
         const banStaminaFruits = hdStaminaFruitShuffle === 'off';
         const banHiddenItems = hdHiddenItemShuffle === 'off';
         const banClosets = hdNpcClosetShuffle === 'vanilla';
-        const banGoddessCubes = hdGoddessChestShuffle === 'off';
+        const banGoddessChests = hdGoddessChestShuffle === 'off';
+        const banGoddessCubes =
+            allSettings['decouple-goddess-cubes-and-chests'] !== 'on';
+        const banBirdStatues = allSettings['bird-statues-give-items'] !== 'on';
         const banGossipStoneTreasures = hdGossipStoneTreasureShuffle === 'off';
         const banPots = potShuffle !== undefined && potShuffle === 'off';
         const banPumpkins =
@@ -577,8 +580,9 @@ export const isCheckBannedSelector = createSelector(
                 (banStaminaFruits && check.type === 'stamina_fruit') ||
                 (banHiddenItems && check.type === 'hidden_item') ||
                 (banClosets && check.type === 'closet') ||
-                check.type === 'goddess_cube' ||
-                (banGoddessCubes && check.type === 'goddess_chest') ||
+                (banGoddessCubes && check.type === 'goddess_cube') ||
+                (banGoddessChests && check.type === 'goddess_chest') ||
+                (banBirdStatues && check.type === 'bird_statue') ||
                 (banGossipStoneTreasures &&
                     check.type === 'gossip_stone_treasure') ||
                 (banPots && check.type === 'pot') ||
@@ -668,7 +672,10 @@ const isCheckCountedByApSelector = createSelector(
         const banStaminaFruits = hdStaminaFruitShuffle === 'off';
         const banHiddenItems = hdHiddenItemShuffle === 'off';
         const banClosets = hdNpcClosetShuffle === 'vanilla';
-        const banGoddessCubes = hdGoddessChestShuffle === 'off';
+        const banGoddessChests = hdGoddessChestShuffle === 'off';
+        const banGoddessCubes =
+            allSettings['decouple-goddess-cubes-and-chests'] !== 'on';
+        const banBirdStatues = allSettings['bird-statues-give-items'] !== 'on';
         const banGossipStoneTreasures = hdGossipStoneTreasureShuffle === 'off';
         const banPots = potShuffle !== undefined && potShuffle === 'off';
         const banPumpkins =
@@ -708,8 +715,9 @@ const isCheckCountedByApSelector = createSelector(
                 (banStaminaFruits && check.type === 'stamina_fruit') ||
                 (banHiddenItems && check.type === 'hidden_item') ||
                 (banClosets && check.type === 'closet') ||
-                check.type === 'goddess_cube' ||
-                (banGoddessCubes && check.type === 'goddess_chest') ||
+                (banGoddessCubes && check.type === 'goddess_cube') ||
+                (banGoddessChests && check.type === 'goddess_chest') ||
+                (banBirdStatues && check.type === 'bird_statue') ||
                 (banGossipStoneTreasures &&
                     check.type === 'gossip_stone_treasure') ||
                 (banPots && check.type === 'pot') ||

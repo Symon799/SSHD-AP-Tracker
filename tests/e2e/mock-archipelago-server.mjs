@@ -7,16 +7,23 @@ const checkedLocationId = 1001;
 const secondLocationId = 1002;
 const thirdLocationId = 1003;
 const progressiveSwordId = 2001;
+const statueUnlockId = 2002;
+const featureLocationIds = [1004, 1005, 1006, 1007];
 
 const gamePackage = {
-    checksum: 'sshd-e2e-fixture-v1',
+    checksum: 'sshd-e2e-fixture-v2',
     item_name_to_id: {
         'Progressive Sword': progressiveSwordId,
+        'Sealed Grounds Statue Unlock': statueUnlockId,
     },
     location_name_to_id: {
         "Knight Academy - Fledge's Gift": checkedLocationId,
         'Knight Academy - Item from Cawlin': secondLocationId,
         'Upper Skyloft - Ring Knight Academy Bell': thirdLocationId,
+        'Sealed Grounds - Sealed Grounds Bird Statue': 1004,
+        'Deep Woods - Deep Woods Bird Statue': 1005,
+        'Deep Woods - Goddess Cube Near Goron': 1006,
+        'Lumpy Pumpkin - Goddess Chest near Gossip Stone': 1007,
     },
 };
 
@@ -64,6 +71,9 @@ const server = http.createServer((request, response) => {
 const webSocketServer = new WebSocketServer({ server });
 
 webSocketServer.on('connection', (socket) => {
+    let featureMode = false;
+    let authenticated = false;
+    let itemsSent = false;
     send(socket, roomInfo);
 
     socket.on('message', (rawMessage) => {
@@ -71,6 +81,8 @@ webSocketServer.on('connection', (socket) => {
 
         for (const packet of packets) {
             if (packet.cmd === 'Connect') {
+                featureMode = packet.name === 'Feature Player';
+                authenticated = true;
                 send(socket, {
                     cmd: 'Connected',
                     team: 0,
@@ -89,9 +101,33 @@ webSocketServer.on('connection', (socket) => {
                             name: 'Fixture Friend',
                         },
                     ],
-                    missing_locations: [secondLocationId, thirdLocationId],
+                    missing_locations: [
+                        secondLocationId,
+                        thirdLocationId,
+                        ...(featureMode ? featureLocationIds : []),
+                    ],
                     checked_locations: [checkedLocationId],
-                    slot_data: slotData,
+                    slot_data: featureMode
+                        ? {
+                              ...slotData,
+                              option_bird_statues_give_items: 1,
+                              option_bird_statues_need_unlock: 1,
+                              option_decouple_goddess_cubes_and_chests: 1,
+                              option_goddess_chest_unlock: 2,
+                              option_custom_starting_items: {
+                                  'Deep Woods Statue Unlock': 1,
+                              },
+                              location_to_item_map: {
+                                  ...slotData.location_to_item_map,
+                                  ...Object.fromEntries(
+                                      featureLocationIds.map((id) => [
+                                          id,
+                                          progressiveSwordId,
+                                      ]),
+                                  ),
+                              },
+                          }
+                        : slotData,
                     slot_info: {
                         1: {
                             name: packet.name,
@@ -113,10 +149,24 @@ webSocketServer.on('connection', (socket) => {
                     cmd: 'DataPackage',
                     data: { games: { [game]: gamePackage } },
                 });
+                // The library may request the package before authentication.
+                // Real AP servers only deliver inventory after Connected.
+                if (!authenticated || itemsSent) continue;
+                itemsSent = true;
                 send(socket, {
                     cmd: 'ReceivedItems',
                     index: 0,
                     items: [
+                        ...(featureMode
+                            ? [
+                                  {
+                                      item: statueUnlockId,
+                                      location: 3001,
+                                      player: 2,
+                                      flags: 1,
+                                  },
+                              ]
+                            : []),
                         {
                             item: progressiveSwordId,
                             location: secondLocationId,

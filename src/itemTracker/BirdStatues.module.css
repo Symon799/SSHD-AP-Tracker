@@ -1,0 +1,110 @@
+.container {
+    /* Positive values move right; negative values move left. */
+    --button-offset-x: 35px;
+    /* Positive values move down; negative values move up. */
+    --button-offset-y: 5px;
+    /* Use a pixel value to customize the button width. */
+    --button-width: 140%;
+
+    grid-column: span 2;
+    width: 100%;
+    transform: translate(var(--button-offset-x), var(--button-offset-y));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: var(--button-width);
+    gap: 8px;
+    flex: 0 0 auto;
+    padding: 2px 8px;
+    border: 1px solid color-mix(in srgb, var(--scheme-text) 22%, transparent);
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--scheme-background) 90%, white);
+    color: var(--scheme-text);
+    box-shadow: 0 1px 3px
+        color-mix(in srgb, var(--scheme-text) 10%, transparent);
+    cursor: pointer;
+}
+
+.trigger:hover {
+    border-color: color-mix(in srgb, var(--scheme-text) 45%, transparent);
+    background: color-mix(
+        in srgb,
+        var(--scheme-background) 92%,
+        var(--scheme-text)
+    );
+}
+
+.trigger:active {
+    box-shadow: inset 0 1px 3px
+        color-mix(in srgb, var(--scheme-text) 16%, transparent);
+}
+
+.trigger:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+.trigger img {
+    width: 26px;
+    height: 100%;
+    object-fit: contain;
+}
+
+.counter {
+    font-size: 14px;
+    line-height: 1;
+    font-weight: 700;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    pointer-events: none;
+}
+
+.provinces {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    max-height: 65vh;
+    overflow-y: auto;
+}
+
+.provinces h3 {
+    font-size: 15px;
+    margin: 0 0 8px;
+}
+
+.provinces section {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.statue {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    font-size: 13px;
+    opacity: 0.6;
+}
+
+.statue[data-unlocked='true'] {
+    opacity: 1;
+    color: var(--scheme-inLogic);
+}
+
+.statue span {
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+    .provinces {
+        grid-template-columns: 1fr;
+    }
+}

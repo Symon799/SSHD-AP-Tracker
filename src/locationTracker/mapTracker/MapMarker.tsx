@@ -113,6 +113,7 @@ function MapMarker({
 
     return (
         <Marker
+            label={title}
             ref={setNodeRef}
             x={markerX}
             y={markerY}

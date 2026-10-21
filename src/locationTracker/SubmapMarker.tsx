@@ -155,6 +155,7 @@ export function SubmapMarker({
 
     return (
         <Marker
+            label={title}
             x={markerX}
             y={markerY}
             variant={title.includes('Silent Realm') ? 'circle' : 'rounded'}

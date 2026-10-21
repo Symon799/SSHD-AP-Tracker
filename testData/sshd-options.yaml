@@ -3239,3 +3239,65 @@
     off: Barrels will drop their vanilla items. on: Breaking a barrel can give a randomized item.
     The exploding barrels in the Sand Sea are not included. Barrels revert to their vanilla drop
     after the item has been collected.
+- name: Goddess Chest Unlock
+  command: goddess-chest-unlock
+  type: singlechoice
+  choices:
+    - locked_until_struck
+    - unlocked_after_goddess_sword
+    - unlocked_from_start
+  default: locked_until_struck
+  bits: 2
+  help: >-
+    Goddess Chests are activated by Skyward Striking their corresponding Goddess Cube (vanilla
+    behaviour). All Goddess Chests are activated as soon as you obtain the Goddess Sword. All
+    Goddess Chests are activated from the start of the game.
+- name: Decouple Goddess Cubes and Chests
+  command: decouple-goddess-cubes-and-chests
+  type: singlechoice
+  choices:
+    - 'off'
+    - 'on'
+  default: 'off'
+  bits: 1
+  help: >-
+    Goddess Cubes only activate their corresponding Goddess Chest (or do nothing if Goddess Chests
+    are already unlocked). Goddess Cubes become checks that give a randomized item when Skyward
+    Struck. If Goddess Chest Unlock is Locked Until Struck, striking a cube also activates its
+    Goddess Chest as in vanilla.
+- name: Bird Statues Give Items
+  command: bird-statues-give-items
+  type: singlechoice
+  choices:
+    - 'off'
+    - 'on'
+  default: 'off'
+  bits: 1
+  help: >-
+    Bird Statues will not give items. Unlocking a Bird Statue for the first time will give an item.
+    This applies to every Bird Statue. Statues are not gated unless Bird Statues Need to be Unlocked
+    is also enabled.
+- name: Bird Statues Need to be Unlocked
+  command: bird-statues-need-unlock
+  type: singlechoice
+  choices:
+    - 'off'
+    - 'on'
+  default: 'off'
+  bits: 1
+  help: >-
+    Bird Statues can be dropped down to as normal. Each Bird Statue has an unlock item in the item
+    pool. You cannot drop down to a Bird Statue until its item is obtained, but you can still use it
+    to fly up to the sky.
+- name: Start with a Bird Statue in Each Region
+  command: start-with-region-bird-statues
+  type: singlechoice
+  choices:
+    - 'off'
+    - 'on'
+  default: 'off'
+  bits: 1
+  help: >-
+    You will not start with any extra Bird Statues unlocked. Only applies when Bird Statues Need to
+    be Unlocked is on. You start with one Bird Statue unlocked in each of Faron, Eldin and Lanayru,
+    and those unlock items are removed from the item pool.

@@ -4,6 +4,7 @@ import noTablets from '../assets/tablets/no_tablets.png';
 import { useDraggable } from '../dragAndDrop/DragAndDrop';
 import { rawItemCountSelector } from '../tracker/Selectors';
 // import { clickItem } from '../tracker/Slice';
+import { BirdStatues } from './BirdStatues';
 import styles from './GridTracker.module.css';
 import Item from './Item';
 import { CounterItem } from './items/CounterItem';
@@ -259,6 +260,7 @@ export default function GridTracker({ width }: { width: number }) {
             <div>
                 <Item itemName="Scrapper" imgWidth={imgWidth} />
             </div>
+            <BirdStatues imgWidth={imgWidth} />
         </div>
     );
 }

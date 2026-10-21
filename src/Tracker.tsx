@@ -191,9 +191,9 @@ function TrackerContents({ openTools }: { openTools: () => void }) {
 
         const clientCubeCallback = (cubeflags: number) => {
             // Legacy AP worlds may still send an auxiliary cube bitfield.
-            // SSHD AP 0.6.x already exposes cube strikes as regular AP locations,
-            // so checked_locations is the authoritative source and this callback
-            // only remains as a harmless compatibility hook.
+            // Decoupled cubes use regular AP checked_locations. Coupled cubes
+            // remain logic helpers, not item checks; this legacy bitfield must
+            // not inflate the slot's checked-location count.
             void cubeflags;
         };
 

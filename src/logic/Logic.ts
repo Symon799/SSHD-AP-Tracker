@@ -77,6 +77,7 @@ export interface LogicalCheck {
         | 'pot'
         | 'pumpkin'
         | 'barrel'
+        | 'bird_statue'
         | 'tr_cube'
         | 'tr_dummy';
     name: string;
@@ -117,6 +118,7 @@ export function isRegularItemCheck(type: LogicalCheck['type']) {
         case 'pot':
         case 'pumpkin':
         case 'barrel':
+        case 'bird_statue':
             return true;
         case 'loose_crystal':
         case 'gossip_stone':
@@ -476,12 +478,16 @@ export function parseLogic(raw: RawLogic): Logic {
     for (const [cubeItem, cubeCheck] of Object.entries(
         supportedCubeCollectedToCubeCheck,
     )) {
-        checks[cubeCheck] = {
-            type: 'tr_cube',
-            name: last(cubeCheck.split('\\'))!,
-            originalItem: undefined,
-            area: checkAreaPlaceholder,
-        };
+        // SSHD cubes can be real randomized checks. Keep their type so the
+        // decoupling option controls visibility and AP totals independently.
+        if (!raw.entrance_connections) {
+            checks[cubeCheck] = {
+                type: 'tr_cube',
+                name: last(cubeCheck.split('\\'))!,
+                originalItem: undefined,
+                area: checkAreaPlaceholder,
+            };
+        }
         checks[cubeItem] = {
             type: 'tr_dummy',
             name: last(cubeCheck.split('\\'))!,
@@ -1355,6 +1361,8 @@ function getCheckType(
         return 'pumpkin';
     } else if (checkType.includes('Barrels')) {
         return 'barrel';
+    } else if (checkType.includes('Bird Statues')) {
+        return 'bird_statue';
     } else {
         return 'regular';
     }

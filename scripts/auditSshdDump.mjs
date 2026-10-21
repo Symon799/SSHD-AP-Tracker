@@ -32,7 +32,16 @@ for (const [id, check] of checks) {
     if (countKey) counts[countKey]++;
 }
 
-const requiredOptions = ['pot-shuffle', 'pumpkin-shuffle', 'barrel-shuffle'];
+const requiredOptions = [
+    'pot-shuffle',
+    'pumpkin-shuffle',
+    'barrel-shuffle',
+    'bird-statues-give-items',
+    'bird-statues-need-unlock',
+    'start-with-region-bird-statues',
+    'goddess-chest-unlock',
+    'decouple-goddess-cubes-and-chests',
+];
 const optionCommands = new Set(options.map((option) => option?.command));
 const missingOptions = requiredOptions.filter(
     (command) => !optionCommands.has(command),

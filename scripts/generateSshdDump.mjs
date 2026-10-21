@@ -1,6 +1,7 @@
 import yaml from 'js-yaml';
 import fs from 'node:fs';
 import path from 'node:path';
+import { applySshdWorldFeatures } from './sshdWorldFeatures.mjs';
 
 const [
     sshdRandoRoot = '.tmp_sshd_rando',
@@ -1140,8 +1141,9 @@ function buildSshdOptions() {
 }
 
 const dump = buildSshdDump();
-fs.writeFileSync(outputPath, yaml.dump(dump, { lineWidth: 100 }));
 const options = buildSshdOptions();
+applySshdWorldFeatures(dump, options);
+fs.writeFileSync(outputPath, yaml.dump(dump, { lineWidth: 100 }));
 fs.writeFileSync(optionsOutputPath, yaml.dump(options, { lineWidth: 100 }));
 console.log(
     `Wrote ${outputPath} with ${Object.keys(dump.checks).length} checks and ${dump.items.length} items/logic nodes`,

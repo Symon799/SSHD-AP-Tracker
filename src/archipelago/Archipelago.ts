@@ -12,6 +12,7 @@ import {
     setStoredArchipelagoServer,
     setStoredArchipelagoSlot,
 } from '../LocalStorage';
+import { birdStatueItems } from '../logic/Inventory';
 import {
     resolveRequiredDungeonsFromSlotData,
     type RegularDungeon,
@@ -189,6 +190,7 @@ export const apAbsoluteInventoryMaximumItems = new Set<string>([
     'Progressive Wallet',
     'Sailcloth',
     'Loftwing',
+    ...birdStatueItems,
 ]);
 
 export function mergeApInventoryWithSeedItems(

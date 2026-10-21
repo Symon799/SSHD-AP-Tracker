@@ -44,6 +44,7 @@ export function Marker({
     debugEnabled,
     onDebugMove,
     debugPath,
+    label,
 }: {
     variant: MarkerVariant;
     color: keyof ColorScheme;
@@ -61,6 +62,7 @@ export function Marker({
     debugEnabled?: boolean;
     onDebugMove?: (debugPath: string, x: number, y: number) => void;
     debugPath?: string;
+    label?: string;
 }) {
     const dragStateRef = useRef<{
         pointerId: number;
@@ -137,6 +139,8 @@ export function Marker({
                     onClick={handleClick}
                     onKeyDown={handleClick}
                     role="button"
+                    aria-label={label}
+                    aria-pressed={selected}
                     tabIndex={0}
                     onContextMenu={(ev) => {
                         ev.preventDefault();
@@ -212,6 +216,14 @@ export function Marker({
                     <span>{children}</span>
                 </div>
             </Tooltip>
+            {selected && (
+                <div
+                    aria-hidden="true"
+                    data-testid="selected-map-arrow"
+                    className={styles.selectionArrow}
+                    style={positionVars as CSSProperties}
+                />
+            )}
             {previewStyle && (
                 <div
                     style={positionVars as CSSProperties}

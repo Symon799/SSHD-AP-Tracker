@@ -1,5 +1,6 @@
 import * as RadixDialog from '@radix-ui/react-dialog';
 import clsx from 'clsx';
+import { useRef } from 'react';
 import styles from './Dialog.module.css';
 
 function Root(
@@ -66,6 +67,7 @@ export function Dialog({
     wide,
     extraWide = false,
     hideFooter = false,
+    focusContentOnOpen = false,
     className,
     children,
 }: {
@@ -75,14 +77,25 @@ export function Dialog({
     wide?: boolean;
     extraWide?: boolean;
     hideFooter?: boolean;
+    focusContentOnOpen?: boolean;
     className?: string;
     children: React.ReactNode;
 }) {
+    const contentRef = useRef<HTMLDivElement>(null);
     return (
         <Root open={open} onOpenChange={onOpenChange}>
             <Portal>
                 <Overlay />
                 <Content
+                    ref={contentRef}
+                    onOpenAutoFocus={
+                        focusContentOnOpen
+                            ? (event) => {
+                                  event.preventDefault();
+                                  contentRef.current?.focus();
+                              }
+                            : undefined
+                    }
                     narrow={!wide}
                     className={extraWide ? styles.extraWide : undefined}
                 >
