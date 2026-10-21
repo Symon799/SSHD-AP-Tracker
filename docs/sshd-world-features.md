@@ -27,6 +27,24 @@ chests. Existing check identifiers and map marker positions are preserved.
 
 ## Data Sources and Maintenance
 
+### Progressive Loftwing
+
+New APWorlds send `Progressive Loftwing`: one copy grants Loftwing and two
+grant Spiral Charge as well. The tracker keeps both existing icons and logic
+requirements. It resolves the progressive total after merging AP inventory with
+seed items, without adding a starting Loftwing to an already-precollected total.
+Starting progressive copies are supported too, and older seeds can still send
+the separate `Loftwing` and `Spiral Charge` items.
+
+The tier definitions are in upstream
+[`logic_converter.py`](https://github.com/LonLon-Labs/SSHD_APWorld/blob/feature/rust-client/logic_converter.py);
+[`__init__.py`](https://github.com/LonLon-Labs/SSHD_APWorld/blob/feature/rust-client/__init__.py)
+converts both stages to progressive items when building the pool and precollecting
+starting items. Unit and browser tests cover both levels, with and without a
+starting Loftwing.
+
+### World Feature Data
+
 `src/data/sshdWorldFeatures.json` records the upstream source and revision, the
 26 statue definitions, and the five settings. They were checked against
 `Locations.py`, `Items.py`, `SSHD_Options.py`, and the backend world YAML files

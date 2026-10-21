@@ -19,6 +19,41 @@ async function connectToFixture(page: Page, slot = 'Test Player') {
 }
 
 test.describe('tracker with simulated Archipelago server', () => {
+    for (const [slot, spiralCharge] of [
+        ['Loftwing Player', false],
+        ['Spiral Charge Player', true],
+        ['Starting Loftwing Player', false],
+        ['Starting Spiral Charge Player', true],
+    ] as const) {
+        test(`synchronizes Progressive Loftwing for ${slot}`, async ({
+            page,
+        }) => {
+            const errors: string[] = [];
+            page.on('pageerror', (error) => errors.push(error.message));
+            await connectToFixture(page, slot);
+            page.once('dialog', (dialog) => dialog.accept());
+            await page
+                .getByRole('button', { name: 'Launch New Tracker' })
+                .click();
+            await expect(
+                page
+                    .getByRole('button', { name: 'Loftwing', exact: true })
+                    .locator('img'),
+            ).toHaveAttribute('src', /\/Loftwing\.png/);
+            await expect(
+                page
+                    .getByRole('button', { name: 'Spiral Charge', exact: true })
+                    .locator('img'),
+            ).toHaveAttribute(
+                'src',
+                spiralCharge
+                    ? /\/bird_statuette\.png/
+                    : /\/no_bird_statuette\.png/,
+            );
+            expect(errors).toEqual([]);
+        });
+    }
+
     test('restores a valid selection per map and marks it with a pointer', async ({
         page,
     }) => {

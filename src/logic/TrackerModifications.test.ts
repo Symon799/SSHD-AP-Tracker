@@ -48,6 +48,20 @@ describe('getInitialItems', () => {
         ).toBe(0);
     });
 
+    it.each([1, 2])('resolves %i starting Progressive Loftwings', (count) => {
+        const inventory = getInitialItems(
+            makeSettings({
+                'randomize-loftwing': 'off',
+                'starting-items': Array<string>(count).fill(
+                    'Progressive Loftwing',
+                ),
+            }),
+        );
+        expect(inventory.Loftwing).toBe(1);
+        expect(inventory['Spiral Charge'] ?? 0).toBe(count === 2 ? 1 : 0);
+        expect(inventory['Progressive Loftwing']).toBeUndefined();
+    });
+
     it('starts without a progressive sword when starting-sword is no_sword', () => {
         expect(
             getInitialItems(makeSettings({ 'starting-sword': 'no_sword' }))[

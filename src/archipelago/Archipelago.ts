@@ -18,6 +18,7 @@ import {
     type RegularDungeon,
 } from '../logic/Locations';
 import {
+    resolveProgressiveLoftwing,
     sothItemReplacement,
     triforceItemReplacement,
 } from '../logic/TrackerModifications';
@@ -190,6 +191,8 @@ export const apAbsoluteInventoryMaximumItems = new Set<string>([
     'Progressive Wallet',
     'Sailcloth',
     'Loftwing',
+    'Progressive Loftwing',
+    'Spiral Charge',
     ...birdStatueItems,
 ]);
 
@@ -213,7 +216,7 @@ export function mergeApInventoryWithSeedItems(
         merged[item] = (startingInventory[item] ?? 0) + apCount;
     }
 
-    return merged;
+    return resolveProgressiveLoftwing(merged);
 }
 
 function isArchipelagoCrystalLogicItem(item: string): boolean {

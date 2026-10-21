@@ -54,6 +54,20 @@ export const triforceItems = [
 
 export const triforceItemReplacement = 'Triforce';
 
+/** Translate AP's progressive total into the two items used by SSHD logic. */
+export function resolveProgressiveLoftwing(
+    inventory: TrackerState['inventory'],
+): TrackerState['inventory'] {
+    const { 'Progressive Loftwing': level = 0, ...resolved } = inventory;
+    if (level >= 1) {
+        resolved.Loftwing = Math.max(resolved.Loftwing ?? 0, 1);
+    }
+    if (level >= 2) {
+        resolved['Spiral Charge'] = Math.max(resolved['Spiral Charge'] ?? 0, 1);
+    }
+    return resolved;
+}
+
 // Checking a dungeon completion check gives the respective "item"
 // so that the "All Required Dungeons Complete" requirement is
 // logically fulfilled when the player completes the dungeon, not
@@ -104,12 +118,14 @@ export function getInitialItems(
             add(sothItemReplacement);
         } else if (item.includes(triforceItemReplacement)) {
             add(triforceItemReplacement);
+        } else if (item === 'Progressive Loftwing') {
+            items[item] = (items[item] ?? 0) + 1;
         } else if (isItem(item)) {
             add(item);
         }
     }
 
-    return items;
+    return resolveProgressiveLoftwing(items);
 }
 
 /**

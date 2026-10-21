@@ -8,13 +8,21 @@ const secondLocationId = 1002;
 const thirdLocationId = 1003;
 const progressiveSwordId = 2001;
 const statueUnlockId = 2002;
+const progressiveLoftwingId = 2003;
 const featureLocationIds = [1004, 1005, 1006, 1007];
+const loftwingScenarios = {
+    'Loftwing Player': { start: 0, received: 1 },
+    'Spiral Charge Player': { start: 0, received: 2 },
+    'Starting Loftwing Player': { start: 1, received: 1 },
+    'Starting Spiral Charge Player': { start: 1, received: 2 },
+};
 
 const gamePackage = {
-    checksum: 'sshd-e2e-fixture-v2',
+    checksum: 'sshd-e2e-fixture-v3',
     item_name_to_id: {
         'Progressive Sword': progressiveSwordId,
         'Sealed Grounds Statue Unlock': statueUnlockId,
+        'Progressive Loftwing': progressiveLoftwingId,
     },
     location_name_to_id: {
         "Knight Academy - Fledge's Gift": checkedLocationId,
@@ -72,6 +80,7 @@ const webSocketServer = new WebSocketServer({ server });
 
 webSocketServer.on('connection', (socket) => {
     let featureMode = false;
+    let loftwingMode;
     let authenticated = false;
     let itemsSent = false;
     send(socket, roomInfo);
@@ -82,6 +91,7 @@ webSocketServer.on('connection', (socket) => {
         for (const packet of packets) {
             if (packet.cmd === 'Connect') {
                 featureMode = packet.name === 'Feature Player';
+                loftwingMode = loftwingScenarios[packet.name];
                 authenticated = true;
                 send(socket, {
                     cmd: 'Connected',
@@ -127,7 +137,15 @@ webSocketServer.on('connection', (socket) => {
                                   ),
                               },
                           }
-                        : slotData,
+                        : loftwingMode
+                          ? {
+                                ...slotData,
+                                option_randomize_loftwing: loftwingMode.start,
+                                option_custom_starting_items: loftwingMode.start
+                                    ? { 'Progressive Loftwing': 1 }
+                                    : {},
+                            }
+                          : slotData,
                     slot_info: {
                         1: {
                             name: packet.name,
@@ -157,6 +175,19 @@ webSocketServer.on('connection', (socket) => {
                     cmd: 'ReceivedItems',
                     index: 0,
                     items: [
+                        ...Array.from(
+                            { length: loftwingMode?.received ?? 0 },
+                            (_, index) => ({
+                                item: progressiveLoftwingId,
+                                location:
+                                    loftwingMode.start && index === 0
+                                        ? -2
+                                        : 3100 + index,
+                                player:
+                                    loftwingMode.start && index === 0 ? 0 : 2,
+                                flags: 1,
+                            }),
+                        ),
                         ...(featureMode
                             ? [
                                   {

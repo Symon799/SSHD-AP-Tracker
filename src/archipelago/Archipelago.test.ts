@@ -1,6 +1,7 @@
 import { load } from 'js-yaml';
 import fs from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { getInitialItems } from '../logic/TrackerModifications';
 import type { OptionDefs } from '../permalink/SettingsTypes';
 import {
     AP_ITEM_ID_GRATITUDE_CRYSTAL,
@@ -222,6 +223,58 @@ describe('applyApItemToTrackerInventory', () => {
 });
 
 describe('mergeApInventoryWithSeedItems', () => {
+    it.each([0, 1, 2, 3])(
+        'resolves %i received Progressive Loftwings into the correct logic items',
+        (count) => {
+            const received: Record<string, number> = {};
+            for (let i = 0; i < count; i++) {
+                applyApItemToTrackerInventory(received, 'Progressive Loftwing');
+            }
+            const inventory = mergeApInventoryWithSeedItems({}, received);
+            expect(inventory.Loftwing ?? 0).toBe(count >= 1 ? 1 : 0);
+            expect(inventory['Spiral Charge'] ?? 0).toBe(count >= 2 ? 1 : 0);
+            expect(inventory['Progressive Loftwing']).toBeUndefined();
+        },
+    );
+
+    it('does not count the precollected Loftwing twice and advances on the next copy', () => {
+        const options = load(
+            fs.readFileSync('testData/sshd-options.yaml', 'utf8'),
+        ) as OptionDefs;
+        const settings = optionIndicesToOptions(options, {
+            option_randomize_loftwing: 1,
+        });
+        settings['starting-items'] = parseApCustomStartingItems({
+            'Progressive Loftwing': 1,
+        })!;
+        const starting = getInitialItems(settings);
+        const received: Record<string, number> = {};
+        applyApItemToTrackerInventory(received, 'Progressive Loftwing');
+        const firstSync = mergeApInventoryWithSeedItems(starting, received);
+        expect(firstSync.Loftwing).toBe(1);
+        expect(firstSync['Spiral Charge'] ?? 0).toBe(0);
+        expect(mergeApInventoryWithSeedItems(starting, received)).toEqual(
+            firstSync,
+        );
+
+        applyApItemToTrackerInventory(received, 'Progressive Loftwing');
+        const upgraded = mergeApInventoryWithSeedItems(starting, received);
+        expect(upgraded.Loftwing).toBe(1);
+        expect(upgraded['Spiral Charge']).toBe(1);
+    });
+
+    it('keeps legacy Loftwing and Spiral Charge items compatible', () => {
+        const received: Record<string, number> = {};
+        applyApItemToTrackerInventory(received, 'Loftwing');
+        applyApItemToTrackerInventory(received, 'Spiral Charge');
+        const inventory = mergeApInventoryWithSeedItems(
+            { Loftwing: 1, 'Spiral Charge': 1 },
+            received,
+        );
+        expect(inventory.Loftwing).toBe(1);
+        expect(inventory['Spiral Charge']).toBe(1);
+    });
+
     it('does not double-count starting empty bottles on AP resync', () => {
         expect(
             mergeApInventoryWithSeedItems(
