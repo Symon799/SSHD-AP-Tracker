@@ -3355,12 +3355,6 @@ items:
   - \Sky\Lumpy Pumpkin Exterior\Lumpy Pumpkin Exterior - Pumpkin 28
   - \Sky\Lumpy Pumpkin Exterior\Lumpy Pumpkin Exterior - Pumpkin 29
   - \Sky\Lumpy Pumpkin Exterior\Lumpy Pumpkin Exterior - Pumpkin 3
-  - \Sky\Lumpy Pumpkin Exterior\Lumpy Pumpkin Exterior - Pumpkin 30
-  - \Sky\Lumpy Pumpkin Exterior\Lumpy Pumpkin Exterior - Pumpkin 31
-  - \Sky\Lumpy Pumpkin Exterior\Lumpy Pumpkin Exterior - Pumpkin 32
-  - \Sky\Lumpy Pumpkin Exterior\Lumpy Pumpkin Exterior - Pumpkin 33
-  - \Sky\Lumpy Pumpkin Exterior\Lumpy Pumpkin Exterior - Pumpkin 34
-  - \Sky\Lumpy Pumpkin Exterior\Lumpy Pumpkin Exterior - Pumpkin 35
   - \Sky\Lumpy Pumpkin Exterior\Lumpy Pumpkin Exterior - Pumpkin 4
   - \Sky\Lumpy Pumpkin Exterior\Lumpy Pumpkin Exterior - Pumpkin 5
   - \Sky\Lumpy Pumpkin Exterior\Lumpy Pumpkin Exterior - Pumpkin 6
@@ -9320,30 +9314,6 @@ checks:
     original item: Green Rupee
     type: Pumpkins, Custom Flag
     short_name: Lumpy Pumpkin Exterior - Pumpkin 29
-  \Sky\Lumpy Pumpkin Exterior\Lumpy Pumpkin Exterior - Pumpkin 30:
-    original item: Green Rupee
-    type: Pumpkins, Custom Flag
-    short_name: Lumpy Pumpkin Exterior - Pumpkin 30
-  \Sky\Lumpy Pumpkin Exterior\Lumpy Pumpkin Exterior - Pumpkin 31:
-    original item: Green Rupee
-    type: Pumpkins, Custom Flag
-    short_name: Lumpy Pumpkin Exterior - Pumpkin 31
-  \Sky\Lumpy Pumpkin Exterior\Lumpy Pumpkin Exterior - Pumpkin 32:
-    original item: Green Rupee
-    type: Pumpkins, Custom Flag
-    short_name: Lumpy Pumpkin Exterior - Pumpkin 32
-  \Sky\Lumpy Pumpkin Exterior\Lumpy Pumpkin Exterior - Pumpkin 33:
-    original item: Green Rupee
-    type: Pumpkins, Custom Flag
-    short_name: Lumpy Pumpkin Exterior - Pumpkin 33
-  \Sky\Lumpy Pumpkin Exterior\Lumpy Pumpkin Exterior - Pumpkin 34:
-    original item: Green Rupee
-    type: Pumpkins, Custom Flag
-    short_name: Lumpy Pumpkin Exterior - Pumpkin 34
-  \Sky\Lumpy Pumpkin Exterior\Lumpy Pumpkin Exterior - Pumpkin 35:
-    original item: Green Rupee
-    type: Pumpkins, Custom Flag
-    short_name: Lumpy Pumpkin Exterior - Pumpkin 35
   \Skyloft\Knight Academy\Knight Academy - Big Pot 1:
     original item: Green Rupee
     type: Pots, Custom Flag
@@ -18930,12 +18900,6 @@ areas:
             Lumpy Pumpkin Exterior - Pumpkin 27: 'True'
             Lumpy Pumpkin Exterior - Pumpkin 28: 'True'
             Lumpy Pumpkin Exterior - Pumpkin 29: 'True'
-            Lumpy Pumpkin Exterior - Pumpkin 30: 'True'
-            Lumpy Pumpkin Exterior - Pumpkin 31: 'True'
-            Lumpy Pumpkin Exterior - Pumpkin 32: 'True'
-            Lumpy Pumpkin Exterior - Pumpkin 33: 'True'
-            Lumpy Pumpkin Exterior - Pumpkin 34: 'True'
-            Lumpy Pumpkin Exterior - Pumpkin 35: 'True'
         Lumpy Pumpkin Back Door Exterior:
           name: \Sky\Lumpy Pumpkin Back Door Exterior
           abstract: false

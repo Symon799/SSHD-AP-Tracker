@@ -43,7 +43,7 @@ describe('SSHD generated dump', () => {
         ) as RawLogic;
         const logic = parseLogic(raw);
 
-        expect(Object.keys(raw.checks)).toHaveLength(1463);
+        expect(Object.keys(raw.checks)).toHaveLength(1457);
         expect(
             logic.checks[
                 "\\Skyloft\\Knight Academy\\Knight Academy - Fledge's Gift"
@@ -98,10 +98,44 @@ describe('SSHD generated dump', () => {
             },
             { pots: 0, pumpkins: 0, barrels: 0 },
         );
-        expect(sanityCounts).toEqual({ pots: 309, pumpkins: 73, barrels: 162 });
+        expect(sanityCounts).toEqual({ pots: 309, pumpkins: 67, barrels: 162 });
         expect(
             Object.keys(logic.areaGraph.entranceConnections).length,
         ).toBeGreaterThan(180);
+    });
+
+    it('excludes the removed Lumpy Pumpkin shelf pumpkins without removing Skyloft pumpkins', () => {
+        const raw = load(
+            fs.readFileSync('testData/sshd-dump.yaml', 'utf8'),
+        ) as RawLogic;
+        const lumpyPrefix = '\\Sky\\Lumpy Pumpkin Exterior\\';
+        const locations =
+            raw.areas.sub_areas.Sky.sub_areas['Lumpy Pumpkin Exterior']
+                .locations!;
+        const expectedNames = Array.from(
+            { length: 29 },
+            (_, index) => `Lumpy Pumpkin Exterior - Pumpkin ${index + 1}`,
+        );
+        expect(
+            Object.keys(locations).filter((name) =>
+                name.startsWith('Lumpy Pumpkin Exterior - Pumpkin '),
+            ),
+        ).toEqual(expectedNames);
+        for (const name of expectedNames) {
+            expect(raw.checks[`${lumpyPrefix}${name}`]).toBeDefined();
+            expect(raw.items).toContain(`${lumpyPrefix}${name}`);
+        }
+        for (let number = 30; number <= 35; number++) {
+            const name = `Lumpy Pumpkin Exterior - Pumpkin ${number}`;
+            expect(raw.checks[`${lumpyPrefix}${name}`]).toBeUndefined();
+            expect(raw.items).not.toContain(`${lumpyPrefix}${name}`);
+            expect(locations[name]).toBeUndefined();
+            expect(
+                raw.checks[
+                    `\\Skyloft\\Skyloft Village\\Skyloft Village - Pumpkin ${number}`
+                ],
+            ).toBeDefined();
+        }
     });
 
     it('keeps SSHD dungeon entrances vanilla when dungeon ER is off', () => {
