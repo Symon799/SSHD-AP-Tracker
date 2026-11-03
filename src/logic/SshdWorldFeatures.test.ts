@@ -109,7 +109,7 @@ describe('SSHD bird statues and goddess chest options', () => {
         const regions = areasSelector(
             stateWith({ 'bird-statues-give-items': 'on' }),
         );
-        expect(birdStatueItems).toHaveLength(26);
+        expect(birdStatueItems).toHaveLength(28);
         for (const statue of features.statues) {
             expect(birdStatueItems).toContain(statue.item);
             const id = resolve(statue.location)!;
@@ -135,7 +135,7 @@ describe('SSHD bird statues and goddess chest options', () => {
                 'goddess-chest-shuffle': 'off',
             }),
         );
-        expect(statues.length - baseline.length).toBe(26);
+        expect(statues.length - baseline.length).toBe(28);
         expect(
             cubes.filter((id) => logic.checks[id].type === 'goddess_cube'),
         ).toHaveLength(27);
@@ -185,6 +185,57 @@ describe('SSHD bird statues and goddess chest options', () => {
             )('\\Sky\\The Sky_DAY'),
         ).toBe(true);
     });
+
+    it.each([
+        {
+            area: 'Inside the Volcano Statue',
+            item: 'Inside the Volcano Statue Unlock',
+            region: 'Eldin Volcano',
+            location: 'Eldin Volcano - Inside the Volcano Bird Statue',
+        },
+        {
+            area: 'Inside the Fire Sanctuary Statue',
+            item: 'Inside the Fire Sanctuary Statue Unlock',
+            region: 'Fire Sanctuary',
+            location: 'Fire Sanctuary - Inside Fire Sanctuary Bird Statue',
+        },
+    ])(
+        'requires the matching unlock to land at $area and maps its check to $region',
+        ({ area, item, region, location }) => {
+            const settings = { 'bird-statues-need-unlock': 'on' };
+            const inventory = {
+                '\\Sky\\Eldin Pillar_DAY': 1,
+                [`\\Unlock ${area}`]: 1,
+            };
+            const destination = `\\Eldin\\${area}_DAY`;
+            expect(reachable(inventory, settings)(destination)).toBe(false);
+            expect(
+                reachable({ ...inventory, [item]: 1 }, settings)(destination),
+            ).toBe(true);
+            expect(
+                reachable(
+                    { ...inventory, 'Temple Entrance Statue Unlock': 1 },
+                    settings,
+                )(destination),
+            ).toBe(false);
+            expect(
+                reachable(inventory, { 'bird-statues-need-unlock': 'off' })(
+                    destination,
+                ),
+            ).toBe(true);
+
+            const received: Record<string, number> = {};
+            applyApItemToTrackerInventory(received, item);
+            expect(
+                mergeApInventoryWithSeedItems({ [item]: 1 }, received)[item],
+            ).toBe(1);
+            const id = buildSshdApLocationResolver(logic)(location)!;
+            expect(logic.checks[id].area).toBe(region);
+            expect(reachable({ ...inventory, [item]: 1 }, settings)(id)).toBe(
+                true,
+            );
+        },
+    );
 
     it('preserves vanilla province access for old seeds without the new options', () => {
         expect(

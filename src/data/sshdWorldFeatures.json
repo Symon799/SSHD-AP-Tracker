@@ -1,5 +1,6 @@
 {
     "source": "https://github.com/LonLon-Labs/SSHD_APWorld/tree/feature/rust-client/sshd-rando-backend/data",
+    "additionalStatuesSourceRevision": "567ed7ef65de5ec712ae74bcee4ae9c6c0874acd",
     "statues": [
         {
             "location": "Sealed Grounds - Sealed Grounds Bird Statue",
@@ -156,6 +157,18 @@
             "area": "Lanayru Gorge Statue",
             "world": "Lanayru",
             "item": "Lanayru Gorge Statue Unlock"
+        },
+        {
+            "location": "Eldin Volcano - Inside the Volcano Bird Statue",
+            "area": "Inside the Volcano Statue",
+            "world": "Eldin",
+            "item": "Inside the Volcano Statue Unlock"
+        },
+        {
+            "location": "Fire Sanctuary - Inside Fire Sanctuary Bird Statue",
+            "area": "Inside the Fire Sanctuary Statue",
+            "world": "Eldin",
+            "item": "Inside the Fire Sanctuary Statue Unlock"
         }
     ],
     "settings": [

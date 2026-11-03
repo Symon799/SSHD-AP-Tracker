@@ -28,6 +28,8 @@ export const itemMaxes = {
     'Shipyard Statue Unlock': 1,
     'Pirate Stronghold Statue Unlock': 1,
     'Lanayru Gorge Statue Unlock': 1,
+    'Inside the Volcano Statue Unlock': 1,
+    'Inside the Fire Sanctuary Statue Unlock': 1,
 
     'Emerald Tablet': 1,
     'Ruby Tablet': 1,

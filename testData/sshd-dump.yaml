@@ -2954,9 +2954,6 @@ items:
   - \Sandship\Sandship Boss Room\Sandship - Nayru's Flame
   - \Sandship\Sandship Boss Room\Sandship Boss Room - Barrel 1
   - \Sandship\Sandship Boss Room\Sandship Boss Room - Barrel 2
-  - \Sandship\Sandship Boss Room\Sandship Boss Room - Barrel 3
-  - \Sandship\Sandship Boss Room\Sandship Boss Room - Barrel 4
-  - \Sandship\Sandship Boss Room\Sandship Boss Room - Barrel 5
   - \Sandship\Sandship Boss Room_DAY
   - \Sandship\Sandship Boss Room_NIGHT
   - \Sandship\Sandship Brig
@@ -3519,9 +3516,6 @@ items:
   - \Skyloft\Bird Nest_DAY
   - \Skyloft\Bird Nest_NIGHT
   - \Skyloft\Central Skyloft
-  - \Skyloft\Central Skyloft\Central Skyloft - Barrel 1
-  - \Skyloft\Central Skyloft\Central Skyloft - Barrel 2
-  - \Skyloft\Central Skyloft\Central Skyloft - Barrel 3
   - \Skyloft\Central Skyloft\Central Skyloft - Blow Purple Flag South of the Bazaar
   - \Skyloft\Central Skyloft\Central Skyloft - Blow Red Flag South of the Bazaar
   - \Skyloft\Central Skyloft\Central Skyloft - Bonk Tree Left of Sky Keep Statue
@@ -4146,8 +4140,6 @@ items:
   - \Skyview\SVT Staldra Room_NIGHT
   - \Skyview\Skyview Boss Room
   - \Skyview\Skyview Boss Room\Skyview Boss Room - Pot 1
-  - \Skyview\Skyview Boss Room\Skyview Boss Room - Pot 10
-  - \Skyview\Skyview Boss Room\Skyview Boss Room - Pot 11
   - \Skyview\Skyview Boss Room\Skyview Boss Room - Pot 2
   - \Skyview\Skyview Boss Room\Skyview Boss Room - Pot 3
   - \Skyview\Skyview Boss Room\Skyview Boss Room - Pot 4
@@ -4155,7 +4147,6 @@ items:
   - \Skyview\Skyview Boss Room\Skyview Boss Room - Pot 6
   - \Skyview\Skyview Boss Room\Skyview Boss Room - Pot 7
   - \Skyview\Skyview Boss Room\Skyview Boss Room - Pot 8
-  - \Skyview\Skyview Boss Room\Skyview Boss Room - Pot 9
   - \Skyview\Skyview Boss Room\Skyview Temple - Defeat Boss
   - \Skyview\Skyview Boss Room_DAY
   - \Skyview\Skyview Boss Room_NIGHT
@@ -4297,7 +4288,19 @@ items:
   - Pirate Stronghold Statue Unlock
   - \Lanayru\Lanayru Gorge Statue\Lanayru Gorge - Lanayru Gorge Bird Statue
   - Lanayru Gorge Statue Unlock
+  - \Eldin\Inside the Volcano Statue\Eldin Volcano - Inside the Volcano Bird Statue
+  - Inside the Volcano Statue Unlock
+  - \Eldin\Inside the Fire Sanctuary Statue\Fire Sanctuary - Inside Fire Sanctuary Bird Statue
+  - Inside the Fire Sanctuary Statue Unlock
 checks:
+  \Eldin\Inside the Volcano Statue\Eldin Volcano - Inside the Volcano Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Eldin Volcano - Inside the Volcano Bird Statue
+  \Eldin\Inside the Fire Sanctuary Statue\Fire Sanctuary - Inside Fire Sanctuary Bird Statue:
+    original item: Green Rupee
+    type: Bird Statues, Custom Flag
+    short_name: Fire Sanctuary - Inside Fire Sanctuary Bird Statue
   \Skyloft\Knight Academy\Knight Academy - Link's Closet:
     original item: Blue Rupee
     type: Closets
@@ -7902,18 +7905,6 @@ checks:
     original item: Green Rupee
     type: Pots, Custom Flag
     short_name: Skyview Boss Room - Pot 8
-  \Skyview\Skyview Boss Room\Skyview Boss Room - Pot 9:
-    original item: Green Rupee
-    type: Pots, Custom Flag
-    short_name: Skyview Boss Room - Pot 9
-  \Skyview\Skyview Boss Room\Skyview Boss Room - Pot 10:
-    original item: Green Rupee
-    type: Pots, Custom Flag
-    short_name: Skyview Boss Room - Pot 10
-  \Skyview\Skyview Boss Room\Skyview Boss Room - Pot 11:
-    original item: Green Rupee
-    type: Pots, Custom Flag
-    short_name: Skyview Boss Room - Pot 11
   \Lanayru Mining Facility\LMF After Sand Drain\LMF After Sand Drain - Pot 1:
     original item: Green Rupee
     type: Pots, Custom Flag
@@ -9374,18 +9365,6 @@ checks:
     original item: Green Rupee
     type: Pots, Custom Flag
     short_name: Bug Heaven - Big Pot 7
-  \Skyloft\Central Skyloft\Central Skyloft - Barrel 1:
-    original item: Green Rupee
-    type: Barrels, Custom Flag
-    short_name: Central Skyloft - Barrel 1
-  \Skyloft\Central Skyloft\Central Skyloft - Barrel 2:
-    original item: Green Rupee
-    type: Barrels, Custom Flag
-    short_name: Central Skyloft - Barrel 2
-  \Skyloft\Central Skyloft\Central Skyloft - Barrel 3:
-    original item: Green Rupee
-    type: Barrels, Custom Flag
-    short_name: Central Skyloft - Barrel 3
   \Lanayru\Fire Node\Fire Node - Barrel 1:
     original item: Green Rupee
     type: Barrels, Custom Flag
@@ -9882,18 +9861,6 @@ checks:
     original item: Green Rupee
     type: Barrels, Custom Flag
     short_name: Sandship Boss Room - Barrel 2
-  \Sandship\Sandship Boss Room\Sandship Boss Room - Barrel 3:
-    original item: Green Rupee
-    type: Barrels, Custom Flag
-    short_name: Sandship Boss Room - Barrel 3
-  \Sandship\Sandship Boss Room\Sandship Boss Room - Barrel 4:
-    original item: Green Rupee
-    type: Barrels, Custom Flag
-    short_name: Sandship Boss Room - Barrel 4
-  \Sandship\Sandship Boss Room\Sandship Boss Room - Barrel 5:
-    original item: Green Rupee
-    type: Barrels, Custom Flag
-    short_name: Sandship Boss Room - Barrel 5
   \Sandship\Sandship Brig\Sandship Brig - Barrel 1:
     original item: Green Rupee
     type: Barrels, Custom Flag
@@ -15052,11 +15019,12 @@ areas:
           sub_areas: {}
           locations:
             \Unlock Inside the Volcano Statue: 'True'
+            Eldin Volcano - Inside the Volcano Bird Statue: 'True'
         Inside the Fire Sanctuary Statue:
           name: \Eldin\Inside the Fire Sanctuary Statue
           abstract: false
           can_sleep: false
-          hint_region: Eldin Volcano
+          hint_region: Fire Sanctuary
           allowed_time_of_day: 3
           entrances:
             - Entrance from Eldin Pillar
@@ -15066,6 +15034,7 @@ areas:
           sub_areas: {}
           locations:
             \Unlock Inside the Fire Sanctuary Statue: 'True'
+            Fire Sanctuary - Inside Fire Sanctuary Bird Statue: 'True'
       locations: {}
     Faron:
       name: \Faron
@@ -18206,9 +18175,6 @@ areas:
             Sandship - Nayru's Flame: \Can Defeat Tentalus & \Goddess Sword
             Sandship Boss Room - Barrel 1: 'True'
             Sandship Boss Room - Barrel 2: 'True'
-            Sandship Boss Room - Barrel 3: 'True'
-            Sandship Boss Room - Barrel 4: 'True'
-            Sandship Boss Room - Barrel 5: 'True'
       locations: {}
     Sky Keep:
       name: \Sky Keep
@@ -18643,8 +18609,12 @@ areas:
             \Sky\Eldin Pillar\Exit to Temple Entrance Statue: >-
               (\Unlock Temple Entrance Statue & \SSHD Setting\bird_statues_need_unlock == off) |
               (Temple Entrance Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
-            \Sky\Eldin Pillar\Exit to Inside the Volcano Statue: \Unlock Inside the Volcano Statue
-            \Sky\Eldin Pillar\Exit to Inside the Fire Sanctuary Statue: \Unlock Inside the Fire Sanctuary Statue
+            \Sky\Eldin Pillar\Exit to Inside the Volcano Statue: >-
+              (\Unlock Inside the Volcano Statue & \SSHD Setting\bird_statues_need_unlock == off) |
+              (Inside the Volcano Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
+            \Sky\Eldin Pillar\Exit to Inside the Fire Sanctuary Statue: >-
+              (\Unlock Inside the Fire Sanctuary Statue & \SSHD Setting\bird_statues_need_unlock == off) |
+              (Inside the Fire Sanctuary Statue Unlock & \SSHD Setting\bird_statues_need_unlock == on)
           sub_areas: {}
           locations: {}
         Eldin Region Entrance:
@@ -19669,9 +19639,6 @@ areas:
             Central Skyloft - Pot 15: 'True'
             Central Skyloft - Pot 16: 'True'
             Central Skyloft - Pot 17: 'True'
-            Central Skyloft - Barrel 1: 'True'
-            Central Skyloft - Barrel 2: 'True'
-            Central Skyloft - Barrel 3: 'True'
         Bird Nest:
           name: \Skyloft\Bird Nest
           abstract: false
@@ -20398,9 +20365,6 @@ areas:
             Skyview Boss Room - Pot 6: 'True'
             Skyview Boss Room - Pot 7: 'True'
             Skyview Boss Room - Pot 8: 'True'
-            Skyview Boss Room - Pot 9: 'True'
-            Skyview Boss Room - Pot 10: 'True'
-            Skyview Boss Room - Pot 11: 'True'
         Skyview Spring:
           name: \Skyview\Skyview Spring
           abstract: false

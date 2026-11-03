@@ -5,7 +5,7 @@ the `option_` prefix:
 
 | Option | Behavior |
 | --- | --- |
-| `bird_statues_give_items` | Adds the 26 bird statue checks to their existing map regions and counters. |
+| `bird_statues_give_items` | Adds the 28 bird statue checks to their existing map regions and counters. |
 | `bird_statues_need_unlock` | Gates sky-to-statue travel on the matching unlock item. Walking to a statue and flying back remain possible. |
 | `start_with_region_bird_statues` | The actual chosen statues come from starting/received items. The tracker does not guess their identities from this toggle. |
 | `decouple_goddess_cubes_and_chests` | Makes the 27 cubes real item checks, independently of chest shuffle. AP checked locations synchronize cube strikes. |
@@ -46,9 +46,17 @@ starting Loftwing.
 ### World Feature Data
 
 `src/data/sshdWorldFeatures.json` records the upstream source and revision, the
-26 statue definitions, and the five settings. They were checked against
+28 statue definitions, and the five settings. They were checked against
 `Locations.py`, `Items.py`, `SSHD_Options.py`, and the backend world YAML files
 on the APWorld `feature/rust-client` branch.
+
+`additionalStatuesSourceRevision` pins the addition of Inside the Volcano and
+Inside Fire Sanctuary to upstream commit `567ed7ef65de5ec712ae74bcee4ae9c6c0874acd`.
+Both unlock items appear in the Eldin inventory group, while their checks belong
+to Eldin Volcano and Fire Sanctuary respectively. The same update removes
+Skyview Boss Room pots 9-11, Central Skyloft barrels 1-3, and Sandship Boss Room
+barrels 3-5, which no longer exist as AP checks. Keep these removals when updating
+the baseline source checkout for dump regeneration.
 
 `scripts/sshdWorldFeatures.mjs` applies these additions when generating the SSHD
 dump. This keeps unrelated baseline logic intact. Update the pinned definitions

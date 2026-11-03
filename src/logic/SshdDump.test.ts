@@ -43,7 +43,7 @@ describe('SSHD generated dump', () => {
         ) as RawLogic;
         const logic = parseLogic(raw);
 
-        expect(Object.keys(raw.checks)).toHaveLength(1457);
+        expect(Object.keys(raw.checks)).toHaveLength(1450);
         expect(
             logic.checks[
                 "\\Skyloft\\Knight Academy\\Knight Academy - Fledge's Gift"
@@ -83,9 +83,7 @@ describe('SSHD generated dump', () => {
             type: 'pumpkin',
         });
         expect(
-            logic.checks[
-                '\\Skyloft\\Central Skyloft\\Central Skyloft - Barrel 1'
-            ],
+            logic.checks['\\Lanayru\\Fire Node\\Fire Node - Barrel 1'],
         ).toMatchObject({
             type: 'barrel',
         });
@@ -98,7 +96,7 @@ describe('SSHD generated dump', () => {
             },
             { pots: 0, pumpkins: 0, barrels: 0 },
         );
-        expect(sanityCounts).toEqual({ pots: 309, pumpkins: 67, barrels: 162 });
+        expect(sanityCounts).toEqual({ pots: 306, pumpkins: 67, barrels: 156 });
         expect(
             Object.keys(logic.areaGraph.entranceConnections).length,
         ).toBeGreaterThan(180);
@@ -137,6 +135,53 @@ describe('SSHD generated dump', () => {
             ).toBeDefined();
         }
     });
+
+    it.each([
+        {
+            world: 'Skyview',
+            area: 'Skyview Boss Room',
+            kind: 'Pot',
+            removed: [9, 10, 11],
+            kept: [1, 8],
+        },
+        {
+            world: 'Skyloft',
+            area: 'Central Skyloft',
+            kind: 'Barrel',
+            removed: [1, 2, 3],
+            kept: [],
+        },
+        {
+            world: 'Sandship',
+            area: 'Sandship Boss Room',
+            kind: 'Barrel',
+            removed: [3, 4, 5],
+            kept: [1, 2],
+        },
+    ])(
+        'removes obsolete $kind checks in $area without affecting valid checks',
+        ({ world, area, kind, removed, kept }) => {
+            const raw = load(
+                fs.readFileSync('testData/sshd-dump.yaml', 'utf8'),
+            ) as RawLogic;
+            const locations =
+                raw.areas.sub_areas[world].sub_areas[area].locations!;
+            for (const number of removed) {
+                const name = `${area} - ${kind} ${number}`;
+                const id = `\\${world}\\${area}\\${name}`;
+                expect(raw.checks[id]).toBeUndefined();
+                expect(raw.items).not.toContain(id);
+                expect(locations[name]).toBeUndefined();
+            }
+            for (const number of kept) {
+                const name = `${area} - ${kind} ${number}`;
+                const id = `\\${world}\\${area}\\${name}`;
+                expect(raw.checks[id]).toBeDefined();
+                expect(raw.items).toContain(id);
+                expect(locations[name]).toBeDefined();
+            }
+        },
+    );
 
     it('keeps SSHD dungeon entrances vanilla when dungeon ER is off', () => {
         const raw = load(

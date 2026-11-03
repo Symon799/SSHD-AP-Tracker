@@ -137,7 +137,7 @@ test.describe('tracker with simulated Archipelago server', () => {
         await connectToFixture(page, 'Feature Player');
         page.once('dialog', (dialog) => dialog.accept());
         await page.getByRole('button', { name: 'Launch New Tracker' }).click();
-        const statues = page.getByRole('button', { name: 'Bird Statues 2/26' });
+        const statues = page.getByRole('button', { name: 'Bird Statues 2/28' });
         await expect(statues).toBeVisible();
         await expect(statues.locator('img')).toHaveAttribute(
             'src',
@@ -228,6 +228,22 @@ test.describe('tracker with simulated Archipelago server', () => {
             }),
         ).toBeVisible();
         await expect(dialog.locator('[data-unlocked="true"]')).toHaveCount(2);
+        for (const item of [
+            'Inside the Volcano Statue Unlock',
+            'Inside the Fire Sanctuary Statue Unlock',
+        ]) {
+            const statue = dialog.getByRole('button', {
+                name: item,
+                exact: true,
+            });
+            await statue.scrollIntoViewIfNeeded();
+            await expect(statue.locator('img')).toHaveAttribute(
+                'src',
+                /bird_statue\.png/,
+            );
+            await statue.click();
+        }
+        await expect(dialog.locator('[data-unlocked="true"]')).toHaveCount(4);
         await dialog
             .getByRole('button', {
                 name: 'Lanayru Gorge Statue Unlock',
@@ -251,6 +267,9 @@ test.describe('tracker with simulated Archipelago server', () => {
             animations: 'disabled',
         });
         await page.getByRole('button', { name: 'Close', exact: true }).click();
+        await expect(
+            page.getByRole('button', { name: 'Bird Statues 4/28' }),
+        ).toBeVisible();
         expect(errors).toEqual([]);
     });
 
