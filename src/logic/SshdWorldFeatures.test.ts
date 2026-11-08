@@ -103,6 +103,90 @@ function stateWith(overrides: Partial<TypedOptions> = {}) {
     return store.getState();
 }
 
+describe('SSHD post-Fire-Dragon pots', () => {
+    it.each([
+        { area: 'Bokoblin Base Summit', first: 1, last: 12, neighbor: 13 },
+        {
+            area: 'Bokoblin Base Upper Eldin Cave',
+            first: 13,
+            last: 24,
+            neighbor: 12,
+        },
+        { area: 'Bokoblin Base Prison', first: 19, last: 30, neighbor: 18 },
+    ])(
+        'gates only the post-reward pots in $area',
+        ({ area, first, last, neighbor }) => {
+            const inventory = {
+                Loftwing: 1,
+                Sailcloth: 1,
+                'Ruby Tablet': 1,
+                'Progressive Mitts': 2,
+                Clawshots: 1,
+                Whip: 1,
+                'Bomb Bag': 1,
+                'Progressive Slingshot': 1,
+                'Progressive Sword': 2,
+            };
+            const scenarios: {
+                items: Record<string, number>;
+                accessible: boolean;
+            }[] = [
+                { items: {}, accessible: false },
+                { items: { 'Fireshield Earrings': 1 }, accessible: false },
+                { items: { 'Progressive Bow': 1 }, accessible: false },
+                { items: { 'Progressive Beetle': 1 }, accessible: false },
+                {
+                    items: { 'Fireshield Earrings': 1, 'Progressive Bow': 1 },
+                    accessible: true,
+                },
+                {
+                    items: {
+                        'Fireshield Earrings': 1,
+                        'Progressive Beetle': 1,
+                    },
+                    accessible: true,
+                },
+            ];
+            for (const optimized of [false, true]) {
+                for (const { items, accessible } of scenarios) {
+                    const access = reachable(
+                        { ...inventory, ...items },
+                        {},
+                        [],
+                        optimized,
+                    );
+                    const scenario = `${area}, optimized=${optimized}, ${JSON.stringify(items)}`;
+                    expect(access('\\Beaten Boko Base'), scenario).toBe(
+                        accessible,
+                    );
+                    expect(
+                        access(
+                            "\\Eldin\\Fire Dragon's Lair\\Bokoblin Base - Fire Dragon's Reward",
+                        ),
+                    ).toBe(accessible);
+                    for (let number = first; number <= last; number++) {
+                        expect(
+                            access(`\\Eldin\\${area}\\${area} - Pot ${number}`),
+                        ).toBe(accessible);
+                    }
+                }
+            }
+            expect(
+                raw.areas.sub_areas.Eldin.sub_areas[area].locations![
+                    `${area} - Pot ${neighbor}`
+                ],
+            ).toBe('True');
+            const firstRoom =
+                raw.areas.sub_areas.Eldin.sub_areas['Volcano First Room'];
+            for (const number of [3, 4, 5]) {
+                expect(
+                    firstRoom.locations![`Volcano First Room - Pot ${number}`],
+                ).toBe('True');
+            }
+        },
+    );
+});
+
 describe('SSHD bird statues and goddess chest options', () => {
     it('maps every statue check to an existing region and inventory item', () => {
         const resolve = buildSshdApLocationResolver(logic);

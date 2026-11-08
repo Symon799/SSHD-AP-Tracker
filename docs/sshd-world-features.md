@@ -66,6 +66,27 @@ previously supported sanity locations as well; an older checkout is insufficient
 
 ## Verification
 
+### Post-Fire-Dragon Pots
+
+As approved by Wesley, the tracker adds `\Beaten Boko Base` to the requirements
+of Bokoblin Base Summit pots 1-12, Upper Eldin Cave pots 13-24, and Prison pots
+19-30. This existing logic event requires access to the Fire Dragon's Lair and
+a Bow or Beetle, and already gates the Fire Dragon's Reward. It models the
+ability to complete the sequence, not a manually checked reward or a received
+Song of the Hero item.
+
+`applyBokoblinBasePotRequirements` in `scripts/sshdWorldFeatures.mjs` preserves
+any upstream physical requirements while adding the event during generation.
+The bundled dump includes the same correction. Neighboring pots and Volcano
+First Room pots 3-5 remain unchanged. This is a tracker-side correction; the
+APWorld needs the equivalent update to keep Universal Tracker in agreement.
+
+Tests cover all 36 pots before and after the sequence becomes logically
+possible, both Bow and Beetle alternatives, and optimized/unoptimized logic.
+Generator tests verify the exact scope and preservation of existing conditions.
+
+### Bird Statues and Goddess Chests
+
 `src/logic/SshdWorldFeatures.test.ts` covers mappings, counts, option parsing,
 travel restrictions, starting and received items, cube strikes, checked cube
 persistence, chest activation modes, and optimized logic equivalence.

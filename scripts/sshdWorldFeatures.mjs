@@ -9,6 +9,34 @@ const features = JSON.parse(
 
 const setting = (name, value) => `\\SSHD Setting\\${name} == ${value}`;
 
+/** These pots only exist in the post-Fire-Dragon versions of their rooms. */
+export function applyBokoblinBasePotRequirements(dump) {
+    const completed = '\\Beaten Boko Base';
+    for (const [areaName, first, last] of [
+        ['Bokoblin Base Summit', 1, 12],
+        ['Bokoblin Base Upper Eldin Cave', 13, 24],
+        ['Bokoblin Base Prison', 19, 30],
+    ]) {
+        const area = dump.areas.sub_areas.Eldin.sub_areas[areaName];
+        for (let number = first; number <= last; number++) {
+            const name = `${areaName} - Pot ${number}`;
+            const requirement = area?.locations?.[name];
+            if (
+                requirement === undefined ||
+                !dump.checks[`${area.name}\\${name}`]
+            ) {
+                throw new Error(`Missing post-Fire-Dragon pot: ${name}`);
+            }
+            if (requirement === completed) continue;
+            // Retain any physical access requirements supplied by upstream.
+            area.locations[name] =
+                requirement === 'True'
+                    ? completed
+                    : `(${requirement}) & ${completed}`;
+        }
+    }
+}
+
 /** Add current APWorld features without replacing unrelated baseline logic. */
 export function applySshdWorldFeatures(dump, options) {
     const items = new Set(dump.items);
@@ -94,5 +122,6 @@ export function applySshdWorldFeatures(dump, options) {
         for (const child of Object.values(area.sub_areas)) visit(child);
     };
     visit(dump.areas);
+    applyBokoblinBasePotRequirements(dump);
     dump.items = [...items];
 }
