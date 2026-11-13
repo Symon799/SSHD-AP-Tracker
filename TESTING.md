@@ -36,7 +36,7 @@ ESLint, Prettier, browser tests, and the production build.
 `run-checks.bat` runs `npm run check` from the repository root and keeps the Windows terminal open so
 the output can be reviewed after the command finishes.
 
-The current baseline passes `npm run check`: the SSHD data audit passes, all 150 Vitest tests pass,
+The current baseline passes `npm run check`: the SSHD data audit passes, all 164 Vitest tests pass,
 the Playwright browser tests pass, TypeScript passes, and the production build succeeds.
 
 The broader `npm run lint` command is separate from the functional check so formatting and static
@@ -57,6 +57,12 @@ The first run downloads the Chromium test browser. The current tests verify that
 the local SSHD logic without browser errors, keeps the disconnected connection form editable, connects
 to the simulator, launches the tracker, renders the map, applies checked-location counts, and displays
 the received Progressive Sword progression in its tooltip. They never connect to a real Archipelago server.
+
+Vegetation scenarios also verify collapsed category and patch groups, independent
+blade checks, checked/accessible filters, AP counter updates, virtualized rows,
+and large map counters. The simulator contains the full vegetation dataset.
+See `docs/sshd-vegetation.md` for manual demo instructions, or double-click
+`run-demo.bat` to start an isolated demo website and AP server.
 
 The simulator lives in `tests/e2e/mock-archipelago-server.mjs`. Keep its fixture small and deterministic;
 add a new packet or state only when a browser test needs to cover that behavior.

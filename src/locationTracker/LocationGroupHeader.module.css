@@ -1,7 +1,7 @@
 .locationGroupHeader {
     user-select: none;
     display: flex;
-    flex-flow: row nowrap;
+    flex-flow: row wrap;
     align-items: center;
     gap: 8px;
     font-size: 1.15rem;
@@ -29,6 +29,7 @@
     .name {
         flex: 1 1 auto;
         display: inline-flex;
+        flex-wrap: wrap;
         align-items: baseline;
         gap: 8px;
         position: relative;
@@ -37,10 +38,12 @@
 
     .nameText {
         min-width: 0;
+        overflow-wrap: anywhere;
     }
 
     .nameCounter {
         flex: 0 0 auto;
+        white-space: nowrap;
         font-size: 0.92rem;
         color: color-mix(in srgb, var(--scheme-text) 68%, transparent);
     }
@@ -77,6 +80,8 @@
     .trailingContent {
         flex: 0 0 auto;
         display: inline-flex;
+        flex-wrap: wrap;
+        max-width: 100%;
         align-items: center;
         gap: 5px;
         margin-left: auto;

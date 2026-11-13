@@ -93,6 +93,9 @@ export function Marker({
     const markerStyle: CSSProperties = {
         background: `var(--scheme-${color})`,
     };
+    if (typeof children === 'number' && String(children).length > 2) {
+        markerStyle.fontSize = `clamp(6px, calc((var(--map-marker-size) - 6px) / ${String(children).length * 0.65}), 22px)`;
+    }
 
     if (selected) {
         const selectedColor = '#ffffff';

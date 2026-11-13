@@ -1,5 +1,9 @@
 import http from 'node:http';
 import { WebSocketServer } from 'ws';
+import {
+    vegetationFixture,
+    vegetationLocations,
+} from './vegetation-fixture.mjs';
 
 const port = Number(process.env.MOCK_AP_PORT ?? 38281);
 const game = 'Skyward Sword HD';
@@ -18,13 +22,14 @@ const loftwingScenarios = {
 };
 
 const gamePackage = {
-    checksum: 'sshd-e2e-fixture-v3',
+    checksum: 'sshd-e2e-fixture-v4',
     item_name_to_id: {
         'Progressive Sword': progressiveSwordId,
         'Sealed Grounds Statue Unlock': statueUnlockId,
         'Progressive Loftwing': progressiveLoftwingId,
     },
     location_name_to_id: {
+        ...vegetationLocations,
         "Knight Academy - Fledge's Gift": checkedLocationId,
         'Knight Academy - Item from Cawlin': secondLocationId,
         'Upper Skyloft - Ring Knight Academy Bell': thirdLocationId,
@@ -81,6 +86,7 @@ const webSocketServer = new WebSocketServer({ server });
 webSocketServer.on('connection', (socket) => {
     let featureMode = false;
     let loftwingMode;
+    let vegetation;
     let authenticated = false;
     let itemsSent = false;
     send(socket, roomInfo);
@@ -92,6 +98,7 @@ webSocketServer.on('connection', (socket) => {
             if (packet.cmd === 'Connect') {
                 featureMode = packet.name === 'Feature Player';
                 loftwingMode = loftwingScenarios[packet.name];
+                vegetation = vegetationFixture(packet.name);
                 authenticated = true;
                 send(socket, {
                     cmd: 'Connected',
@@ -115,37 +122,63 @@ webSocketServer.on('connection', (socket) => {
                         secondLocationId,
                         thirdLocationId,
                         ...(featureMode ? featureLocationIds : []),
+                        ...(vegetation?.ids ?? []),
+                    ].filter((id) => !vegetation?.checked.includes(id)),
+                    checked_locations: vegetation?.checked ?? [
+                        checkedLocationId,
                     ],
-                    checked_locations: [checkedLocationId],
-                    slot_data: featureMode
+                    slot_data: vegetation
                         ? {
                               ...slotData,
-                              option_bird_statues_give_items: 1,
-                              option_bird_statues_need_unlock: 1,
-                              option_decouple_goddess_cubes_and_chests: 1,
-                              option_goddess_chest_unlock: 2,
+                              option_grass_shuffle:
+                                  vegetation.mode === 'bundles' ? 1 : 2,
+                              option_tree_shuffle: 1,
                               option_custom_starting_items: {
-                                  'Deep Woods Statue Unlock': 1,
+                                  'Progressive Sword': 1,
+                                  'Emerald Tablet': 1,
+                                  'Ruby Tablet': 1,
+                                  'Amber Tablet': 1,
                               },
                               location_to_item_map: {
                                   ...slotData.location_to_item_map,
                                   ...Object.fromEntries(
-                                      featureLocationIds.map((id) => [
+                                      vegetation.ids.map((id) => [
                                           id,
                                           progressiveSwordId,
                                       ]),
                                   ),
                               },
                           }
-                        : loftwingMode
+                        : featureMode
                           ? {
                                 ...slotData,
-                                option_randomize_loftwing: loftwingMode.start,
-                                option_custom_starting_items: loftwingMode.start
-                                    ? { 'Progressive Loftwing': 1 }
-                                    : {},
+                                option_bird_statues_give_items: 1,
+                                option_bird_statues_need_unlock: 1,
+                                option_decouple_goddess_cubes_and_chests: 1,
+                                option_goddess_chest_unlock: 2,
+                                option_custom_starting_items: {
+                                    'Deep Woods Statue Unlock': 1,
+                                },
+                                location_to_item_map: {
+                                    ...slotData.location_to_item_map,
+                                    ...Object.fromEntries(
+                                        featureLocationIds.map((id) => [
+                                            id,
+                                            progressiveSwordId,
+                                        ]),
+                                    ),
+                                },
                             }
-                          : slotData,
+                          : loftwingMode
+                            ? {
+                                  ...slotData,
+                                  option_randomize_loftwing: loftwingMode.start,
+                                  option_custom_starting_items:
+                                      loftwingMode.start
+                                          ? { 'Progressive Loftwing': 1 }
+                                          : {},
+                              }
+                            : slotData,
                     slot_info: {
                         1: {
                             name: packet.name,
@@ -206,6 +239,21 @@ webSocketServer.on('connection', (socket) => {
                         },
                     ],
                 });
+            } else if (
+                packet.cmd === 'Say' &&
+                vegetation &&
+                packet.text === '!demo-check'
+            ) {
+                const id = vegetation.centralGrassIds.find(
+                    (candidate) => !vegetation.checked.includes(candidate),
+                );
+                if (id !== undefined) {
+                    vegetation.checked.push(id);
+                    send(socket, {
+                        cmd: 'RoomUpdate',
+                        checked_locations: [...vegetation.checked],
+                    });
+                }
             } else if (packet.cmd === 'Get') {
                 send(socket, { cmd: 'Retrieved', keys: {} });
             } else if (packet.cmd === 'LocationScouts') {

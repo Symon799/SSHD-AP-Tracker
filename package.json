@@ -34,6 +34,7 @@
   },
   "scripts": {
     "start": "vite",
+    "demo": "node scripts/startDemo.mjs",
     "build": "vite build",
     "audit:sshdDump": "node ./scripts/auditSshdDump.mjs",
     "serve": "vite preview",

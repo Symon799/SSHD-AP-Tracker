@@ -16,7 +16,7 @@ import {
     areasSelector,
     isCheckBannedSelector,
 } from '../tracker/Selectors';
-import { reset } from '../tracker/Slice';
+import { reset, syncApCheckedChecks } from '../tracker/Slice';
 import { computeLeastFixedPoint, mergeRequirements } from './bitlogic/BitLogic';
 import { getExitRules, getExits } from './Entrances';
 import { birdStatueItems } from './Inventory';
@@ -27,6 +27,7 @@ import { getAdditionalItems } from './Misc';
 import { loadLogic } from './Slice';
 import { getInitialItems } from './TrackerModifications';
 import type { RawLogic } from './UpstreamTypes';
+import { isVegetationType } from './Vegetation';
 
 const raw = load(
     fs.readFileSync('testData/sshd-dump.yaml', 'utf8'),
@@ -102,6 +103,99 @@ function stateWith(overrides: Partial<TypedOptions> = {}) {
     );
     return store.getState();
 }
+
+describe('SSHD vegetation checks', () => {
+    it('maps all vegetation to real regions while sharing only reachability', () => {
+        const counts = { grass: 0, grass_blade: 0, tree: 0 };
+        for (const [id, check] of Object.entries(logic.checks)) {
+            if (!isVegetationType(check.type)) continue;
+            counts[check.type]++;
+            expect(logic.itemBits[id]).toBeDefined();
+            expect(check.area).toBeTruthy();
+            expect(logic.checksByHintRegion[check.area!]).toContain(id);
+        }
+        expect(counts).toEqual({ grass: 854, grass_blade: 12579, tree: 91 });
+        expect(logic.numRequirements).toBeLessThan(6000);
+    });
+
+    it.each([
+        { grass: 0, tree: 0, counts: { grass: 0, grass_blade: 0, tree: 0 } },
+        { grass: 1, tree: 0, counts: { grass: 854, grass_blade: 0, tree: 0 } },
+        {
+            grass: 2,
+            tree: 1,
+            counts: { grass: 0, grass_blade: 12579, tree: 91 },
+        },
+        { grass: 0, tree: 1, counts: { grass: 0, grass_blade: 0, tree: 91 } },
+    ])(
+        'counts only the selected AP modes: grass=$grass, tree=$tree',
+        ({ grass, tree, counts }) => {
+            const settings = optionIndicesToOptions(options, {
+                option_grass_shuffle: grass,
+                option_tree_shuffle: tree,
+            });
+            const state = stateWith(settings);
+            const actual = { grass: 0, grass_blade: 0, tree: 0 };
+            for (const id of apCountedCheckIdsSelector(state)) {
+                const type = logic.checks[id].type;
+                if (isVegetationType(type)) actual[type]++;
+            }
+            expect(actual).toEqual(counts);
+        },
+    );
+
+    it('keeps grass cutting alternatives separate from tree requirements', () => {
+        const base = { Loftwing: 1, Sailcloth: 1 };
+        const grass =
+            '\\Skyloft\\Central Skyloft\\Central Skyloft - Grass Patch 1';
+        const blade = `${grass} - Blade 1`;
+        const tree = '\\Skyloft\\Central Skyloft\\Central Skyloft - Tree 1';
+        for (const optimized of [false, true]) {
+            expect(reachable(base, {}, [], optimized)(grass)).toBe(false);
+            expect(
+                reachable({ ...base, Whip: 1 }, {}, [], optimized)(grass),
+            ).toBe(true);
+            expect(
+                reachable({ ...base, Whip: 1 }, {}, [], optimized)(blade),
+            ).toBe(true);
+            expect(
+                reachable({ ...base, Whip: 1 }, {}, [], optimized)(tree),
+            ).toBe(false);
+            expect(
+                reachable({ ...base, 'Bomb Bag': 1 }, {}, [], optimized)(tree),
+            ).toBe(true);
+        }
+    });
+
+    it('synchronizes blades independently even when their access is shared', () => {
+        const store = createStore();
+        store.dispatch(
+            loadLogic({
+                logic: raw,
+                options,
+                presets: {},
+                remote: { type: 'localSshd' },
+                remoteName: 'SSHD',
+            }),
+        );
+        store.dispatch(
+            reset({
+                settings: {
+                    ...defaultSettings(options),
+                    'grass-shuffle': 'blades',
+                },
+            }),
+        );
+        const first =
+            '\\Skyloft\\Central Skyloft\\Central Skyloft - Grass Patch 1 - Blade 1';
+        const second =
+            '\\Skyloft\\Central Skyloft\\Central Skyloft - Grass Patch 1 - Blade 2';
+        expect(logic.itemBits[first]).toBe(logic.itemBits[second]);
+        store.dispatch(syncApCheckedChecks([first]));
+        expect(store.getState().tracker.checkedChecks).toEqual([first]);
+        expect(store.getState().tracker.checkedChecks).not.toContain(second);
+    });
+});
 
 describe('SSHD post-Fire-Dragon pots', () => {
     it.each([

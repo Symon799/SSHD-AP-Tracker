@@ -3301,3 +3301,22 @@
     You will not start with any extra Bird Statues unlocked. Only applies when Bird Statues Need to
     be Unlocked is on. You start with one Bird Statue unlocked in each of Faron, Eldin and Lanayru,
     and those unlock items are removed from the item pool.
+- name: Grass Shuffle
+  command: grass-shuffle
+  type: singlechoice
+  choices:
+    - 'off'
+    - bundles
+    - blades
+  bits: 2
+  default: 'off'
+  help: One check per patch in bundles mode, or per blade in blades mode.
+- name: Small Tree Shuffle
+  command: tree-shuffle
+  type: singlechoice
+  choices:
+    - 'off'
+    - 'on'
+  bits: 1
+  default: 'off'
+  help: Cut small trees and bamboo for randomized items.

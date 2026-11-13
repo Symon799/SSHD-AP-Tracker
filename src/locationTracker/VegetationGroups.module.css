@@ -1,0 +1,93 @@
+.groups {
+    display: grid;
+    gap: 6px;
+    margin-inline: 2px;
+}
+
+.groups:not(:empty) {
+    margin-top: 4px;
+}
+
+.group,
+.patch {
+    min-width: 0;
+    border: 1px solid color-mix(in srgb, var(--scheme-text) 13%, transparent);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--scheme-background) 92%, white);
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--scheme-text) 7%, transparent);
+}
+
+.group summary {
+    cursor: pointer;
+    padding: 5px 8px;
+    font-size: 0.84rem;
+    min-height: 30px;
+    box-sizing: border-box;
+    list-style-position: inside;
+    border-radius: 7px;
+}
+
+.group summary:hover {
+    border-color: color-mix(
+        in srgb,
+        var(--scheme-interact) 40%,
+        var(--scheme-text) 13%
+    );
+    background: color-mix(in srgb, var(--scheme-background) 86%, white);
+}
+
+.group summary:focus-visible {
+    outline: 2px solid var(--scheme-interact);
+}
+
+.summaryContent {
+    display: inline-flex;
+    margin-left: 4px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    max-width: calc(100% - 22px);
+    vertical-align: middle;
+}
+
+.summaryContent > span:first-child {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.counts {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 4px 10px;
+    font-variant-numeric: tabular-nums;
+    max-width: 100%;
+    font-size: 0.79rem;
+    color: color-mix(in srgb, var(--scheme-text) 65%, transparent);
+}
+
+.accessible {
+    color: var(--scheme-inLogic);
+}
+
+.patch {
+    margin: 4px 4px 4px 12px;
+    min-width: 0;
+}
+
+.row {
+    display: grid;
+    gap: 4px;
+    padding: 2px 4px;
+    box-sizing: border-box;
+}
+
+.row > .cell {
+    min-height: 30px;
+    margin: 0;
+}
+
+.group[open] > summary {
+    margin-bottom: 4px;
+}

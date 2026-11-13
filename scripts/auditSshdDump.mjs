@@ -36,6 +36,8 @@ const requiredOptions = [
     'pot-shuffle',
     'pumpkin-shuffle',
     'barrel-shuffle',
+    'grass-shuffle',
+    'tree-shuffle',
     'bird-statues-give-items',
     'bird-statues-need-unlock',
     'start-with-region-bird-statues',
@@ -64,3 +66,6 @@ console.log(
     `Sanity checks: ${counts.pots} pots, ${counts.pumpkins} pumpkins, ${counts.barrels} barrels`,
 );
 console.log(`Option definitions: ${options.length}`);
+console.log(
+    `Vegetation: ${checks.filter(([, check]) => check.type === 'Grass, Custom Flag').length} patches, ${checks.filter(([, check]) => check.type === 'Grass Blade, Custom Flag').length} blades, ${checks.filter(([, check]) => check.type === 'Trees, Custom Flag').length} trees`,
+);

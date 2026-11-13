@@ -46,6 +46,7 @@ import {
     dungeonCompletionItems,
     goddessChestCheckToCubeCheck,
 } from '../logic/TrackerModifications';
+import { isVegetationEnabled } from '../logic/Vegetation';
 import {
     computeLeastFixedPoint,
     mergeRequirements,
@@ -170,7 +171,7 @@ export const rawItemCountSelector = currySelector(
         inventorySelector(state)[item] ?? 0,
 );
 
-const checkedChecksSelector = createSelector(
+export const checkedChecksSelector = createSelector(
     [(state: RootState) => state.tracker.checkedChecks],
     (checkedChecks) => new Set(checkedChecks),
 );
@@ -567,6 +568,7 @@ export const isCheckBannedSelector = createSelector(
                     ? undergroundRupeesExcluded
                     : freestandingRupeesExcluded);
             return (
+                !isVegetationEnabled(check.type, allSettings) ||
                 bannedChecks.has(check.name) ||
                 areaNonprogress(logic.checks[checkId].area!) ||
                 isExcessRelic(check) ||
@@ -705,6 +707,7 @@ const isCheckCountedByApSelector = createSelector(
                     ? undergroundRupeesExcluded
                     : freestandingRupeesExcluded);
             return !(
+                !isVegetationEnabled(check.type, allSettings) ||
                 bannedChecks.has(check.name) ||
                 isExcessRelic(check) ||
                 rupeeExcluded ||

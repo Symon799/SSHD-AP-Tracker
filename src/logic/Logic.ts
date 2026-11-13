@@ -32,6 +32,7 @@ import type {
     RawLogic,
     TimeOfDayInt,
 } from './UpstreamTypes';
+import { vegetationAccessAliases } from './Vegetation';
 
 export interface Logic {
     numRequirements: number;
@@ -78,6 +79,9 @@ export interface LogicalCheck {
         | 'pumpkin'
         | 'barrel'
         | 'bird_statue'
+        | 'grass'
+        | 'grass_blade'
+        | 'tree'
         | 'tr_cube'
         | 'tr_dummy';
     name: string;
@@ -119,6 +123,9 @@ export function isRegularItemCheck(type: LogicalCheck['type']) {
         case 'pumpkin':
         case 'barrel':
         case 'bird_statue':
+        case 'grass':
+        case 'grass_blade':
+        case 'tree':
             return true;
         case 'loose_crystal':
         case 'gossip_stone':
@@ -437,7 +444,10 @@ export function parseLogic(raw: RawLogic): Logic {
             .filter((entry): entry is [string, string] => Boolean(entry)),
     );
 
-    const { newItems, impliedBy, implies } = preprocessItems(raw.items);
+    const sharedAccess = vegetationAccessAliases(raw);
+    const { newItems, impliedBy, implies } = preprocessItems(
+        raw.items.filter((id) => !sharedAccess[id]),
+    );
     const rawItems = [
         ...newItems,
         ...Object.keys(supportedCubeCollectedToCubeCheck),
@@ -532,6 +542,9 @@ export function parseLogic(raw: RawLogic): Logic {
     for (const rawItem of rawItems) {
         itemBits[rawItem] = idx;
         idx++;
+    }
+    for (const [alias, representative] of Object.entries(sharedAccess)) {
+        itemBits[alias] = itemBits[representative];
     }
 
     const dummyDayBit = itemBits['Day'];
@@ -1024,6 +1037,9 @@ export function parseLogic(raw: RawLogic): Logic {
         acc[val] = idx;
         return acc;
     }, {});
+    for (const [alias, representative] of Object.entries(sharedAccess)) {
+        itemLookup[alias] = itemLookup[representative];
+    }
 
     // Now map our area graph to BitLogic
     const newBuilder = new LogicBuilder(
@@ -1031,7 +1047,7 @@ export function parseLogic(raw: RawLogic): Logic {
         itemLookup,
         staticRequirements,
     );
-    mapAreaToBitLogic(newBuilder, areaGraph, opaqueItems);
+    mapAreaToBitLogic(newBuilder, areaGraph, opaqueItems, sharedAccess);
     // Universal Tracker treats a goddess chest as available as soon as the
     // corresponding cube strike is reachable in logic.
     for (const [cubeCollectedItem, cubeCheck] of Object.entries(
@@ -1068,11 +1084,11 @@ export function parseLogic(raw: RawLogic): Logic {
     const dungeonOrder: readonly string[] = dungeonNames;
 
     const rawCheckOrder = Object.keys(raw.checks);
+    const checkOrder = new Map(rawCheckOrder.map((id, index) => [id, index]));
     for (const area of Object.keys(checksByHintRegion)) {
         checksByHintRegion[area].sort(
             compareBy((check) => {
-                const idx = rawCheckOrder.indexOf(check);
-                return idx !== -1 ? idx : Number.MAX_SAFE_INTEGER;
+                return checkOrder.get(check) ?? Number.MAX_SAFE_INTEGER;
             }),
         );
     }
@@ -1081,8 +1097,8 @@ export function parseLogic(raw: RawLogic): Logic {
     areas.sort(
         chainComparators(
             compareBy((area) => dungeonOrder.indexOf(area)),
-            compareBy((area) =>
-                rawCheckOrder.indexOf(checksByHintRegion[area][0]),
+            compareBy(
+                (area) => checkOrder.get(checksByHintRegion[area][0]) ?? -1,
             ),
         ),
     );
@@ -1140,10 +1156,11 @@ function mapAreaToBitLogic(
     b: LogicBuilder,
     areaGraph: AreaGraph,
     opaqueItems: BitVector,
+    sharedAccess: Record<string, string>,
     area = areaGraph.rootArea,
 ) {
     for (const subArea of Object.values(area.subAreas)) {
-        mapAreaToBitLogic(b, areaGraph, opaqueItems, subArea);
+        mapAreaToBitLogic(b, areaGraph, opaqueItems, sharedAccess, subArea);
     }
 
     if (area.canSleep) {
@@ -1168,6 +1185,8 @@ function mapAreaToBitLogic(
             case 'mapExit':
                 {
                     const locName = location.id;
+                    if (location.type === 'check' && sharedAccess[locName])
+                        break;
                     // Hack: We keep these virtual locations opaque...
                     if (
                         !locName.endsWith('Gratitude Crystals') &&
@@ -1363,6 +1382,12 @@ function getCheckType(
         return 'barrel';
     } else if (checkType.includes('Bird Statues')) {
         return 'bird_statue';
+    } else if (checkType.includes('Grass Blade')) {
+        return 'grass_blade';
+    } else if (checkType.includes('Grass')) {
+        return 'grass';
+    } else if (checkType.includes('Trees')) {
+        return 'tree';
     } else {
         return 'regular';
     }

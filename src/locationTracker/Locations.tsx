@@ -2,9 +2,12 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import type { TrackerLocationFilter } from '../LocalStorage';
 import type { HintRegion } from '../logic/Locations';
+import { logicSelector } from '../logic/Selectors';
+import { isVegetationType } from '../logic/Vegetation';
 import type { RootState } from '../store/Store';
 import { checkSelector, OTHERS_HINT_REGION } from '../tracker/Selectors';
 import LocationGroup from './LocationGroup';
+import VegetationGroups from './VegetationGroups';
 
 export function Locations({
     compact,
@@ -34,7 +37,12 @@ export function Locations({
         };
 
         return {
-            primary: hintRegion.checks.list.filter(matchesFilter),
+            primary: hintRegion.checks.list.filter(
+                (id) =>
+                    !isVegetationType(
+                        logicSelector(state).checks[id]?.type ?? '',
+                    ) && matchesFilter(id),
+            ),
             extras: Object.fromEntries(
                 (['tr_cube', 'gossip_stone', 'exits'] as const).map((type) => [
                     type,
@@ -55,6 +63,15 @@ export function Locations({
                 onChooseEntrance={onChooseEntrance}
                 onGoToEntrance={onGoToEntrance}
                 locations={filteredChecks.primary}
+            />
+            <VegetationGroups
+                key={hintRegion.name}
+                viewKey={hintRegion.name}
+                wide={wide}
+                locations={hintRegion.checks.list}
+                filter={filter}
+                onChooseEntrance={onChooseEntrance}
+                onGoToEntrance={onGoToEntrance}
             />
             {(['tr_cube', 'gossip_stone', 'exits'] as const).map(
                 (type) =>

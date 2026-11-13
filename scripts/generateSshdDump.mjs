@@ -1,6 +1,7 @@
 import yaml from 'js-yaml';
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { applySshdWorldFeatures } from './sshdWorldFeatures.mjs';
 
 const [
@@ -494,6 +495,53 @@ function addSkyTravelRequirements(area, targetAreaName, requirement) {
     return `${terms.join(' and ')} and (${String(requirement)})`;
 }
 
+/** Read only vegetation additions, preserving the tracker's existing world graph. */
+export function readSshdVegetation(randoRoot, apworldPath) {
+    const worldAreas = loadWorldAreas(randoRoot);
+    const macros = loadMacros(randoRoot);
+    const { itemAliasByToken } = loadItems(randoRoot);
+    const areaIdsByName = new Map();
+    for (const area of worldAreas) {
+        const ids = areaIdsByName.get(area.name) ?? [];
+        ids.push(makeFullAreaName(area.worldName, area.name));
+        areaIdsByName.set(area.name, ids);
+    }
+    const convert = makeRequirementConverter({
+        macroNamesByToken: new Map(
+            Object.keys(macros).map((name) => [normalizeToken(name), name]),
+        ),
+        itemAliasByToken,
+        eventAliasesByToken: buildEventAliases(worldAreas),
+        areaIdsByName,
+        settingsByName: loadSettings(randoRoot),
+    });
+    const accesses = buildLocationAccesses(worldAreas);
+    return parseApworldLocations(apworldPath)
+        .filter((location) =>
+            location.types.some((type) =>
+                ['Grass', 'Grass Blade', 'Trees'].includes(type),
+            ),
+        )
+        .map((location) => {
+            const paths = accesses.get(location.name);
+            if (!paths?.length)
+                throw new Error(`Missing vegetation access: ${location.name}`);
+            const primary = paths[0].area;
+            return {
+                id: makeCheckId(
+                    makeFullAreaName(primary.worldName, primary.name),
+                    location.name,
+                ),
+                name: location.name,
+                type: getLocationType(location.types),
+                accesses: paths.map(({ area, requirement }) => ({
+                    area: makeFullAreaName(area.worldName, area.name),
+                    requirement: convert(requirement),
+                })),
+            };
+        });
+}
+
 function buildSshdDump() {
     const apworldLocations = parseApworldLocations(sshdApworldLocationsPath);
     const apworldLocationsByName = new Map(
@@ -607,9 +655,8 @@ function buildSshdDump() {
             if (!data) {
                 continue;
             }
-            const [sourceName, targetName, ...extra] = data.connection.split(
-                ' -> ',
-            );
+            const [sourceName, targetName, ...extra] =
+                data.connection.split(' -> ');
             if (!sourceName || !targetName || extra.length > 0) {
                 throw new Error(
                     `Invalid entrance connection: ${data.connection}`,
@@ -650,8 +697,7 @@ function buildSshdDump() {
                 alias: data.alias ?? data.connection,
                 canStartAt: data.can_start_at ?? true,
                 stage:
-                    data.exit_infos?.[0]?.stage ??
-                    data.spawn_info?.[0]?.stage,
+                    data.exit_infos?.[0]?.stage ?? data.spawn_info?.[0]?.stage,
                 doorCoupleTag: entry.door_couple_tag,
                 conditionalVanillaConnections:
                     data.conditional_vanilla_connections ?? [],
@@ -808,8 +854,9 @@ function buildSshdDump() {
         for (const direction of shuffleDirectionsByTargetArea.get(area) ?? []) {
             rawArea.entrances.push(direction.entranceName);
         }
-        for (const direction of
-            conditionalVanillaDirectionsByTargetArea.get(area) ?? []) {
+        for (const direction of conditionalVanillaDirectionsByTargetArea.get(
+            area,
+        ) ?? []) {
             rawArea.entrances.push(direction.entranceName);
         }
 
@@ -825,15 +872,13 @@ function buildSshdDump() {
                 `${area.name} -> ${exitName}`,
             );
             if (shuffleDirection) {
-                rawArea.exits[shuffleDirection.exitId] = convertRequirement(
-                    adjustedRequirement,
-                );
+                rawArea.exits[shuffleDirection.exitId] =
+                    convertRequirement(adjustedRequirement);
                 continue;
             }
-            const conditionalDirection =
-                conditionalVanillaByConnection.get(
-                    `${area.name} -> ${exitName}`,
-                );
+            const conditionalDirection = conditionalVanillaByConnection.get(
+                `${area.name} -> ${exitName}`,
+            );
             if (conditionalDirection) {
                 rawArea.exits[conditionalDirection.exitId] =
                     convertRequirement(adjustedRequirement);
@@ -1005,9 +1050,8 @@ function buildSshdDump() {
         rawExits[direction.exitId] = {
             type: 'exit',
             allowed_time_of_day:
-                timeOfDay[
-                    direction.sourceArea.allowed_time_of_day ?? 'All'
-                ] ?? timeOfDay.All,
+                timeOfDay[direction.sourceArea.allowed_time_of_day ?? 'All'] ??
+                timeOfDay.All,
             stage: direction.stage,
             short_name: direction.alias,
             vanilla: direction.entranceId,
@@ -1016,9 +1060,8 @@ function buildSshdDump() {
             type: 'entrance',
             'can-start-at': direction.canStartAt,
             allowed_time_of_day:
-                timeOfDay[
-                    direction.targetArea.allowed_time_of_day ?? 'All'
-                ] ?? timeOfDay.All,
+                timeOfDay[direction.targetArea.allowed_time_of_day ?? 'All'] ??
+                timeOfDay.All,
             subtype:
                 direction.type === 'Bird Statue'
                     ? 'bird-statue-entrance'
@@ -1041,9 +1084,8 @@ function buildSshdDump() {
         rawExits[direction.exitId] = {
             type: 'exit',
             allowed_time_of_day:
-                timeOfDay[
-                    direction.sourceArea.allowed_time_of_day ?? 'All'
-                ] ?? timeOfDay.All,
+                timeOfDay[direction.sourceArea.allowed_time_of_day ?? 'All'] ??
+                timeOfDay.All,
             short_name: `${direction.sourceArea.name} -> ${direction.targetArea.name}`,
             vanilla: direction.entranceId,
         };
@@ -1051,9 +1093,8 @@ function buildSshdDump() {
             type: 'entrance',
             'can-start-at': false,
             allowed_time_of_day:
-                timeOfDay[
-                    direction.targetArea.allowed_time_of_day ?? 'All'
-                ] ?? timeOfDay.All,
+                timeOfDay[direction.targetArea.allowed_time_of_day ?? 'All'] ??
+                timeOfDay.All,
             province: direction.targetArea.worldName,
             short_name: direction.targetArea.name,
         };
@@ -1140,12 +1181,17 @@ function buildSshdOptions() {
     return [...optionsByCommand.values()];
 }
 
-const dump = buildSshdDump();
-const options = buildSshdOptions();
-applySshdWorldFeatures(dump, options);
-fs.writeFileSync(outputPath, yaml.dump(dump, { lineWidth: 100 }));
-fs.writeFileSync(optionsOutputPath, yaml.dump(options, { lineWidth: 100 }));
-console.log(
-    `Wrote ${outputPath} with ${Object.keys(dump.checks).length} checks and ${dump.items.length} items/logic nodes`,
-);
-console.log(`Wrote ${optionsOutputPath} with ${options.length} options`);
+if (
+    process.argv[1] &&
+    import.meta.url === pathToFileURL(process.argv[1]).href
+) {
+    const dump = buildSshdDump();
+    const options = buildSshdOptions();
+    applySshdWorldFeatures(dump, options);
+    fs.writeFileSync(outputPath, yaml.dump(dump, { lineWidth: 100 }));
+    fs.writeFileSync(optionsOutputPath, yaml.dump(options, { lineWidth: 100 }));
+    console.log(
+        `Wrote ${outputPath} with ${Object.keys(dump.checks).length} checks and ${dump.items.length} items/logic nodes`,
+    );
+    console.log(`Wrote ${optionsOutputPath} with ${options.length} options`);
+}

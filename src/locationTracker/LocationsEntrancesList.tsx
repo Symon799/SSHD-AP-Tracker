@@ -20,6 +20,7 @@ import type {
 import EntranceChooser from './EntranceChooser';
 import LocationGroupHeader from './LocationGroupHeader';
 import { Locations } from './Locations';
+import { useRememberedScroll } from './LocationViewState';
 
 export function LocationsEntrancesList({
     includeHeader,
@@ -54,6 +55,9 @@ export function LocationsEntrancesList({
                         unmappedAreaNames.has(activeArea)),
             )) ||
         undefined;
+    const scroll = useRememberedScroll(
+        JSON.stringify(['area', selectedArea?.name, locationFilter]),
+    );
     const onChooseEntrance = (exitId: string) =>
         interfaceDispatch({ type: 'chooseEntrance', exitId });
 
@@ -145,15 +149,29 @@ export function LocationsEntrancesList({
                             />
                         </div>
                     )}
-                    <div style={{ overflow: 'visible auto', flex: '1' }}>
-                        <Locations
-                            compact
-                            filter={locationFilter}
-                            wide={wide}
-                            onChooseEntrance={onChooseEntrance}
-                            onGoToEntrance={onGoToEntrance}
-                            hintRegion={selectedArea}
-                        />
+                    <div
+                        data-testid="location-scroll"
+                        key={JSON.stringify([
+                            selectedArea.name,
+                            locationFilter,
+                        ])}
+                        ref={scroll.viewport}
+                        style={{
+                            overflow: 'visible auto',
+                            flex: '1',
+                            paddingBottom: 8,
+                        }}
+                    >
+                        <div ref={scroll.content}>
+                            <Locations
+                                compact
+                                filter={locationFilter}
+                                wide={wide}
+                                onChooseEntrance={onChooseEntrance}
+                                onGoToEntrance={onGoToEntrance}
+                                hintRegion={selectedArea}
+                            />
+                        </div>
                     </div>
                 </div>
             )}
