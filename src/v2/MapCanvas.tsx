@@ -6,6 +6,7 @@ import {
     type ReactNode,
 } from 'react';
 import { useElementSize } from '../utils/React';
+import { markerDisplayScale, markerMetrics } from './markerSizing';
 import type { MapDocument, MapMarker, MarkerStatus, PackMap } from './pack';
 import styles from './v2.module.css';
 
@@ -357,8 +358,19 @@ export default function MapCanvas({
                             alt={map.name}
                             draggable={false}
                         />
-                        {map.markers.map((marker) =>
-                            states[marker.id] === 'empty' ? null : (
+                        {map.markers.map((marker) => {
+                            const metrics = markerMetrics(
+                                markerDisplayScale(
+                                    measuredWidth,
+                                    measuredHeight,
+                                    zoom,
+                                ),
+                                marker.kind === 'checks'
+                                    ? (counts[marker.id] ??
+                                          marker.checkIds.length)
+                                    : 0,
+                            );
+                            return states[marker.id] === 'empty' ? null : (
                                 <button
                                     type="button"
                                     key={marker.id}
@@ -367,6 +379,10 @@ export default function MapCanvas({
                                         states[marker.id] ?? 'available'
                                     }
                                     data-marker-id={marker.id}
+                                    data-count-visible={
+                                        marker.kind === 'checks' &&
+                                        metrics.showCount
+                                    }
                                     aria-label={marker.label}
                                     onDoubleClick={(event) => {
                                         if (
@@ -409,6 +425,24 @@ export default function MapCanvas({
                                     }
                                     onBlur={onLeave}
                                     style={{
+                                        width: metrics.size,
+                                        height: metrics.size,
+                                        minHeight: metrics.size,
+                                        fontSize:
+                                            marker.kind === 'link'
+                                                ? Math.max(
+                                                      4,
+                                                      metrics.size * 0.45,
+                                                  )
+                                                : metrics.fontSize,
+                                        borderWidth: metrics.size < 18 ? 1 : 2,
+                                        borderRadius:
+                                            marker.kind === 'link'
+                                                ? '50%'
+                                                : Math.min(
+                                                      5,
+                                                      metrics.size * 0.18,
+                                                  ),
                                         left: `${((preview?.id === marker.id ? preview.x : marker.x) / map.width) * 100}%`,
                                         top: `${((preview?.id === marker.id ? preview.y : marker.y) / map.height) * 100}%`,
                                     }}
@@ -434,18 +468,12 @@ export default function MapCanvas({
                                 >
                                     {marker.kind === 'link' ? (
                                         <Icon name="arrow-right" />
-                                    ) : (
-                                        new Intl.NumberFormat('en', {
-                                            notation: 'compact',
-                                            maximumFractionDigits: 0,
-                                        }).format(
-                                            counts[marker.id] ??
-                                                marker.checkIds.length,
-                                        )
-                                    )}
+                                    ) : metrics.showCount ? (
+                                        metrics.label
+                                    ) : null}
                                 </button>
-                            ),
-                        )}
+                            );
+                        })}
                     </div>
                 </div>
             </div>

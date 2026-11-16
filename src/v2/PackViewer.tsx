@@ -28,6 +28,7 @@ import { createV1CheckOrder } from './checkOrder';
 import { mapCheckIds } from './editOperations';
 import { matchPlayerMap } from './locationTracking';
 import MapCanvas, { Icon } from './MapCanvas';
+import MapHoverPanel from './MapHoverPanel';
 import { findMapForChecks } from './mapNavigation';
 import {
     linkDestination,
@@ -272,27 +273,6 @@ export default function PackViewer({
     };
     const hovered = hover?.marker;
     const target = hovered ? destination(hovered) : undefined;
-    const width = Math.min(400, window.innerWidth - 24);
-    const popupLeft = hover
-        ? Math.max(
-              12,
-              Math.min(
-                  window.innerWidth - width - 12,
-                  hover.anchor.right + width + 22 <= window.innerWidth
-                      ? hover.anchor.right + 10
-                      : hover.anchor.left - width - 10,
-              ),
-          )
-        : 0;
-    const popupTop = hover
-        ? Math.max(
-              12,
-              Math.min(
-                  window.innerHeight - Math.min(480, window.innerHeight - 24),
-                  hover.anchor.top,
-              ),
-          )
-        : 0;
     const footer = (
         <footer className={`${styles.footer} ${styles.footerDock}`}>
             <nav
@@ -508,13 +488,11 @@ export default function PackViewer({
             {hover &&
                 hovered &&
                 createPortal(
-                    <section
-                        className={`${styles.app} ${styles.hoverPopup}`}
-                        style={{ left: popupLeft, top: popupTop, width }}
-                        role="dialog"
-                        aria-label={hovered.label}
-                        onPointerEnter={keepOpen}
-                        onPointerLeave={closeSoon}
+                    <MapHoverPanel
+                        anchor={hover.anchor}
+                        label={hovered.label}
+                        onEnter={keepOpen}
+                        onLeave={closeSoon}
                     >
                         {(hovered.kind === 'link' ||
                             hovered.showNameOnHover) && (
@@ -591,7 +569,7 @@ export default function PackViewer({
                                 onEntrances={onEntrances}
                             />
                         ) : null}
-                    </section>,
+                    </MapHoverPanel>,
                     window.document.body,
                 )}
         </div>

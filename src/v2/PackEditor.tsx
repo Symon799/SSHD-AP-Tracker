@@ -18,7 +18,6 @@ import {
     NewPackDialog,
 } from './EditorDialogs';
 import { MapArrivalSettings, MapLinkSettings } from './EntranceBindings';
-import { legacyDocument } from './legacyPack';
 import LocationRuleEditor from './LocationRuleEditor';
 import MapCanvas, { Icon } from './MapCanvas';
 import {
@@ -44,8 +43,10 @@ const newId = () => window.crypto.randomUUID();
 
 export default function PackEditor({
     store,
+    defaultDocument,
 }: {
     store: ReturnType<typeof useMapDocument>;
+    defaultDocument: MapDocument;
 }) {
     const {
         document,
@@ -1134,7 +1135,7 @@ export default function PackEditor({
                 <NewPackDialog
                     onClose={() => setCreation(undefined)}
                     onCreate={(name) => {
-                        const next = legacyDocument(logic);
+                        const next = defaultDocument;
                         commit({
                             ...next,
                             pack: { ...next.pack, id: newId(), name },

@@ -4,6 +4,174 @@ import { load } from 'js-yaml';
 import fs from 'node:fs';
 import path from 'node:path';
 
+// Legacy interaction scenarios retain their original, stable geographic fixture.
+// The bundled-pack scenarios below exercise the actual contributor default.
+test.beforeEach(async ({ page }, info) => {
+    if (info.title.startsWith('V2 bundled')) return;
+    await page.route('**/default-map-pack.zip*', async (route) => {
+        const files = unzipSync(
+            fs.readFileSync('src/v2/data/default-map-pack.zip'),
+        );
+        files['pack.json'] = new Uint8Array(
+            fs.readFileSync('tests/e2e/v2-legacy-pack.json'),
+        );
+        await route.fulfill({
+            body: Buffer.from(zipSync(files)),
+            contentType: 'application/zip',
+        });
+    });
+});
+
+test('V2 bundled pack preserves local edits and becomes the base for New pack', async ({
+    page,
+}) => {
+    await page.goto('/v2/editor');
+    await expect(
+        page.getByRole('button', {
+            name: 'Edit Knight Academy F1',
+            exact: true,
+        }),
+    ).toBeVisible();
+    await page
+        .getByRole('button', { name: 'Edit Skyloft', exact: true })
+        .click();
+    await page.getByLabel('Map name', { exact: true }).fill('My local Skyloft');
+    await expect(
+        page.getByRole('button', {
+            name: 'Edit My local Skyloft',
+            exact: true,
+        }),
+    ).toBeVisible();
+    await expect
+        .poll(async () =>
+            page
+                .getByRole('status')
+                .filter({ hasText: 'Saved locally' })
+                .count(),
+        )
+        .toBeGreaterThan(0);
+    await page.reload();
+    await expect(
+        page.getByRole('button', {
+            name: 'Edit My local Skyloft',
+            exact: true,
+        }),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'New pack', exact: true }).click();
+    await page
+        .getByRole('dialog', { name: 'New map pack' })
+        .getByRole('button', { name: 'Create pack', exact: true })
+        .click();
+    await expect(
+        page.getByRole('button', { name: 'Edit Skyloft', exact: true }),
+    ).toBeVisible();
+    await expect(page.locator('[aria-label="Maps"] > button')).toHaveCount(10);
+});
+
+test('V2 bundled markers shrink with the map, hide crowded labels and recover on zoom', async ({
+    page,
+}) => {
+    await page.setViewportSize({ width: 940, height: 515 });
+    await page.goto('/v2');
+    await page
+        .getByRole('combobox', { name: 'Offline preset' })
+        .selectOption('all-blades');
+    await page.locator('[data-marker-id="to-skyloft"]').click();
+    await expect(
+        page.getByTestId('map-stage').getByRole('img'),
+    ).toHaveAttribute('alt', 'Skyloft');
+    const sizes = () =>
+        page
+            .locator('[data-marker-id]')
+            .evaluateAll((elements) =>
+                elements.map(
+                    (element) => element.getBoundingClientRect().width,
+                ),
+            );
+    const small = await sizes();
+    expect(Math.max(...small)).toBeLessThan(16);
+    expect(Math.min(...small)).toBeGreaterThanOrEqual(7);
+    await expect(
+        page.locator('[data-count-visible="false"]').first(),
+    ).toBeVisible();
+    await page.screenshot({ path: 'test-results/v2-dense-small.png' });
+    await page
+        .getByRole('button', { name: 'Waterfall Cave', exact: true })
+        .click();
+    await expect(
+        page.getByTestId('map-stage').getByRole('img'),
+    ).toHaveAttribute('alt', 'Waterfall Cave');
+    await expect
+        .poll(async () =>
+            Math.abs(Math.max(...(await sizes())) - Math.max(...small)),
+        )
+        .toBeLessThan(0.1);
+    await page.screenshot({
+        path: 'test-results/v2-waterfall-marker-size.png',
+    });
+    await page
+        .getByRole('button', { name: 'Previous map', exact: true })
+        .click();
+    await expect(
+        page.getByTestId('map-stage').getByRole('img'),
+    ).toHaveAttribute('alt', 'Skyloft');
+    for (let n = 0; n < 5; n++)
+        await page
+            .getByRole('button', { name: 'Zoom in', exact: true })
+            .click();
+    await expect.poll(async () => Math.max(...(await sizes()))).toBe(38);
+    await expect(
+        page.locator('[data-count-visible="true"]').first(),
+    ).toBeVisible();
+    await page.screenshot({ path: 'test-results/v2-dense-zoom.png' });
+    for (const [width, height] of [
+        [2560, 1440],
+        [1400, 900],
+        [600, 820],
+    ]) {
+        await page.setViewportSize({ width, height });
+        await page
+            .getByRole('button', { name: 'Fit map', exact: true })
+            .click();
+        await expect(
+            page.getByTestId('map-stage').getByRole('img'),
+        ).toBeVisible();
+        await page.screenshot({ path: `test-results/v2-dense-${width}.png` });
+    }
+});
+
+test('V2 bundled short hovers stay beside the marker and inside the viewport', async ({
+    page,
+}) => {
+    await page.setViewportSize({ width: 1000, height: 600 });
+    await page.goto('/v2');
+    await page
+        .getByRole('combobox', { name: 'Offline preset' })
+        .selectOption('all-blades');
+    await page.locator('[data-marker-id="to-skyloft"]').click();
+    const point = page.locator(
+        '[data-marker-id="17b58630-5094-480c-bd5c-12aff3da1844"]',
+    );
+    await point.hover();
+    const popup = page.getByRole('dialog', {
+        name: 'Multi-check',
+        exact: true,
+    });
+    await expect(popup).toBeVisible();
+    await expect
+        .poll(async () => {
+            const bounds = (await popup.boundingBox())!;
+            const anchor = (await point.boundingBox())!;
+            return Math.abs(
+                bounds.y - Math.min(anchor.y, 600 - bounds.height - 12),
+            );
+        })
+        .toBeLessThan(2);
+    await page.screenshot({ path: 'test-results/v2-short-hover.png' });
+    await popup.hover();
+    await expect(popup.getByRole('button').first()).toBeVisible();
+});
+
 async function connectV2(page: Page, slot = 'Vegetation Player') {
     await page.goto('/v2/connect');
     await expect(

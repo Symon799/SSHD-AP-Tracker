@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector, useStore } from 'react-redux';
 import { Route, Routes } from 'react-router-dom';
 import { DragAndDropContext } from '../dragAndDrop/DragAndDrop';
 import EntranceTracker from '../entranceTracker/EntranceTracker';
 import { loadRemoteLogic } from '../loader/LogicLoader';
-import { isLogicLoadedSelector, logicSelector } from '../logic/Selectors';
+import { isLogicLoadedSelector } from '../logic/Selectors';
 import { loadLogic } from '../logic/Slice';
 import Options from '../options/Options';
 import { defaultSettings } from '../permalink/Settings';
@@ -13,19 +13,16 @@ import { MakeTooltipsAvailable } from '../tooltips/TooltipHooks';
 import { TrackerContents } from '../Tracker';
 import { exitsByIdSelector } from '../tracker/Selectors';
 import { acceptSettings } from '../tracker/Slice';
-import { demoDocument } from './demo';
+import { loadDefaultDocument } from './defaultPack';
 import { useMapDocument } from './documentStore';
-import { legacyDocument } from './legacyPack';
 import OfflinePreview from './OfflinePreview';
+import type { MapDocument } from './pack';
 import PackEditor from './PackEditor';
 import PackViewer from './PackViewer';
 import styles from './v2.module.css';
 
-function Workspace() {
-    const logic = useSelector(logicSelector);
-    const initial = useMemo(() => legacyDocument(logic), [logic]);
-    const previous = useMemo(() => demoDocument(logic).pack, [logic]);
-    const store = useMapDocument(initial, previous);
+function Workspace({ initial }: { initial: MapDocument }) {
+    const store = useMapDocument(initial);
     const [entrancesOpen, setEntrancesOpen] = useState(false);
     const [requestedExit, setRequestedExit] = useState<string>();
     const openEntrances = (exitId?: string) => {
@@ -65,7 +62,12 @@ function Workspace() {
                     />
                     <Route
                         path="editor"
-                        element={<PackEditor store={store} />}
+                        element={
+                            <PackEditor
+                                store={store}
+                                defaultDocument={initial}
+                            />
+                        }
                     />
                     <Route
                         path="*"
@@ -115,6 +117,20 @@ export default function V2App() {
     const dispatch = useAppDispatch();
     const store = useStore<RootState>();
     const [error, setError] = useState('');
+    const [initial, setInitial] = useState<MapDocument>();
+    useEffect(() => {
+        let active = true;
+        loadDefaultDocument()
+            .then((document) => {
+                if (active) setInitial(document);
+            })
+            .catch((cause: unknown) => {
+                if (active) setError(String(cause));
+            });
+        return () => {
+            active = false;
+        };
+    }, []);
     useEffect(() => {
         if (loaded) return;
         let active = true;
@@ -146,11 +162,11 @@ export default function V2App() {
             active = false;
         };
     }, [loaded, dispatch, store]);
-    if (!loaded)
+    if (!loaded || !initial)
         return (
             <div className={styles.app}>
                 <p role="status">{error || 'Loading SSHD catalogue…'}</p>
             </div>
         );
-    return <Workspace />;
+    return <Workspace initial={initial} />;
 }

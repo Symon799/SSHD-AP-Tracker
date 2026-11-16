@@ -129,7 +129,7 @@ export function NewPackDialog({
                 }}
             >
                 <p className={styles.dialogDescription}>
-                    This will replace the current pack with the default V1
+                    This will replace the current pack with the latest default
                     layout, including its maps and check groups. No map image is
                     needed.
                 </p>
