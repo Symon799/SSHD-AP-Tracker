@@ -16,6 +16,7 @@ import { acceptSettings } from '../tracker/Slice';
 import { demoDocument } from './demo';
 import { useMapDocument } from './documentStore';
 import { legacyDocument } from './legacyPack';
+import OfflinePreview from './OfflinePreview';
 import PackEditor from './PackEditor';
 import PackViewer from './PackViewer';
 import styles from './v2.module.css';
@@ -69,26 +70,38 @@ function Workspace() {
                     <Route
                         path="*"
                         element={
-                            <>
-                                <TrackerContents
-                                    openTools={() => setEntrancesOpen(true)}
-                                    renderLayout={
-                                        <PackViewer
-                                            document={store.document}
-                                            onEntrances={openEntrances}
-                                            requestedMap={requestedMap}
-                                            notice={notice}
-                                            trackingPaused={entrancesOpen}
+                            <OfflinePreview>
+                                {(presetControl, preview) => (
+                                    <>
+                                        <TrackerContents
+                                            syncArchipelago={!preview}
+                                            openTools={() =>
+                                                setEntrancesOpen(true)
+                                            }
+                                            renderLayout={
+                                                <PackViewer
+                                                    document={store.document}
+                                                    onEntrances={openEntrances}
+                                                    requestedMap={requestedMap}
+                                                    notice={notice}
+                                                    trackingPaused={
+                                                        entrancesOpen
+                                                    }
+                                                    presetControl={
+                                                        presetControl
+                                                    }
+                                                />
+                                            }
                                         />
-                                    }
-                                />
-                                <EntranceTracker
-                                    open={entrancesOpen}
-                                    onOpenChange={setEntrancesOpen}
-                                    onGoToExit={goToExit}
-                                    initialExitId={requestedExit ?? ''}
-                                />
-                            </>
+                                        <EntranceTracker
+                                            open={entrancesOpen}
+                                            onOpenChange={setEntrancesOpen}
+                                            onGoToExit={goToExit}
+                                            initialExitId={requestedExit ?? ''}
+                                        />
+                                    </>
+                                )}
+                            </OfflinePreview>
                         }
                     />
                 </Routes>

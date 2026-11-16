@@ -19,6 +19,28 @@ async function connectV2(page: Page, slot = 'Vegetation Player') {
     await page.getByRole('button', { name: 'Launch New Tracker' }).click();
 }
 
+test('V2 offline presets are isolated from saved settings and hidden for AP sessions', async ({ page }) => {
+    await page.goto('/v2');
+    const presets = page.getByRole('combobox', { name: 'Offline preset' });
+    await expect(presets).toBeVisible();
+    const before = await page.evaluate(() => ({ ...localStorage }));
+    await presets.selectOption('all-blades');
+    await expect(presets).toHaveValue('all-blades');
+    await expect(page.getByText('Remaining', { exact: false }).first()).toBeVisible();
+    await page.screenshot({ path: 'test-results/offline-presets-desktop.png' });
+    await page.setViewportSize({ width: 600, height: 800 });
+    await expect(presets).toBeVisible();
+    await page.screenshot({ path: 'test-results/offline-presets-narrow.png' });
+    await presets.selectOption('saved');
+    const after = await page.evaluate(() => ({ ...localStorage }));
+    for (const key of Object.keys(before).filter((key) => /tracker/i.test(key))) {
+        expect(after[key]).toBe(before[key]);
+    }
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await connectV2(page);
+    await expect(presets).toHaveCount(0);
+});
+
 async function findHoverCheck(
     popup: import('@playwright/test').Locator,
     name: string,

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -88,12 +88,14 @@ export default function PackViewer({
     requestedMap,
     notice,
     trackingPaused = false,
+    presetControl,
 }: {
     document: MapDocument;
     onEntrances: (exitId?: string) => void;
     requestedMap?: { id: string };
     notice?: string;
     trackingPaused?: boolean;
+    presetControl?: ReactNode;
 }) {
     const { pack, images } = document;
     const telemetry = useTrackerTelemetry();
@@ -328,6 +330,7 @@ export default function PackViewer({
                 <strong>SSHD Map Tracker</strong>
                 <span className={styles.badge}>V2 Preview</span>
                 <nav>
+                    {presetControl}
                     <span className={styles.packCaption} title={pack.name}>
                         {pack.name}
                     </span>

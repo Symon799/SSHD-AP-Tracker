@@ -119,9 +119,11 @@ function Tracker() {
 export function TrackerContents({
     openTools,
     renderLayout,
+    syncArchipelago = true,
 }: {
     openTools: () => void;
     renderLayout?: React.ReactNode;
+    syncArchipelago?: boolean;
 }) {
     const logic = useSelector(logicSelector);
     const areaGraph = useSelector(areaGraphSelector);
@@ -162,7 +164,7 @@ export function TrackerContents({
 
     // Configure the AP client for auto-tracking
     useEffect(() => {
-        if (clientManager === null) {
+        if (clientManager === null || !syncArchipelago) {
             return;
         }
 
@@ -277,7 +279,13 @@ export function TrackerContents({
                 }
             }
         } */
-    }, [clientManager, dispatch, store, trackerInterfaceDispatch]);
+    }, [
+        clientManager,
+        dispatch,
+        store,
+        trackerInterfaceDispatch,
+        syncArchipelago,
+    ]);
 
     return (
         <>

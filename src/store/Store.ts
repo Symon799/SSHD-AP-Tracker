@@ -7,7 +7,12 @@ import logic from '../logic/Slice';
 import saves, { preloadedSavesState } from '../saves/Slice';
 import tracker, { preloadedTrackerState } from '../tracker/Slice';
 
-export function createStore() {
+export function createStore(preloaded?: {
+    logic: ReturnType<typeof logic>;
+    tracker: ReturnType<typeof tracker>;
+    customization: ReturnType<typeof customization>;
+    saves: ReturnType<typeof saves>;
+}) {
     return configureStore({
         reducer: {
             logic,
@@ -15,7 +20,7 @@ export function createStore() {
             tracker,
             saves,
         },
-        preloadedState: {
+        preloadedState: preloaded ?? {
             customization: preloadedCustomizationState(),
             tracker: preloadedTrackerState(),
             saves: preloadedSavesState(),
