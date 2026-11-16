@@ -2,10 +2,15 @@ import type { OptionValue } from '../permalink/SettingsTypes';
 import type { LogicalCheck } from './Logic';
 import type { RawArea, RawLogic } from './UpstreamTypes';
 
-export type VegetationType = 'grass' | 'grass_blade' | 'tree';
+export type VegetationType = 'grass' | 'grass_blade' | 'tree' | 'sign';
 
 export function isVegetationType(type: string): type is VegetationType {
-    return type === 'grass' || type === 'grass_blade' || type === 'tree';
+    return (
+        type === 'grass' ||
+        type === 'grass_blade' ||
+        type === 'tree' ||
+        type === 'sign'
+    );
 }
 
 export function isVegetationEnabled(
@@ -15,6 +20,7 @@ export function isVegetationEnabled(
     if (type === 'grass') return settings['grass-shuffle'] === 'bundles';
     if (type === 'grass_blade') return settings['grass-shuffle'] === 'blades';
     if (type === 'tree') return settings['tree-shuffle'] === 'on';
+    if (type === 'sign') return settings['sign-shuffle'] === 'on';
     return true;
 }
 
@@ -29,6 +35,7 @@ export function vegetationAccessAliases(raw: RawLogic): Record<string, string> {
                     'Grass, Custom Flag',
                     'Grass Blade, Custom Flag',
                     'Trees, Custom Flag',
+                    'Signs, Custom Flag',
                 ].includes(raw.checks[id]?.type ?? '')
             )
                 continue;

@@ -39,7 +39,7 @@ const processes = [
 console.log(`Demo website: http://127.0.0.1:${appPort}/`);
 console.log(`AP server: localhost:${apPort}`);
 console.log(
-    'Slots: Vegetation Player (bundles + trees), Blade Player (blades + trees). No password.',
+    'Slots: Vegetation Player (bundles + trees + signs), Blade Player (blades + trees + signs). No password.',
 );
 console.log(
     'Send !demo-check in Server & Tools to simulate another checked location.',

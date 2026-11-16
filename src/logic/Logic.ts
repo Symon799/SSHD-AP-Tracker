@@ -82,6 +82,7 @@ export interface LogicalCheck {
         | 'grass'
         | 'grass_blade'
         | 'tree'
+        | 'sign'
         | 'tr_cube'
         | 'tr_dummy';
     name: string;
@@ -126,6 +127,7 @@ export function isRegularItemCheck(type: LogicalCheck['type']) {
         case 'grass':
         case 'grass_blade':
         case 'tree':
+        case 'sign':
             return true;
         case 'loose_crystal':
         case 'gossip_stone':
@@ -1388,6 +1390,8 @@ function getCheckType(
         return 'grass';
     } else if (checkType.includes('Trees')) {
         return 'tree';
+    } else if (checkType.includes('Signs')) {
+        return 'sign';
     } else {
         return 'regular';
     }

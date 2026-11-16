@@ -2,7 +2,7 @@ import yaml from 'js-yaml';
 import fs from 'node:fs';
 import { readSshdVegetation } from './generateSshdDump.mjs';
 
-const [root, apworldPath] = process.argv.slice(2);
+const [root, apworldPath, mode] = process.argv.slice(2);
 if (!root || !apworldPath)
     throw new Error(
         'Usage: node scripts/generateSshdVegetation.mjs <rando-root> <Locations.py>',
@@ -11,7 +11,9 @@ const dumpPath = 'testData/sshd-dump.yaml';
 const optionsPath = 'testData/sshd-options.yaml';
 const dump = yaml.load(fs.readFileSync(dumpPath, 'utf8'));
 const options = yaml.load(fs.readFileSync(optionsPath, 'utf8'));
-const additions = readSshdVegetation(root, apworldPath);
+const additions = readSshdVegetation(root, apworldPath).filter(
+    (entry) => mode !== '--signs-only' || entry.type === 'Signs, Custom Flag',
+);
 const areas = new Map();
 const visit = (area) => {
     areas.set(area.name, area);
@@ -36,6 +38,15 @@ for (const entry of additions) {
     }
 }
 for (const option of [
+    {
+        name: 'Sign Shuffle',
+        command: 'sign-shuffle',
+        type: 'singlechoice',
+        choices: ['off', 'on'],
+        bits: 1,
+        default: 'off',
+        help: 'Cut signs for randomized items.',
+    },
     {
         name: 'Grass Shuffle',
         command: 'grass-shuffle',

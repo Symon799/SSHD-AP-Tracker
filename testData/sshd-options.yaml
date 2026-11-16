@@ -3320,3 +3320,12 @@
   bits: 1
   default: 'off'
   help: Cut small trees and bamboo for randomized items.
+- name: Sign Shuffle
+  command: sign-shuffle
+  type: singlechoice
+  choices:
+    - 'off'
+    - 'on'
+  bits: 1
+  default: 'off'
+  help: Cut signs for randomized items.

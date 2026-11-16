@@ -43,7 +43,7 @@ describe('SSHD generated dump', () => {
         ) as RawLogic;
         const logic = parseLogic(raw);
 
-        expect(Object.keys(raw.checks)).toHaveLength(14974);
+        expect(Object.keys(raw.checks)).toHaveLength(14982);
         expect(
             logic.checks[
                 "\\Skyloft\\Knight Academy\\Knight Academy - Fledge's Gift"

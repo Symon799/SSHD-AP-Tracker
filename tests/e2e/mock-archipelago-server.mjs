@@ -133,6 +133,7 @@ webSocketServer.on('connection', (socket) => {
                               option_grass_shuffle:
                                   vegetation.mode === 'bundles' ? 1 : 2,
                               option_tree_shuffle: 1,
+                              option_sign_shuffle: 1,
                               option_custom_starting_items: {
                                   'Progressive Sword': 1,
                                   'Emerald Tablet': 1,
@@ -242,9 +243,13 @@ webSocketServer.on('connection', (socket) => {
             } else if (
                 packet.cmd === 'Say' &&
                 vegetation &&
-                packet.text === '!demo-check'
+                ['!demo-check', '!demo-sign'].includes(packet.text)
             ) {
-                const id = vegetation.centralGrassIds.find(
+                const candidates =
+                    packet.text === '!demo-sign'
+                        ? vegetation.centralSignIds
+                        : vegetation.centralGrassIds;
+                const id = candidates.find(
                     (candidate) => !vegetation.checked.includes(candidate),
                 );
                 if (id !== undefined) {

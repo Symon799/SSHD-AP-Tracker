@@ -33,6 +33,24 @@ const entries: VegetationEntry[] = [
 ];
 
 describe('vegetation groups', () => {
+    it('keeps signs in their own group with the same filters and counters', () => {
+        const sign: VegetationEntry = {
+            id: 'sign',
+            name: 'Central Skyloft - Sign 1',
+            type: 'sign',
+            checked: false,
+            accessible: true,
+        };
+        const groups = groupVegetation([...entries, sign], 'accessible');
+        expect(groups.map((group) => group.type)).toEqual([
+            'sign',
+            'grass_blade',
+            'tree',
+        ]);
+        expect(groups[0].all).toEqual([sign]);
+        expect(groups[0].visible).toEqual([sign]);
+        expect(groupVegetation([sign], 'checked')[0].visible).toEqual([]);
+    });
     it('groups blades by patch without merging their identities', () => {
         const groups = groupVegetation(entries, 'all');
         expect(groups.map((group) => group.type)).toEqual([

@@ -32,7 +32,7 @@ export function groupVegetation(
     entries: VegetationEntry[],
     filter: TrackerLocationFilter,
 ) {
-    return (['grass', 'grass_blade', 'tree'] as const)
+    return (['sign', 'grass', 'grass_blade', 'tree'] as const)
         .map((type) => {
             const all = entries.filter((entry) => entry.type === type);
             const visible = all.filter(
@@ -260,11 +260,13 @@ function Group({
     const key = JSON.stringify([viewKey, group.type]);
     const [open, setOpen] = useRememberedOpen(key);
     const label =
-        group.type === 'tree'
-            ? 'Trees'
-            : group.type === 'grass_blade'
-              ? 'Grass blades'
-              : 'Grass';
+        group.type === 'sign'
+            ? 'Signs'
+            : group.type === 'tree'
+              ? 'Trees'
+              : group.type === 'grass_blade'
+                ? 'Grass blades'
+                : 'Grass';
     if (!group.visible.length) return null;
     return (
         <details
