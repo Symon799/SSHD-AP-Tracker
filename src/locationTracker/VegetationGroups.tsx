@@ -145,7 +145,7 @@ function VegetationRow({
     );
 }
 
-function VirtualChecks({
+export function VirtualChecks({
     entries,
     wide,
     viewKey,

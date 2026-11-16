@@ -48,6 +48,18 @@
     gap: 12px;
     min-height: 0;
 }
+.toolsSections {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    gap: 12px;
+    overflow: auto;
+    scrollbar-gutter: stable;
+}
+.toolsSections > * {
+    flex-shrink: 0;
+}
 
 .toolsOverviewCard {
     border: 1px solid color-mix(in srgb, var(--scheme-text) 12%, transparent);

@@ -1,2 +1,10 @@
 # Downloaded files can always be collapsed in diffs
 testData/* linguist-generated
+
+# Keep formatter checks consistent in Windows worktrees and Linux CI.
+*.ts text eol=lf
+*.tsx text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+*.mjs text eol=lf
+*.cjs text eol=lf

@@ -17,7 +17,7 @@ export const vegetationLocations = Object.fromEntries(
 
 export function vegetationFixture(slot) {
     const mode =
-        slot === 'Vegetation Player'
+        slot === 'Vegetation Player' || slot === 'Entrance Player'
             ? 'bundles'
             : slot === 'Blade Player'
               ? 'blades'

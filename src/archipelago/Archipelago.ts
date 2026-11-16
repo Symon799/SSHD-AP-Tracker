@@ -673,10 +673,14 @@ function getSlotDataLocationCount(slotData: SlotData): number | undefined {
     return undefined;
 }
 
+import { TrackerTelemetryStore } from './TrackerTelemetry';
+
 const MAX_MESSAGES = 1000;
 const GAME_NAME = 'Skyward Sword HD';
 
 export class APClientManager {
+    readonly trackerTelemetry = new TrackerTelemetryStore();
+    private telemetryEpoch = 0;
     client?: Client;
     loadedSettings?: AllTypedOptions;
     idToLocation?: Record<number, string>;
@@ -1195,6 +1199,8 @@ export class APClientManager {
     }
 
     resetClient() {
+        this.telemetryEpoch++;
+        this.trackerTelemetry.reset();
         if (this.isHooked()) {
             this.client!.socket.disconnect();
             this.client = undefined;
@@ -1279,11 +1285,28 @@ export class APClientManager {
         this.clearApServerExportData();
 
         const client = new Client();
+        const telemetryEpoch = ++this.telemetryEpoch;
+        this.trackerTelemetry.reset();
+        let telemetrySeed = '';
+        client.socket.on('roomInfo', (content) => {
+            telemetrySeed = content.seed_name;
+        });
+        client.socket.on('disconnected', () => {
+            if (telemetryEpoch === this.telemetryEpoch)
+                this.trackerTelemetry.reset();
+        });
         let connectSetupError: unknown;
 
         client.socket.on('connected', (content) => {
             try {
                 this.connectedData = content;
+                if (telemetryEpoch === this.telemetryEpoch)
+                    this.trackerTelemetry.reset({
+                        server,
+                        seed: telemetrySeed,
+                        team: content.team,
+                        slot: content.slot,
+                    });
                 this.hasDeliveredRequiredDungeonsToTracker = false;
                 this.hasDeliveredCheckedLocationsToTracker = false;
                 setStoredArchipelagoServer(server);
@@ -1488,6 +1511,11 @@ export class APClientManager {
         });
 
         client.socket.on('bounced', (content) => {
+            if (
+                telemetryEpoch === this.telemetryEpoch &&
+                content.data?.sshd_tracker !== undefined
+            )
+                this.trackerTelemetry.receive(content.data.sshd_tracker);
             const stage = content.data?.ss_stage_name;
             if (stage !== undefined) {
                 this.changeStage?.(stage as string);

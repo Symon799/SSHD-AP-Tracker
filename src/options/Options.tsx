@@ -36,7 +36,11 @@ import {
 
 const SSHD_REMOTE = { type: 'localSshd' } as const;
 
-export default function Options() {
+export default function Options({
+    trackerPath = '/tracker',
+}: {
+    trackerPath?: string;
+}) {
     const {
         counters,
         dispatch,
@@ -79,7 +83,7 @@ export default function Options() {
                 }
                 appDispatch(acceptSettings({ settings }));
             }
-            navigate('/tracker');
+            navigate(trackerPath);
         },
         [
             appDispatch,
@@ -87,6 +91,7 @@ export default function Options() {
             isClientConnected,
             loaded,
             navigate,
+            trackerPath,
             settings,
             store,
         ],

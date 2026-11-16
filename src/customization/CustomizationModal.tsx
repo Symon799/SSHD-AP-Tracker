@@ -62,9 +62,11 @@ function Setting({
 export default function CustomizationModal({
     open,
     onOpenChange,
+    mapPack = false,
 }: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    mapPack?: boolean;
 }) {
     const dispatch = useAppDispatch();
     const layout = useSelector(itemLayoutSelector);
@@ -84,14 +86,18 @@ export default function CustomizationModal({
             title="Tracker Customization"
             className={styles.modal}
         >
-            <Setting name="Item Tracker Settings">
-                <Select
-                    selectedValue={itemLayouts.find((l) => l.value === layout)}
-                    onValueChange={(e) => e && dispatch(setItemLayout(e))}
-                    options={itemLayouts}
-                    label="Item Layout"
-                />
-            </Setting>
+            {!mapPack && (
+                <Setting name="Item Tracker Settings">
+                    <Select
+                        selectedValue={itemLayouts.find(
+                            (l) => l.value === layout,
+                        )}
+                        onValueChange={(e) => e && dispatch(setItemLayout(e))}
+                        options={itemLayouts}
+                        label="Item Layout"
+                    />
+                </Setting>
+            )}
             <Setting
                 name="Trick Logic"
                 tooltip="Choose whether checks reachable only with tricks should be highlighted in a separate color, and which checks should be shown. An empty tricks list shows all tricks."
@@ -110,20 +116,22 @@ export default function CustomizationModal({
                     "Cannot customize tricks here because logic isn't loaded"
                 )}
             </Setting>
-            <Setting name="Additional Settings">
-                <div className={styles.labeledCheckbox}>
-                    <Checkbox
-                        id="autoRegionChange"
-                        checked={autoRegionLoading}
-                        onCheckedChange={(e) =>
-                            dispatch(setAutoRegionLoading(e))
-                        }
-                    />
-                    <label htmlFor="autoRegionChange">
-                        Automatically follow current region (AP)
-                    </label>
-                </div>
-            </Setting>
+            {!mapPack && (
+                <Setting name="Additional Settings">
+                    <div className={styles.labeledCheckbox}>
+                        <Checkbox
+                            id="autoRegionChange"
+                            checked={autoRegionLoading}
+                            onCheckedChange={(e) =>
+                                dispatch(setAutoRegionLoading(e))
+                            }
+                        />
+                        <label htmlFor="autoRegionChange">
+                            Automatically follow current region (AP)
+                        </label>
+                    </div>
+                </Setting>
+            )}
             <Setting name="Presets">
                 <div className={styles.colorPresets}>
                     {Object.entries(defaultColorSchemes).map(

@@ -5,6 +5,7 @@ declare const classNames: {
     readonly entranceOverlayButton: 'entranceOverlayButton';
     readonly toolsLayout: 'toolsLayout';
     readonly toolsSidebar: 'toolsSidebar';
+    readonly toolsSections: 'toolsSections';
     readonly toolsOverviewCard: 'toolsOverviewCard';
     readonly toolsCard: 'toolsCard';
     readonly toolsTitle: 'toolsTitle';

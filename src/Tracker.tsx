@@ -116,7 +116,13 @@ function Tracker() {
     );
 }
 
-function TrackerContents({ openTools }: { openTools: () => void }) {
+export function TrackerContents({
+    openTools,
+    renderLayout,
+}: {
+    openTools: () => void;
+    renderLayout?: React.ReactNode;
+}) {
     const logic = useSelector(logicSelector);
     const areaGraph = useSelector(areaGraphSelector);
     const exitsById = useSelector(exitsByIdSelector);
@@ -281,27 +287,31 @@ function TrackerContents({ openTools }: { openTools: () => void }) {
             />
             <MapLayoutDebugContextMenu />
             <div className={styles.trackerView}>
-                <TrackerLayout
-                    footerContent={<TrackerFooterNav openTools={openTools} />}
-                    mapOverlayContent={
-                        entranceRandomizerEnabled ? (
-                            <button
-                                type="button"
-                                className={`${styles.entranceOverlayButton} tracker-button`}
-                                onClick={() => setShowEntranceDialog(true)}
-                                aria-label="Open Entrances"
-                                title="Entrances"
-                            >
-                                <i
-                                    className="fas fa-door-open"
-                                    aria-hidden="true"
-                                />
-                            </button>
-                        ) : undefined
-                    }
-                    interfaceDispatch={trackerInterfaceDispatch}
-                    interfaceState={trackerInterfaceState}
-                />
+                {renderLayout ?? (
+                    <TrackerLayout
+                        footerContent={
+                            <TrackerFooterNav openTools={openTools} />
+                        }
+                        mapOverlayContent={
+                            entranceRandomizerEnabled ? (
+                                <button
+                                    type="button"
+                                    className={`${styles.entranceOverlayButton} tracker-button`}
+                                    onClick={() => setShowEntranceDialog(true)}
+                                    aria-label="Open Entrances"
+                                    title="Entrances"
+                                >
+                                    <i
+                                        className="fas fa-door-open"
+                                        aria-hidden="true"
+                                    />
+                                </button>
+                            ) : undefined
+                        }
+                        interfaceDispatch={trackerInterfaceDispatch}
+                        interfaceState={trackerInterfaceState}
+                    />
+                )}
             </div>
             <EntranceTracker
                 open={showEntranceDialog}
@@ -312,12 +322,20 @@ function TrackerContents({ openTools }: { openTools: () => void }) {
     );
 }
 
-function TrackerToolsView({
+export function TrackerToolsView({
     closeTools,
     openCustomization,
+    footerContent,
+    extraContent,
+    scrollableSections = false,
+    showMapLayoutExport = true,
 }: {
-    closeTools: () => void;
+    closeTools?: () => void;
     openCustomization: () => void;
+    footerContent?: React.ReactNode;
+    extraContent?: React.ReactNode;
+    scrollableSections?: boolean;
+    showMapLayoutExport?: boolean;
 }) {
     const dispatch = useDispatch();
     const debugMode = useSelector(debugModeSelector);
@@ -332,91 +350,100 @@ function TrackerToolsView({
         locationTotal > 0
             ? ((counters.numChecked / locationTotal) * 100).toFixed(1)
             : '0.0';
+    const sections = (
+        <>
+            <div className={styles.toolsOverviewCard}>
+                <div className={styles.toolsSection}>
+                    <div className={styles.toolsTitle}>Session</div>
+                    <div className={styles.sessionSummary}>
+                        <div className={styles.sessionLine}>
+                            Checked Locations: {counters.numChecked}
+                        </div>
+                        <div className={styles.sessionLine}>
+                            Accessible Locations: {counters.numAccessible}
+                        </div>
+                        <div className={styles.sessionLine}>
+                            Remaining Locations: {counters.numRemaining}
+                        </div>
+                        <div className={styles.sessionLine}>
+                            Total Locations: {locationTotal}
+                        </div>
+                        <div className={styles.sessionLine}>
+                            Completion: {completionPercent}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div className={styles.toolsCard}>
+                <div className={styles.toolsSection}>
+                    <div className={styles.toolsTitle}>Tools</div>
+                    <div className={styles.toolsButtons}>
+                        <ExportTrackerStateButton />
+                        <ImportTrackerStateButton />
+                        <button
+                            type="button"
+                            className="tracker-button"
+                            onClick={openCustomization}
+                        >
+                            Customization
+                        </button>
+                        {debugMode && (
+                            <>
+                                <ExportUtSnapshotButton />
+                                <ExportApServerDataButton />
+                            </>
+                        )}
+                        {showMapLayoutExport && ENABLE_MAP_LAYOUT_DEBUG && (
+                            <button
+                                type="button"
+                                className="tracker-button"
+                                onClick={downloadLayoutOverrides}
+                            >
+                                Export Map Layout
+                            </button>
+                        )}
+                        <button
+                            type="button"
+                            className={clsx(
+                                'tracker-button',
+                                styles.toolsDebugToggle,
+                            )}
+                            onClick={() => dispatch(setDebugMode(!debugMode))}
+                        >
+                            {debugMode ? 'Debug On' : 'Debug Off'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {debugMode && requiredDungeonDiagnostic && (
+                <div className={styles.toolsCard}>
+                    <div className={styles.toolsSection}>
+                        <div className={styles.toolsTitle}>Debug</div>
+                        <div className={styles.debugStack}>
+                            <div className={styles.debugLine}>
+                                <strong>Required dungeons:</strong>{' '}
+                                {formatRequiredDungeonsDebugSummary(
+                                    requiredDungeonDiagnostic,
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {extraContent}
+        </>
+    );
 
     return (
         <div className={styles.toolsLayout}>
             <div className={styles.toolsSidebar}>
-                <div className={styles.toolsOverviewCard}>
-                    <div className={styles.toolsSection}>
-                        <div className={styles.toolsTitle}>Session</div>
-                        <div className={styles.sessionSummary}>
-                            <div className={styles.sessionLine}>
-                                Checked Locations: {counters.numChecked}
-                            </div>
-                            <div className={styles.sessionLine}>
-                                Accessible Locations: {counters.numAccessible}
-                            </div>
-                            <div className={styles.sessionLine}>
-                                Remaining Locations: {counters.numRemaining}
-                            </div>
-                            <div className={styles.sessionLine}>
-                                Total Locations: {locationTotal}
-                            </div>
-                            <div className={styles.sessionLine}>
-                                Completion: {completionPercent}%
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div className={styles.toolsCard}>
-                    <div className={styles.toolsSection}>
-                        <div className={styles.toolsTitle}>Tools</div>
-                        <div className={styles.toolsButtons}>
-                            <ExportTrackerStateButton />
-                            <ImportTrackerStateButton />
-                            <button
-                                type="button"
-                                className="tracker-button"
-                                onClick={openCustomization}
-                            >
-                                Customization
-                            </button>
-                            {debugMode && (
-                                <>
-                                    <ExportUtSnapshotButton />
-                                    <ExportApServerDataButton />
-                                </>
-                            )}
-                            {ENABLE_MAP_LAYOUT_DEBUG && (
-                                <button
-                                    type="button"
-                                    className="tracker-button"
-                                    onClick={downloadLayoutOverrides}
-                                >
-                                    Export Map Layout
-                                </button>
-                            )}
-                            <button
-                                type="button"
-                                className={clsx(
-                                    'tracker-button',
-                                    styles.toolsDebugToggle,
-                                )}
-                                onClick={() =>
-                                    dispatch(setDebugMode(!debugMode))
-                                }
-                            >
-                                {debugMode ? 'Debug On' : 'Debug Off'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                {debugMode && requiredDungeonDiagnostic && (
-                    <div className={styles.toolsCard}>
-                        <div className={styles.toolsSection}>
-                            <div className={styles.toolsTitle}>Debug</div>
-                            <div className={styles.debugStack}>
-                                <div className={styles.debugLine}>
-                                    <strong>Required dungeons:</strong>{' '}
-                                    {formatRequiredDungeonsDebugSummary(
-                                        requiredDungeonDiagnostic,
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                {scrollableSections ? (
+                    <div className={styles.toolsSections}>{sections}</div>
+                ) : (
+                    sections
                 )}
-                <ToolsFooterNav closeTools={closeTools} />
+                {footerContent ??
+                    (closeTools && <ToolsFooterNav closeTools={closeTools} />)}
             </div>
             <div className={styles.toolsLogPane}>
                 <div className={styles.toolsLogHeader}>
