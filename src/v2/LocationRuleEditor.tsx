@@ -26,6 +26,12 @@ export default function LocationRuleEditor({
     const [entrance, setEntrance] = useState('');
     const [error, setError] = useState('');
     const rules = map.trackingRules ?? [];
+    const stages: Record<string, string> = { F000: 'Skyloft', ...stageRegions };
+    for (const rule of pack.maps.flatMap((entry) => entry.trackingRules ?? []))
+        stages[rule.stage] ??= 'Other game area';
+    if (telemetry.location)
+        stages[telemetry.location.stage] ??= 'Current game area';
+    if (stage) stages[stage] ??= 'Other game area';
     const fields = [
         ['Room', room, setRoom],
         ['Layer', layer, setLayer],
@@ -33,23 +39,27 @@ export default function LocationRuleEditor({
     ] as const;
     return (
         <details className={styles.bindingSection}>
-            <summary>Auto map following ({rules.length})</summary>
-            <input
+            <summary>
+                Auto-follow: game areas for this map ({rules.length})
+            </summary>
+            <select
                 aria-label="Tracking stage"
-                placeholder="Stage ID"
-                list="v2-stage-options"
                 value={stage}
                 onChange={(event) => setStage(event.target.value)}
-            />
-            <datalist id="v2-stage-options">
-                {Object.entries({ F000: 'Skyloft', ...stageRegions }).map(
-                    ([id, name]) => (
+            >
+                <option value="">Choose a game area</option>
+                {Object.entries(stages)
+                    .sort(
+                        (a, b) =>
+                            a[1].localeCompare(b[1]) ||
+                            a[0].localeCompare(b[0]),
+                    )
+                    .map(([id, name]) => (
                         <option key={id} value={id}>
-                            {name}
+                            {name} ({id})
                         </option>
-                    ),
-                )}
-            </datalist>
+                    ))}
+            </select>
             <div className={styles.trackingFields}>
                 {fields.map(([label, value, setter]) => (
                     <label key={label}>
@@ -102,14 +112,14 @@ export default function LocationRuleEditor({
                         setError('');
                     }}
                 >
-                    <Icon name="plus" /> Add rule
+                    <Icon name="plus" /> Associate game area
                 </button>
                 <button
                     type="button"
                     disabled={
                         !telemetry.location || telemetry.state !== 'ready'
                     }
-                    title="Fill the stage only; room, layer and arrival remain optional."
+                    title="Select the player's current game area. Available only when the client sends player location data."
                     onClick={() => {
                         if (telemetry.location)
                             setStage(telemetry.location.stage);
@@ -118,18 +128,21 @@ export default function LocationRuleEditor({
                         setEntrance('');
                     }}
                 >
-                    <Icon name="crosshairs" /> Current stage
+                    <Icon name="crosshairs" /> Use player's area
                 </button>
             </div>
             {error && <span role="alert">{error}</span>}
-            <div className={styles.arrivalList}>
+            <div
+                className={styles.arrivalList}
+                aria-label="Game areas associated with this map"
+            >
                 {rules.map((rule) => (
                     <div
                         className={styles.arrivalRow}
                         key={locationRuleKey(rule)}
                     >
                         <span>
-                            {rule.stage}
+                            {stages[rule.stage]} ({rule.stage})
                             {rule.room !== undefined
                                 ? ` / room ${rule.room}`
                                 : ''}

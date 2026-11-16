@@ -22,6 +22,7 @@ import { legacyDocument } from './legacyPack';
 import LocationRuleEditor from './LocationRuleEditor';
 import MapCanvas, { Icon } from './MapCanvas';
 import {
+    linkDestination,
     packWarnings,
     parsePack,
     placedChecks,
@@ -1051,8 +1052,15 @@ export default function PackEditor({
                     images={images}
                     selected={selectedId}
                     onNavigateLink={(marker) => {
-                        if (marker.targetMapId && !marker.exitId) {
-                            setMapId(marker.targetMapId);
+                        const destination = linkDestination(
+                            marker,
+                            pack,
+                            marker.exitId
+                                ? exits[marker.exitId]?.entrance?.id
+                                : undefined,
+                        );
+                        if (destination) {
+                            setMapId(destination);
                             setSelectedId(undefined);
                             setPlacement(undefined);
                         }

@@ -24,8 +24,9 @@ Continue authoring normally. One image for an entire dungeon is supported: sever
 stage IDs can point to that map. Room/layer/arrival constraints are optional.
 A game layer is not a dungeon floor.
 
-In map properties, expand **Auto map following**, enter a stage ID and **Add rule**.
-Stage suggestions use the old V1 region table. **Current stage** fills the stage
+In map properties, expand **Auto-follow: game areas for this map**, choose a named game area and **Associate game area**.
+The area list uses the old V1 region table, with stage IDs shown in parentheses.
+Imported rules and received unknown stages remain selectable. **Use player's area** fills the stage
 from received telemetry, leaving the optional constraints unrestricted.
 
 More specific rules take precedence. Equal specificity on different maps is

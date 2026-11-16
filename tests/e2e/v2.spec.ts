@@ -1788,6 +1788,27 @@ test('V2 editor associates searchable game exits and map arrivals, and manual en
     await expect(
         popup.getByLabel('Entrance connection', { exact: true }),
     ).toContainText('Earth Temple Map');
+    await page.keyboard.press('Escape');
+    await page.getByRole('link', { name: 'Map Editor' }).click();
+    await page
+        .getByRole('button', { name: 'Edit Door Map', exact: true })
+        .click();
+    await marker(page, 'Dungeon Door').dblclick();
+    await expect(page.getByLabel('Map name', { exact: true })).toHaveValue(
+        'Earth Temple Map',
+    );
+    await page
+        .getByRole('button', { name: 'Edit Door Map', exact: true })
+        .click();
+    await marker(page, 'Dungeon Door').click({ button: 'right' });
+    await expect(page.getByLabel('Map name', { exact: true })).toHaveValue(
+        'Earth Temple Map',
+    );
+    await page
+        .getByRole('button', { name: 'Edit Door Map', exact: true })
+        .click();
+    await page.getByRole('link', { name: 'Preview Tracker' }).click();
+    await marker(page, 'Dungeon Door').hover();
     await expect(
         popup.getByRole('button', {
             name: 'Upper Skyloft - Ring Knight Academy Bell',
@@ -2021,13 +2042,25 @@ test('V2 editor exports stage rules and player following prefers specific rules 
         await page
             .getByRole('button', { name: `Edit ${name}`, exact: true })
             .click();
-        await page.getByText('Auto map following (0)', { exact: true }).click();
-        await page.getByLabel('Tracking stage').fill('F000');
+        await page
+            .getByText('Auto-follow: game areas for this map (0)', {
+                exact: true,
+            })
+            .click();
+        await expect(
+            page
+                .getByLabel('Tracking stage')
+                .getByRole('option', { name: 'Skyloft (F000)', exact: true }),
+        ).toHaveCount(1);
+        await page.getByLabel('Tracking stage').selectOption('F000');
         await page.getByLabel('Tracking Room', { exact: true }).fill(room);
         await page.getByLabel('Tracking Layer', { exact: true }).fill(layer);
         await page
-            .getByRole('button', { name: 'Add rule', exact: true })
+            .getByRole('button', { name: 'Associate game area', exact: true })
             .click();
+        await expect(
+            page.getByLabel('Game areas associated with this map'),
+        ).toContainText('Skyloft (F000)');
     }
     await page.screenshot({
         path: 'test-results/v2-tracking-rules.png',
