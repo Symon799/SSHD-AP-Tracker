@@ -184,6 +184,7 @@ export default function PackEditor({
         ids: string[],
         position?: { x: number; y: number },
         targetId?: string,
+        keepSourceSelected = false,
     ) => {
         const next = extractChecks(
             map,
@@ -198,7 +199,12 @@ export default function PackEditor({
             (entry) => !map.markers.some((old) => old.id === entry.id),
         );
         updateMap(next);
-        setSelectedId(targetId ?? created?.id ?? sourceId);
+        if (
+            !keepSourceSelected ||
+            !next.markers.some((entry) => entry.id === sourceId)
+        ) {
+            setSelectedId(targetId ?? created?.id ?? sourceId);
+        }
     };
     const toggleCheck = (id: string) =>
         setSelectedChecks((current) => {
@@ -1090,6 +1096,7 @@ export default function PackEditor({
                                 data.checkIds,
                                 { x, y },
                                 targetId,
+                                !targetId,
                             );
                         })
                     }

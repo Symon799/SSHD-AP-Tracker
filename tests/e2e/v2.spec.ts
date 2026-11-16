@@ -19,21 +19,27 @@ async function connectV2(page: Page, slot = 'Vegetation Player') {
     await page.getByRole('button', { name: 'Launch New Tracker' }).click();
 }
 
-test('V2 offline presets are isolated from saved settings and hidden for AP sessions', async ({ page }) => {
+test('V2 offline presets are isolated from saved settings and hidden for AP sessions', async ({
+    page,
+}) => {
     await page.goto('/v2');
     const presets = page.getByRole('combobox', { name: 'Offline preset' });
     await expect(presets).toBeVisible();
     const before = await page.evaluate(() => ({ ...localStorage }));
     await presets.selectOption('all-blades');
     await expect(presets).toHaveValue('all-blades');
-    await expect(page.getByText('Remaining', { exact: false }).first()).toBeVisible();
+    await expect(
+        page.getByText('Remaining', { exact: false }).first(),
+    ).toBeVisible();
     await page.screenshot({ path: 'test-results/offline-presets-desktop.png' });
     await page.setViewportSize({ width: 600, height: 800 });
     await expect(presets).toBeVisible();
     await page.screenshot({ path: 'test-results/offline-presets-narrow.png' });
     await presets.selectOption('saved');
     const after = await page.evaluate(() => ({ ...localStorage }));
-    for (const key of Object.keys(before).filter((key) => /tracker/i.test(key))) {
+    for (const key of Object.keys(before).filter((key) =>
+        /tracker/i.test(key),
+    )) {
         expect(after[key]).toBe(before[key]);
     }
     await page.setViewportSize({ width: 1280, height: 900 });
@@ -2351,6 +2357,9 @@ test('V2 editor drags a member out of a group and rejects invalid imports withou
     await page
         .getByLabel('Select check or link')
         .selectOption({ label: 'Faron Woods' });
+    const sourceSelection = await page
+        .getByLabel('Select check or link')
+        .inputValue();
     await page
         .getByLabel('Search group members')
         .fill('Faron Woods - Chest behind Upper Bombable Rock');
@@ -2368,6 +2377,19 @@ test('V2 editor drags a member out of a group and rejects invalid imports withou
     await expect(
         marker(page, 'Faron Woods - Chest behind Upper Bombable Rock'),
     ).toBeVisible();
+    await expect(page.getByLabel('Select check or link')).toHaveValue(
+        sourceSelection,
+    );
+    await expect(page.getByLabel('Search group members')).toHaveValue(
+        'Faron Woods - Chest behind Upper Bombable Rock',
+    );
+    await marker(
+        page,
+        'Faron Woods - Chest behind Upper Bombable Rock',
+    ).click();
+    await expect(page.getByLabel('Select check or link')).not.toHaveValue(
+        sourceSelection,
+    );
     await page.getByLabel('Import pack', { exact: true }).setInputFiles({
         name: 'invalid.zip',
         mimeType: 'application/zip',
