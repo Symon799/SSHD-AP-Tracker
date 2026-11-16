@@ -19,6 +19,71 @@ async function connectToFixture(page: Page, slot = 'Test Player') {
 }
 
 test.describe('tracker with simulated Archipelago server', () => {
+    test('groups signs, filters them, remembers expansion and synchronizes AP checks', async ({
+        page,
+    }) => {
+        await connectToFixture(page, 'Vegetation Player');
+        page.once('dialog', (dialog) => dialog.accept());
+        await page.getByRole('button', { name: 'Launch New Tracker' }).click();
+        const central = page.getByRole('button', {
+            name: 'Central Skyloft',
+            exact: true,
+        });
+        await central.click();
+        const signs = page.getByLabel(/^Signs:/);
+        await expect(signs).toHaveAttribute(
+            'aria-label',
+            'Signs: 0/7 checked, 7 accessible',
+        );
+        const group = signs.locator('..');
+        await expect(group.locator('[data-vegetation-check]')).toHaveCount(0);
+        await signs.click();
+        await expect(group.locator('[data-vegetation-check]')).toHaveCount(7);
+        await expect(
+            group
+                .locator('[data-vegetation-row]')
+                .first()
+                .locator('[data-vegetation-check]'),
+        ).toHaveCount(2);
+        const sign = page.getByRole('button', {
+            name: 'Central Skyloft - Sign 1',
+            exact: true,
+        });
+        await sign.hover();
+        await expect(page.getByRole('tooltip')).toBeVisible();
+        await page
+            .getByRole('button', { name: 'Open Server and Tools' })
+            .click();
+        await page.getByPlaceholder('Enter a command here').fill('!demo-sign');
+        await page.getByPlaceholder('Enter a command here').press('Enter');
+        await page
+            .getByRole('button', { name: 'Tracker', exact: true })
+            .click();
+        await central.click();
+        await expect(signs).toHaveAttribute(
+            'aria-label',
+            'Signs: 1/7 checked, 6 accessible',
+        );
+        await expect(group).toHaveAttribute('open', '');
+        await page
+            .getByRole('button', { name: 'Checked', exact: true })
+            .click();
+        await expect(group.locator('[data-vegetation-check]')).toHaveCount(1);
+        await expect(sign).toBeVisible();
+        await page
+            .getByRole('button', { name: 'Accessible', exact: true })
+            .click();
+        await expect(group.locator('[data-vegetation-check]')).toHaveCount(6);
+        await expect(sign).toHaveCount(0);
+        await page.getByRole('button', { name: 'All', exact: true }).click();
+        await expect(group.locator('[data-vegetation-check]')).toHaveCount(7);
+        await signs.scrollIntoViewIfNeeded();
+        await page.screenshot({
+            path: 'test-results/sign-shuffle.png',
+            animations: 'disabled',
+        });
+    });
+
     test('remembers expanded groups and both scroll positions across tools and regions', async ({
         page,
     }) => {

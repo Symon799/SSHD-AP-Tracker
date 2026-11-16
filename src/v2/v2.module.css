@@ -1,0 +1,971 @@
+.app {
+    isolation: isolate;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    color: var(--scheme-text);
+    background: var(--scheme-background);
+    font-family: system-ui, sans-serif;
+    font-size: 13px;
+    letter-spacing: 0;
+}
+
+.app button,
+.app select,
+.app input,
+.app textarea {
+    font: inherit;
+    color: inherit;
+    border: 1px solid color-mix(in srgb, var(--scheme-text) 20%, transparent);
+    border-radius: 5px;
+    background: var(--scheme-background);
+    padding: 6px 9px;
+    min-height: 30px;
+    box-sizing: border-box;
+}
+.app button {
+    cursor: pointer;
+}
+.app button:hover {
+    background: color-mix(
+        in srgb,
+        var(--scheme-text) 8%,
+        var(--scheme-background)
+    );
+}
+.app button:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+.app button[aria-pressed='true'] {
+    background: color-mix(
+        in srgb,
+        var(--scheme-text) 15%,
+        var(--scheme-background)
+    );
+    box-shadow: inset 0 0 0 1px var(--scheme-text);
+}
+.app button:focus-visible,
+.app a:focus-visible {
+    outline: 2px solid #ce7500;
+    outline-offset: 2px;
+}
+.app a {
+    color: inherit;
+}
+.app input,
+.app select,
+.app textarea {
+    width: 100%;
+    min-width: 0;
+}
+.app textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+.app label {
+    display: grid;
+    gap: 5px;
+}
+.header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-bottom: 1px solid
+        color-mix(in srgb, var(--scheme-text) 15%, transparent);
+}
+.header strong {
+    font-size: 16px;
+}
+.editorHeader {
+    align-items: flex-end;
+}
+.editorHeader > nav {
+    min-height: 34px;
+}
+.header nav {
+    margin-left: auto;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+    max-width: 100%;
+}
+.header select {
+    width: auto;
+    max-width: 220px;
+}
+.badge {
+    font-size: 11px;
+    color: #7b4b00;
+    background: #fff0c7;
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+.body {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr) 310px;
+}
+.sidebar {
+    min-height: 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    border-right: 1px solid
+        color-mix(in srgb, var(--scheme-text) 15%, transparent);
+    overflow: auto;
+}
+.inspector {
+    border-right: 0;
+    border-left: 1px solid
+        color-mix(in srgb, var(--scheme-text) 15%, transparent);
+}
+.sidebar h2 {
+    font-size: 14px;
+    margin: 2px 0;
+}
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+.actions output {
+    min-width: 42px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+.scroll {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+}
+.list {
+    display: grid;
+    align-content: start;
+    gap: 5px;
+    padding-bottom: 8px;
+}
+.list > button {
+    text-align: left;
+    width: 100%;
+    overflow-wrap: anywhere;
+}
+.list small {
+    display: block;
+    opacity: 0.7;
+}
+.row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.app label.row {
+    display: flex;
+    align-items: center;
+}
+.row > * {
+    flex: 1;
+    min-width: 0;
+}
+.row input[type='checkbox'] {
+    width: 16px;
+    flex: 0 0 16px;
+}
+.catalogue {
+    font-size: 12px;
+    line-height: 16px;
+    padding: 2px 8px 2px 4px;
+}
+.catalogue label {
+    display: flex;
+    align-items: start;
+    gap: 7px;
+    padding: 2px 0;
+    min-height: 24px;
+    box-sizing: border-box;
+    overflow-wrap: anywhere;
+}
+.catalogue input {
+    width: 16px;
+    flex: 0 0 16px;
+    min-height: 16px;
+    height: 16px;
+    padding: 0;
+    margin: 0;
+}
+.muted {
+    font-size: 12px;
+    opacity: 0.7;
+}
+.notice {
+    padding: 8px 14px;
+    background: color-mix(in srgb, #f0c63b 17%, var(--scheme-background));
+    border-bottom: 1px solid
+        color-mix(in srgb, var(--scheme-text) 15%, transparent);
+    overflow-wrap: anywhere;
+}
+.notice:empty {
+    display: none;
+}
+.footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 7px 14px;
+    font-size: 12px;
+    border-top: 1px solid
+        color-mix(in srgb, var(--scheme-text) 15%, transparent);
+}
+.canvas {
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    background: color-mix(
+        in srgb,
+        var(--scheme-text) 4%,
+        var(--scheme-background)
+    );
+}
+.mapToolbar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-bottom: 1px solid
+        color-mix(in srgb, var(--scheme-text) 12%, transparent);
+}
+.mapToolbar h2 {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.3;
+    font-weight: 650;
+    overflow-wrap: anywhere;
+}
+.mapHeading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+.mapHeading > .actions {
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+}
+.selectionHeader {
+    display: grid;
+    gap: 8px;
+    padding: 14px 12px 12px;
+    margin: -12px -12px 2px;
+    border-bottom: 2px solid
+        color-mix(in srgb, var(--scheme-text) 24%, transparent);
+    position: sticky;
+    top: -12px;
+    z-index: 1;
+    flex-shrink: 0;
+    background: color-mix(
+        in srgb,
+        var(--scheme-text) 9%,
+        var(--scheme-background)
+    );
+}
+.sidebar .selectionHeader h2 {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0;
+}
+.selectionHeader select {
+    font-weight: 600;
+}
+.selectionIdentity {
+    display: grid;
+    gap: 0;
+}
+.sidebar.inspector {
+    gap: 6px;
+}
+.selectionIdentity > .row {
+    gap: 4px;
+    min-height: 20px;
+}
+.app .selectionIdentity > .row input {
+    width: 14px;
+    height: 14px;
+    min-height: 14px;
+    flex: 0 0 14px;
+    padding: 0;
+    margin: 0;
+}
+.memberCount {
+    line-height: 1.3;
+}
+.memberSearchRow {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.memberSearchRow > input {
+    flex: 1;
+    min-width: 0;
+}
+.coordinates {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+.app .coordinates label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.coordinates input {
+    flex: 1;
+    width: 0;
+    min-width: 0;
+    font-variant-numeric: tabular-nums;
+}
+.app .locationNote {
+    height: 40px;
+    min-height: 40px;
+}
+.sidebar .selectionType {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 0;
+}
+.selectionActions {
+    border-top: 1px solid
+        color-mix(in srgb, var(--scheme-text) 15%, transparent);
+    padding-top: 12px;
+    display: grid;
+}
+.viewport {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    overflow: auto;
+    padding: 24px;
+    touch-action: none;
+    cursor: grab;
+}
+.viewport:active {
+    cursor: grabbing;
+}
+.stage {
+    position: relative;
+    margin: auto;
+    flex: none;
+}
+.stage > img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    user-select: none;
+    pointer-events: none;
+}
+.app .marker {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    padding: 0;
+    width: 28px;
+    height: 28px;
+    min-height: 28px;
+    border: 2px solid #202020;
+    border-radius: 5px;
+    background: #d54b46;
+    color: #111;
+    font-weight: 700;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    box-shadow: 0 1px 4px #0005;
+    touch-action: none;
+}
+.app .marker[data-status='available'] {
+    background: #62c985;
+}
+.app .marker[data-status='mixed'] {
+    background: #edb54f;
+}
+.app .marker[data-status='done'] {
+    background: #b9bec3;
+}
+.app .linkMarker {
+    border-radius: 50%;
+}
+.app .marker[data-status='unavailable'] {
+    background: #d54b46;
+}
+.app .selectedMarker {
+    border-color: white;
+    outline: 2px solid #242424;
+    box-shadow: 0 0 0 5px #ffffff9c;
+}
+.status {
+    font-variant-numeric: tabular-nums;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.checkList {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+}
+.checkList > div {
+    min-height: 30px;
+    border: 1px solid color-mix(in srgb, var(--scheme-text) 15%, transparent);
+    border-radius: 6px;
+    overflow: hidden;
+}
+.grow {
+    flex: 1;
+    min-height: 150px;
+}
+.empty {
+    margin: auto;
+    padding: 24px;
+    text-align: center;
+}
+.fileLabel {
+    cursor: pointer;
+    display: inline-flex !important;
+    align-items: center;
+    gap: 5px !important;
+    padding: 6px 9px;
+    border: 1px solid color-mix(in srgb, var(--scheme-text) 20%, transparent);
+    border-radius: 5px;
+}
+.fileLabel input {
+    width: 0;
+    height: 0;
+    opacity: 0;
+    position: absolute;
+}
+.danger {
+    color: #b43030 !important;
+}
+.hoverPopup {
+    position: fixed;
+    height: auto;
+    min-width: 0;
+    max-height: calc(100dvh - 24px);
+    overflow: auto;
+    z-index: 50;
+    padding: 8px;
+    border: 1px solid color-mix(in srgb, var(--scheme-text) 30%, transparent);
+    border-radius: 6px;
+    box-shadow: 0 5px 22px #0004;
+}
+.app.hoverPopup {
+    min-height: 0;
+}
+:global(body):has(.hoverPopup) > :global([data-radix-popper-content-wrapper]) {
+    z-index: 60 !important;
+}
+.popupHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 2px 5px;
+}
+.popupHeader strong {
+    flex: 1;
+    overflow-wrap: anywhere;
+}
+.popupHeader.headerWithNote {
+    padding-bottom: 0;
+}
+.hoverNote {
+    margin: 0 2px 5px;
+    font-size: 12px;
+    line-height: 1.35;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+.popupHeader button {
+    border: 0;
+    min-height: 26px;
+    padding: 3px 6px;
+}
+.app .popupLinkTitle {
+    flex: 1;
+    text-align: left;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+.hoverPopup [data-vegetation-check] {
+    min-height: 24px;
+}
+.hoverPopup [data-vegetation-check] [role='button'] {
+    font-size: 12px;
+}
+.hoverPopup [data-vegetation-check] [role='button'] > span:first-child {
+    padding: 3px 6px;
+}
+.resizableBody {
+    overflow: hidden;
+}
+.app .panelDivider {
+    min-height: 0;
+    min-width: 0;
+    height: 100%;
+    width: 7px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    cursor: col-resize;
+    touch-action: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.panelDivider span {
+    height: 100%;
+    width: 3px;
+    background: color-mix(in srgb, var(--scheme-text) 18%, transparent);
+    border-radius: 2px;
+}
+.app .panelDivider:hover span,
+.app .panelDivider:focus-visible span {
+    background: color-mix(in srgb, var(--scheme-text) 50%, transparent);
+}
+.app .horizontalDivider {
+    width: 100%;
+    height: 9px;
+    flex: 0 0 9px;
+    cursor: row-resize;
+}
+.horizontalDivider span {
+    width: 100%;
+    height: 3px;
+}
+.catalogueStack {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.mapsPane {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex-shrink: 0;
+    gap: 8px;
+}
+.mapsPane .list > button {
+    height: auto;
+    min-height: 46px;
+    line-height: 1.3;
+}
+.mapsPane .list small {
+    margin-top: 3px;
+    font-size: 11px;
+}
+.cataloguePane {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    gap: 8px;
+    overflow: auto;
+    min-width: 0;
+    scrollbar-gutter: stable;
+    padding-right: 4px;
+    box-sizing: border-box;
+}
+.mapsPane .scroll {
+    scrollbar-gutter: stable;
+    padding-right: 4px;
+}
+.catalogueViewport {
+    scrollbar-gutter: stable;
+}
+.cataloguePane > * {
+    flex-shrink: 0;
+}
+.cataloguePane > .scroll {
+    min-height: 100px;
+}
+.catalogueActions {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    flex-wrap: nowrap;
+}
+.catalogueFilters {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px 5px;
+    align-items: center;
+}
+.app .unplacedFilter {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+    justify-self: start;
+}
+.app .unplacedFilter input {
+    width: 14px;
+    height: 14px;
+    min-height: 14px;
+    padding: 0;
+    margin: 0;
+}
+.app .catalogueActions label {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    white-space: nowrap;
+    flex: 1;
+}
+.app .catalogueActions input {
+    width: 14px;
+    height: 14px;
+    min-height: 14px;
+    margin: 0;
+    padding: 0;
+}
+.app .catalogueActions button {
+    font-size: 11px;
+    padding: 4px 5px;
+    min-height: 28px;
+    white-space: nowrap;
+}
+.editorCatalogue {
+    overflow: hidden;
+}
+.sectionHeading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    border-bottom: 1px solid
+        color-mix(in srgb, var(--scheme-text) 20%, transparent);
+    padding-bottom: 5px;
+}
+.sidebar .sectionHeading h2 {
+    font-size: 15px;
+    font-weight: 700;
+}
+.inspectorSection {
+    display: grid;
+    gap: 8px;
+    border-top: 1px solid
+        color-mix(in srgb, var(--scheme-text) 20%, transparent);
+    padding-top: 12px;
+}
+.inspectorSection h2 {
+    font-size: 15px;
+    font-weight: 700;
+}
+.bindingSection {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+}
+.trackingFields {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+    font-size: 12px;
+}
+.telemetryDetails {
+    display: grid;
+    gap: 6px;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+.sidebar .bindingSection h2 {
+    font-size: 13px;
+    font-weight: 700;
+}
+.routingModes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+}
+.fieldLabel,
+.bindingStatus {
+    font-size: 12px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+.bindingStatus {
+    padding: 5px 7px;
+    background: color-mix(
+        in srgb,
+        var(--scheme-text) 5%,
+        var(--scheme-background)
+    );
+    border-radius: 4px;
+}
+.entrancePicker {
+    min-width: 0;
+    font-size: 12px;
+}
+.app .entrancePicker input {
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+}
+.arrivalList {
+    display: grid;
+    gap: 4px;
+    max-height: 200px;
+    overflow: auto;
+    scrollbar-gutter: stable;
+}
+.arrivalRow {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+.arrivalRow > span {
+    flex: 1;
+    min-width: 0;
+}
+.arrivalRow > button {
+    flex-shrink: 0;
+}
+.linkConnection {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 2px 5px;
+    font-size: 12px;
+    line-height: 1.4;
+}
+.linkConnection > span {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+.packIdentity {
+    min-width: 180px;
+    max-width: 380px;
+    display: grid;
+    gap: 4px;
+}
+.packIdentity label {
+    font-size: 11px;
+    gap: 2px;
+}
+.packIdentity input {
+    font-size: 15px;
+    font-weight: 600;
+}
+.packHeading {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.saveStatus {
+    font-size: 11px;
+}
+.saveStatus[data-state='pending'],
+.warningText {
+    color: #b87505;
+}
+.saveStatus[data-state='complete'],
+.completeStatus {
+    color: #238346;
+}
+.saveStatus[data-state='error'],
+.errorStatus {
+    color: #d44747;
+}
+.dialogDescription,
+.warningText {
+    margin: 0;
+    line-height: 1.5;
+}
+.bottomNotice {
+    flex: 0 0 28px;
+    height: 28px;
+    box-sizing: border-box;
+    padding: 5px 14px;
+    font-size: 12px;
+    overflow: auto;
+    white-space: nowrap;
+    background: color-mix(in srgb, #f0c63b 17%, var(--scheme-background));
+}
+.bottomNotice:empty {
+    background: transparent;
+}
+.app.dialogForm {
+    height: auto;
+    min-height: 0;
+    gap: 14px;
+    padding: 4px;
+}
+.memberList {
+    min-height: 0;
+    max-height: 228px;
+    overflow: hidden;
+    flex: 0 0 auto;
+    border: 1px solid color-mix(in srgb, var(--scheme-text) 15%, transparent);
+    border-radius: 4px;
+}
+.footer {
+    align-items: center;
+}
+.editorFooter {
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+}
+.editorFooter > span:not(.editorNotice) {
+    flex-shrink: 0;
+}
+.editorNotice {
+    flex: 1;
+    min-width: 0;
+    overflow: auto;
+    white-space: nowrap;
+    background: color-mix(in srgb, #f0c63b 17%, var(--scheme-background));
+}
+.footerActions {
+    display: flex;
+    gap: 5px;
+}
+.packCaption {
+    font-size: 12px;
+    color: color-mix(in srgb, var(--scheme-text) 55%, var(--scheme-background));
+    max-width: 240px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.footerDock {
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+    min-width: 0;
+    margin-top: auto;
+    padding: 7px 2px;
+    border: 0;
+}
+.footerActions {
+    flex-shrink: 0;
+}
+.connectionCaption {
+    overflow: hidden;
+    min-width: 0;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.toolsPage {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+.readerSidebar > .grow {
+    min-height: 0;
+}
+.readerSidebar > :not(.grow) {
+    flex-shrink: 0;
+}
+.canvasArea {
+    position: relative;
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+}
+.mapOverlay {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 2;
+}
+.app .entranceButton {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    box-shadow: 0 2px 6px #0002;
+}
+.app .footerActions button,
+.footerIconLink {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 30px;
+    height: 30px;
+    min-height: 30px;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--scheme-text) 20%, transparent);
+    border-radius: 5px;
+    text-decoration: none;
+}
+.dropTarget {
+    outline: 4px solid #edb54f !important;
+    box-shadow: 0 0 0 7px #fff8 !important;
+}
+@media (max-width: 1050px) {
+    .body {
+        grid-template-columns: 220px minmax(0, 1fr) 260px;
+    }
+}
+@media (max-width: 760px) {
+    .app {
+        height: auto;
+        min-height: 100dvh;
+    }
+    .body {
+        display: flex;
+        flex-direction: column;
+    }
+    .resizableBody > .panelDivider {
+        display: none;
+    }
+    .sidebar.editorCatalogue {
+        max-height: none;
+        height: 650px;
+    }
+    .sidebar {
+        max-height: 280px;
+        flex: none;
+        border: 0;
+        border-bottom: 1px solid
+            color-mix(in srgb, var(--scheme-text) 15%, transparent);
+    }
+    .sidebar > * {
+        flex-shrink: 0;
+    }
+    .sidebar .scroll {
+        flex: 0 0 200px;
+        min-height: 200px;
+    }
+    .editorCatalogue .scroll {
+        flex: 1;
+        min-height: 0;
+    }
+    .canvas {
+        height: 440px;
+        flex: none;
+    }
+    .inspector {
+        max-height: 440px;
+    }
+    .header {
+        gap: 8px;
+    }
+}

@@ -89,6 +89,7 @@ webSocketServer.on('connection', (socket) => {
     let vegetation;
     let authenticated = false;
     let itemsSent = false;
+    let telemetrySequence = 0;
     send(socket, roomInfo);
 
     socket.on('message', (rawMessage) => {
@@ -130,9 +131,16 @@ webSocketServer.on('connection', (socket) => {
                     slot_data: vegetation
                         ? {
                               ...slotData,
+                              ...(packet.name === 'Entrance Player'
+                                  ? {
+                                        option_randomize_dungeons: 1,
+                                        option_randomize_trials: 1,
+                                    }
+                                  : {}),
                               option_grass_shuffle:
                                   vegetation.mode === 'bundles' ? 1 : 2,
                               option_tree_shuffle: 1,
+                              option_sign_shuffle: 1,
                               option_custom_starting_items: {
                                   'Progressive Sword': 1,
                                   'Emerald Tablet': 1,
@@ -242,9 +250,13 @@ webSocketServer.on('connection', (socket) => {
             } else if (
                 packet.cmd === 'Say' &&
                 vegetation &&
-                packet.text === '!demo-check'
+                ['!demo-check', '!demo-sign'].includes(packet.text)
             ) {
-                const id = vegetation.centralGrassIds.find(
+                const candidates =
+                    packet.text === '!demo-sign'
+                        ? vegetation.centralSignIds
+                        : vegetation.centralGrassIds;
+                const id = candidates.find(
                     (candidate) => !vegetation.checked.includes(candidate),
                 );
                 if (id !== undefined) {
@@ -254,6 +266,49 @@ webSocketServer.on('connection', (socket) => {
                         checked_locations: [...vegetation.checked],
                     });
                 }
+            } else if (
+                packet.cmd === 'Say' &&
+                packet.text.startsWith('!demo-')
+            ) {
+                const [command, stage = 'F100', room, layer] =
+                    packet.text.split(/\s+/);
+                const telemetry = {
+                    version: 1,
+                    seed: roomInfo.seed_name,
+                    team: 0,
+                    slot: command === '!demo-other-stage' ? 2 : 1,
+                    sequence:
+                        command === '!demo-old-stage' ? 0 : ++telemetrySequence,
+                };
+                if (
+                    [
+                        '!demo-stage',
+                        '!demo-loading',
+                        '!demo-other-stage',
+                        '!demo-old-stage',
+                    ].includes(command)
+                ) {
+                    telemetry.location = {
+                        stage,
+                        ...(room !== undefined ? { room: Number(room) } : {}),
+                        ...(layer !== undefined
+                            ? { layer: Number(layer) }
+                            : {}),
+                        loading: command === '!demo-loading',
+                    };
+                } else if (command === '!demo-discover') {
+                    telemetry.discoveries = [
+                        {
+                            exit: '\\Faron\\Deep Woods\\Exit to Skyview Entry',
+                            entrance:
+                                '\\Earth Temple\\Earth Temple First Room\\Entrance from Near Temple Entrance',
+                        },
+                    ];
+                } else continue;
+                send(socket, {
+                    cmd: 'Bounced',
+                    data: { sshd_tracker: telemetry },
+                });
             } else if (packet.cmd === 'Get') {
                 send(socket, { cmd: 'Retrieved', keys: {} });
             } else if (packet.cmd === 'LocationScouts') {

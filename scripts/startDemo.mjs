@@ -16,8 +16,8 @@ async function freePort(start) {
 }
 
 // A separate origin keeps demo saves away from the normal development tracker.
-const appPort = await freePort(5180);
-const apPort = await freePort(38282);
+const appPort = await freePort(Number(process.env.DEMO_PORT ?? 5180));
+const apPort = await freePort(Number(process.env.DEMO_AP_PORT ?? 38282));
 const processes = [
     spawn(process.execPath, ['tests/e2e/mock-archipelago-server.mjs'], {
         stdio: 'inherit',
@@ -37,9 +37,17 @@ const processes = [
     ),
 ];
 console.log(`Demo website: http://127.0.0.1:${appPort}/`);
+if (process.env.DEMO_V2 === '1') {
+    console.log(`V2 connection: http://127.0.0.1:${appPort}/v2/connect`);
+    console.log(`V2 tracker: http://127.0.0.1:${appPort}/v2/`);
+    console.log(`V2 editor: http://127.0.0.1:${appPort}/v2/editor`);
+}
 console.log(`AP server: localhost:${apPort}`);
 console.log(
-    'Slots: Vegetation Player (bundles + trees), Blade Player (blades + trees). No password.',
+    'Slots: Vegetation Player (bundles + trees + signs), Blade Player (blades + trees + signs). No password.',
+);
+console.log(
+    'Entrance Player: bundles + trees + signs, with manual dungeon and trial entrance randomization. No password.',
 );
 console.log(
     'Send !demo-check in Server & Tools to simulate another checked location.',

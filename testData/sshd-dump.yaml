@@ -17816,6 +17816,14 @@ items:
   - \Faron\Sealed Grounds\Sealed Grounds - Grass Patch 24 - Blade 42
   - \Faron\Sealed Grounds\Sealed Grounds - Grass Patch 24 - Blade 43
   - \Faron\Sealed Grounds\Sealed Grounds - Grass Patch 24 - Blade 44
+  - \Skyloft\Central Skyloft\Central Skyloft - Sign 1
+  - \Skyloft\Central Skyloft\Central Skyloft - Sign 2
+  - \Skyloft\Central Skyloft\Central Skyloft - Sign 3
+  - \Skyloft\Central Skyloft\Central Skyloft - Sign 4
+  - \Skyloft\Central Skyloft\Central Skyloft - Sign 5
+  - \Skyloft\Central Skyloft\Central Skyloft - Sign 6
+  - \Skyloft\Central Skyloft\Central Skyloft - Sign 7
+  - \Sky\Beedle's Island\Beedle's Island - Sign 1
 checks:
   \Eldin\Inside the Volcano Statue\Eldin Volcano - Inside the Volcano Bird Statue:
     original item: Green Rupee
@@ -77713,6 +77721,38 @@ checks:
     original item: Green Rupee
     type: Grass Blade, Custom Flag
     short_name: Sealed Grounds - Grass Patch 24 - Blade 44
+  \Skyloft\Central Skyloft\Central Skyloft - Sign 1:
+    original item: Green Rupee
+    type: Signs, Custom Flag
+    short_name: Central Skyloft - Sign 1
+  \Skyloft\Central Skyloft\Central Skyloft - Sign 2:
+    original item: Green Rupee
+    type: Signs, Custom Flag
+    short_name: Central Skyloft - Sign 2
+  \Skyloft\Central Skyloft\Central Skyloft - Sign 3:
+    original item: Green Rupee
+    type: Signs, Custom Flag
+    short_name: Central Skyloft - Sign 3
+  \Skyloft\Central Skyloft\Central Skyloft - Sign 4:
+    original item: Green Rupee
+    type: Signs, Custom Flag
+    short_name: Central Skyloft - Sign 4
+  \Skyloft\Central Skyloft\Central Skyloft - Sign 5:
+    original item: Green Rupee
+    type: Signs, Custom Flag
+    short_name: Central Skyloft - Sign 5
+  \Skyloft\Central Skyloft\Central Skyloft - Sign 6:
+    original item: Green Rupee
+    type: Signs, Custom Flag
+    short_name: Central Skyloft - Sign 6
+  \Skyloft\Central Skyloft\Central Skyloft - Sign 7:
+    original item: Green Rupee
+    type: Signs, Custom Flag
+    short_name: Central Skyloft - Sign 7
+  \Sky\Beedle's Island\Beedle's Island - Sign 1:
+    original item: Green Rupee
+    type: Signs, Custom Flag
+    short_name: Beedle's Island - Sign 1
 gossip_stones: {}
 exits:
   \Start:
@@ -98484,6 +98524,7 @@ areas:
               of Temple & \SSHD Setting\goddess_chest_unlock == locked_until_struck) | (\Goddess
               Sword & \SSHD Setting\goddess_chest_unlock == unlocked_after_goddess_sword) | \SSHD
               Setting\goddess_chest_unlock == unlocked_from_start)
+            Beedle's Island - Sign 1: \Sword | Gust Bellows | \Slingshot | Clawshots | \Bow | Bomb Bag
         Northeast Island:
           name: \Sky\Northeast Island
           abstract: false
@@ -100088,6 +100129,13 @@ areas:
             Central Skyloft - Grass Patch 26 - Blade 2: Progressive Sword | \Beetle | Bomb Bag | \Bow | Whip
             Central Skyloft - Grass Patch 26 - Blade 3: Progressive Sword | \Beetle | Bomb Bag | \Bow | Whip
             Central Skyloft - Grass Patch 26 - Blade 4: Progressive Sword | \Beetle | Bomb Bag | \Bow | Whip
+            Central Skyloft - Sign 1: \Sword | Gust Bellows | \Slingshot | Clawshots | \Bow | Bomb Bag
+            Central Skyloft - Sign 2: \Sword | Gust Bellows | \Slingshot | Clawshots | \Bow | Bomb Bag
+            Central Skyloft - Sign 3: \Sword | Gust Bellows | \Slingshot | Clawshots | \Bow | Bomb Bag
+            Central Skyloft - Sign 4: \Sword | Gust Bellows | \Slingshot | Clawshots | \Bow | Bomb Bag
+            Central Skyloft - Sign 5: \Sword | Gust Bellows | \Slingshot | Clawshots | \Bow | Bomb Bag
+            Central Skyloft - Sign 6: \Sword | Gust Bellows | \Slingshot | Clawshots | \Bow | Bomb Bag
+            Central Skyloft - Sign 7: \Sword | Gust Bellows | \Slingshot | Clawshots | \Bow | Bomb Bag
         Bird Nest:
           name: \Skyloft\Bird Nest
           abstract: false

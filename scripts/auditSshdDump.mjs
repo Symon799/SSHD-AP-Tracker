@@ -22,8 +22,9 @@ const sanityTypes = {
     'Pots, Custom Flag': 'pots',
     'Pumpkins, Custom Flag': 'pumpkins',
     'Barrels, Custom Flag': 'barrels',
+    'Signs, Custom Flag': 'signs',
 };
-const counts = { pots: 0, pumpkins: 0, barrels: 0 };
+const counts = { pots: 0, pumpkins: 0, barrels: 0, signs: 0 };
 const missingFromItems = [];
 
 for (const [id, check] of checks) {
@@ -38,6 +39,7 @@ const requiredOptions = [
     'barrel-shuffle',
     'grass-shuffle',
     'tree-shuffle',
+    'sign-shuffle',
     'bird-statues-give-items',
     'bird-statues-need-unlock',
     'start-with-region-bird-statues',
@@ -63,7 +65,7 @@ if (missingOptions.length > 0) {
 
 console.log(`SSHD dump audit passed: ${checks.length} checks`);
 console.log(
-    `Sanity checks: ${counts.pots} pots, ${counts.pumpkins} pumpkins, ${counts.barrels} barrels`,
+    `Sanity checks: ${counts.pots} pots, ${counts.pumpkins} pumpkins, ${counts.barrels} barrels, ${counts.signs} signs`,
 );
 console.log(`Option definitions: ${options.length}`);
 console.log(

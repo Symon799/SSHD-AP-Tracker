@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
     FixedSizeList as List,
@@ -22,10 +22,12 @@ function EntranceTracker({
     open,
     onOpenChange,
     onGoToExit,
+    initialExitId,
 }: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onGoToExit: (exitId: string) => void;
+    initialExitId?: string;
 }) {
     const dispatch = useDispatch();
     const exits = useSelector(exitsSelector);
@@ -34,6 +36,18 @@ function EntranceTracker({
 
     const [exitSearch, setExitSearch] = useState('');
     const [entranceSearch, setEntranceSearch] = useState('');
+    const initialExitName = initialExitId
+        ? formatEntranceName(
+              exits.find((entry) => entry.exit.id === initialExitId)?.exit
+                  .name ?? initialExitId,
+          )
+        : '';
+    useEffect(() => {
+        if (open && initialExitId !== undefined) {
+            setExitSearch(initialExitName);
+            setEntranceSearch('');
+        }
+    }, [open, initialExitId, initialExitName]);
     const listViewportRef = useRef<HTMLDivElement | null>(null);
     const listOuterRef = useRef<HTMLDivElement | null>(null);
     const { measuredHeight } = useElementSize(listViewportRef);

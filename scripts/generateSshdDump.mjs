@@ -495,7 +495,15 @@ function addSkyTravelRequirements(area, targetAreaName, requirement) {
     return `${terms.join(' and ')} and (${String(requirement)})`;
 }
 
-/** Read only vegetation additions, preserving the tracker's existing world graph. */
+export function normalizeSignRequirement(requirement, types) {
+    // Wesley confirmed these alternatives on Discord; the public
+    // world files still use Sword alone. Leave newer/more specific rules intact.
+    return types.includes('Signs') && requirement === 'Sword'
+        ? 'Sword or Gust_Bellows or Slingshot or Clawshots or Bow or Bomb_Bag'
+        : requirement;
+}
+
+/** Read grouped sanity additions, preserving the tracker's existing world graph. */
 export function readSshdVegetation(randoRoot, apworldPath) {
     const worldAreas = loadWorldAreas(randoRoot);
     const macros = loadMacros(randoRoot);
@@ -519,7 +527,7 @@ export function readSshdVegetation(randoRoot, apworldPath) {
     return parseApworldLocations(apworldPath)
         .filter((location) =>
             location.types.some((type) =>
-                ['Grass', 'Grass Blade', 'Trees'].includes(type),
+                ['Grass', 'Grass Blade', 'Trees', 'Signs'].includes(type),
             ),
         )
         .map((location) => {
@@ -536,7 +544,9 @@ export function readSshdVegetation(randoRoot, apworldPath) {
                 type: getLocationType(location.types),
                 accesses: paths.map(({ area, requirement }) => ({
                     area: makeFullAreaName(area.worldName, area.name),
-                    requirement: convert(requirement),
+                    requirement: convert(
+                        normalizeSignRequirement(requirement, location.types),
+                    ),
                 })),
             };
         });
@@ -909,7 +919,10 @@ function buildSshdDump() {
             const locationKey =
                 primaryAccess.area === area ? locationName : checkId;
             rawArea.locations[locationKey] = convertRequirement(
-                String(requirement),
+                normalizeSignRequirement(
+                    String(requirement),
+                    apworldLocationsByName.get(locationName).types,
+                ),
             );
         }
 

@@ -1,4 +1,4 @@
-# Grass and Small Trees
+# Grass, Small Trees and Signs
 
 ## Supported Data
 
@@ -10,15 +10,23 @@ Sources: LonLon-Labs/SSHD_APWorld, revision
 - `grass_shuffle=bundles`: 854 patch checks.
 - `grass_shuffle=blades`: 12,579 independent blade checks, instead of patches.
 - `tree_shuffle=on`: 91 small-tree/bamboo checks.
+- `sign_shuffle=on`: 8 sign checks (7 Central Skyloft, 1 Beedle's Island).
+
+Sign names and placement come from revision
+`fa80a894466ac84fbb080d0d0427dce0e8c3489e` of the same repository.
+Its published world files still require Sword alone. The generator expands only
+that exact sign-only rule to Sword, Gust Bellows, Slingshot, Clawshots, Bow or
+Bomb Bag, following Wesley's Discord clarification supplied on 2026-11-15.
+More specific requirements or a future `Can_Cut_Signs` macro are preserved.
 
 These are dataset counts, not a fixed total for every seed. Other shuffle settings
-still control the existing location types. Sign shuffle is outside this change.
+still control the existing location types. Missing shuffle options default to off.
 Each new location uses its upstream physical area and cutting requirement.
 Multiple access paths are retained. No new map coordinates are needed.
 
 ## Interface
 
-Grass and Trees appear as collapsed sections below ordinary checks in each region.
+Grass, Trees and Signs appear as collapsed sections below ordinary checks in each region.
 Blade mode adds a second level for each named grass patch. Summaries show checked
 out of total, and accessible unchecked locations. The existing All, Checked and
 Accessible filters also apply to these groups; totals remain whole-group totals.
@@ -46,8 +54,8 @@ AP server address (normally `localhost:38282`). Busy ports are skipped.
 
 On the connection page, enter that server and either slot name, with no password:
 
-- `Vegetation Player`: grass bundles and trees.
-- `Blade Player`: grass blades and trees.
+- `Vegetation Player`: grass bundles, trees and signs.
+- `Blade Player`: grass blades, trees and signs.
 
 Connect and launch a new tracker, then select Central Skyloft. Seven grass checks
 are already marked checked. Open Grass/Trees or a grass patch to inspect the
@@ -56,6 +64,7 @@ lists and try the filters. Other provinces also contain vegetation.
 Send `!demo-check` in the Server & Tools command field to simulate the server
 checking another Central Skyloft grass location. Return to the map and select
 Central Skyloft to see the updated counter.
+Send `!demo-sign` to simulate checking the next Central Skyloft sign.
 
 This is a deterministic UI fixture, not a generated playable seed. The demo uses
 a separate browser origin to avoid changing normal tracker saves. Keep the demo
@@ -69,6 +78,9 @@ upstream source checkout and run:
 ```text
 node scripts/generateSshdVegetation.mjs <sshd-rando-backend-root> <Locations.py>
 ```
+
+Append `--signs-only` to import only signs while preserving existing grass/tree
+data. The current sign import added exactly 8 checks; no existing checks changed.
 
 The additive generator reuses the existing SSHD requirement converter. Missing
 source access paths or tracker areas are errors, not guesses. A full SSHD dump

@@ -6,6 +6,7 @@ const types = new Set([
     'Grass, Custom Flag',
     'Grass Blade, Custom Flag',
     'Trees, Custom Flag',
+    'Signs, Custom Flag',
 ]);
 const entries = Object.values(dump.checks).filter((check) =>
     types.has(check.type),
@@ -16,7 +17,7 @@ export const vegetationLocations = Object.fromEntries(
 
 export function vegetationFixture(slot) {
     const mode =
-        slot === 'Vegetation Player'
+        slot === 'Vegetation Player' || slot === 'Entrance Player'
             ? 'bundles'
             : slot === 'Blade Player'
               ? 'blades'
@@ -25,6 +26,7 @@ export function vegetationFixture(slot) {
     const active = entries.filter(
         (entry) =>
             entry.type === 'Trees, Custom Flag' ||
+            entry.type === 'Signs, Custom Flag' ||
             entry.type ===
                 (mode === 'bundles'
                     ? 'Grass, Custom Flag'
@@ -35,9 +37,18 @@ export function vegetationFixture(slot) {
         .filter(
             (entry) =>
                 entry.short_name.startsWith('Central Skyloft -') &&
-                entry.type !== 'Trees, Custom Flag',
+                ['Grass, Custom Flag', 'Grass Blade, Custom Flag'].includes(
+                    entry.type,
+                ),
         )
         .map((entry) => vegetationLocations[entry.short_name]);
     const checked = [1001, ...centralGrassIds.slice(0, 7)];
-    return { mode, ids, checked, centralGrassIds };
+    const centralSignIds = active
+        .filter(
+            (entry) =>
+                entry.type === 'Signs, Custom Flag' &&
+                entry.short_name.startsWith('Central Skyloft -'),
+        )
+        .map((entry) => vegetationLocations[entry.short_name]);
+    return { mode, ids, checked, centralGrassIds, centralSignIds };
 }

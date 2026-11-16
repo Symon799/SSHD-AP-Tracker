@@ -29,6 +29,14 @@ function useApManagerData<R>(fn: (manager: APClientManager) => R) {
 
 export const useApConnectionStatusString = () =>
     useApManagerData((manager) => manager.getStatusString());
+
+export function useTrackerTelemetry() {
+    const manager = useContext(ClientManagerContext)!;
+    return useSyncExternalStore(
+        manager.trackerTelemetry.subscribe,
+        manager.trackerTelemetry.getSnapshot,
+    );
+}
 export const useApConnectionStatus = () =>
     useApManagerData((manager) => manager.getStatus());
 export const useApRequiredDungeonDiagnostic = () =>

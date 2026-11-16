@@ -106,7 +106,7 @@ function stateWith(overrides: Partial<TypedOptions> = {}) {
 
 describe('SSHD vegetation checks', () => {
     it('maps all vegetation to real regions while sharing only reachability', () => {
-        const counts = { grass: 0, grass_blade: 0, tree: 0 };
+        const counts = { grass: 0, grass_blade: 0, tree: 0, sign: 0 };
         for (const [id, check] of Object.entries(logic.checks)) {
             if (!isVegetationType(check.type)) continue;
             counts[check.type]++;
@@ -114,7 +114,12 @@ describe('SSHD vegetation checks', () => {
             expect(check.area).toBeTruthy();
             expect(logic.checksByHintRegion[check.area!]).toContain(id);
         }
-        expect(counts).toEqual({ grass: 854, grass_blade: 12579, tree: 91 });
+        expect(counts).toEqual({
+            grass: 854,
+            grass_blade: 12579,
+            tree: 91,
+            sign: 8,
+        });
         expect(logic.numRequirements).toBeLessThan(6000);
     });
 
@@ -135,12 +140,12 @@ describe('SSHD vegetation checks', () => {
                 option_tree_shuffle: tree,
             });
             const state = stateWith(settings);
-            const actual = { grass: 0, grass_blade: 0, tree: 0 };
+            const actual = { grass: 0, grass_blade: 0, tree: 0, sign: 0 };
             for (const id of apCountedCheckIdsSelector(state)) {
                 const type = logic.checks[id].type;
                 if (isVegetationType(type)) actual[type]++;
             }
-            expect(actual).toEqual(counts);
+            expect(actual).toEqual({ ...counts, sign: 0 });
         },
     );
 
@@ -194,6 +199,68 @@ describe('SSHD vegetation checks', () => {
         store.dispatch(syncApCheckedChecks([first]));
         expect(store.getState().tracker.checkedChecks).toEqual([first]);
         expect(store.getState().tracker.checkedChecks).not.toContain(second);
+    });
+});
+
+describe('SSHD sign shuffle', () => {
+    it.each([undefined, 0, 1])(
+        'counts signs only when enabled: %s',
+        (value) => {
+            const settings = optionIndicesToOptions(
+                options,
+                value === undefined ? {} : { option_sign_shuffle: value },
+            );
+            const state = stateWith(settings);
+            const signs = apCountedCheckIdsSelector(state).filter(
+                (id) => logic.checks[id].type === 'sign',
+            );
+            expect(signs).toHaveLength(value === 1 ? 8 : 0);
+        },
+    );
+
+    it('resolves all sign names from AP to their actual regions', () => {
+        const resolver = buildSshdApLocationResolver(logic);
+        for (const [id, check] of Object.entries(logic.checks)) {
+            if (check.type !== 'sign') continue;
+            expect(resolver(check.name)).toBe(id);
+            expect(check.area).toBe(
+                check.name.startsWith('Central Skyloft')
+                    ? 'Central Skyloft'
+                    : 'Sky',
+            );
+        }
+    });
+
+    it('accepts all six confirmed attacks but not unrelated grass cutting tools', () => {
+        const sign = '\\Skyloft\\Central Skyloft\\Central Skyloft - Sign 1';
+        const base = { Loftwing: 1, Sailcloth: 1 };
+        for (const optimized of [false, true]) {
+            expect(reachable(base, {}, [], optimized)(sign)).toBe(false);
+            expect(
+                reachable({ ...base, Whip: 1 }, {}, [], optimized)(sign),
+            ).toBe(false);
+            expect(
+                reachable(
+                    { ...base, 'Progressive Beetle': 1 },
+                    {},
+                    [],
+                    optimized,
+                )(sign),
+            ).toBe(false);
+            for (const tool of [
+                'Progressive Sword',
+                'Gust Bellows',
+                'Progressive Slingshot',
+                'Clawshots',
+                'Progressive Bow',
+                'Bomb Bag',
+            ]) {
+                expect(
+                    reachable({ ...base, [tool]: 1 }, {}, [], optimized)(sign),
+                    tool,
+                ).toBe(true);
+            }
+        }
     });
 });
 

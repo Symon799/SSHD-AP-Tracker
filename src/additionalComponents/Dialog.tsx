@@ -97,7 +97,7 @@ export function Dialog({
                             : undefined
                     }
                     narrow={!wide}
-                    className={extraWide ? styles.extraWide : undefined}
+                    className={clsx(extraWide && styles.extraWide)}
                 >
                     <Title>{title}</Title>
                     <div className={className}>{children}</div>
