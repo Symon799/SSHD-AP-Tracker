@@ -2961,6 +2961,103 @@ test('V2 reuses V1 dungeon controls and right-click navigation follows authored 
     });
 });
 
+test('V2 editor link tooltips count unique checks across nested sub-maps', async ({
+    page,
+}) => {
+    const pack: import('../../src/v2/pack').MapPack =
+        manualEntranceFixture().pack;
+    const dump = load(fs.readFileSync('testData/sshd-dump.yaml', 'utf8')) as {
+        checks: Record<string, unknown>;
+    };
+    const checkIds = Object.keys(dump.checks).slice(0, 1234);
+    pack.maps[1].markers = [
+        {
+            id: 'direct',
+            kind: 'checks',
+            label: 'Direct',
+            x: 100,
+            y: 100,
+            checkIds: checkIds.slice(0, 2),
+        },
+        {
+            id: 'nested',
+            kind: 'link',
+            label: 'Nested',
+            x: 200,
+            y: 100,
+            targetMapId: 'nested-map',
+            navigation: 'child',
+        },
+        {
+            id: 'return',
+            kind: 'link',
+            label: 'Return',
+            x: 300,
+            y: 100,
+            targetMapId: 'root',
+            navigation: 'back',
+        },
+        {
+            id: 'passage',
+            kind: 'link',
+            label: 'Passage',
+            x: 400,
+            y: 100,
+            targetMapId: 'earth',
+        },
+    ];
+    pack.maps.push({
+        id: 'nested-map',
+        name: 'Nested Map',
+        image: 'images/map.png',
+        width: 843,
+        height: 465,
+        entranceIds: [],
+        markers: [
+            {
+                id: 'nested-checks',
+                kind: 'checks',
+                label: 'Nested checks',
+                x: 100,
+                y: 100,
+                checkIds,
+            },
+            {
+                id: 'cycle',
+                kind: 'link',
+                label: 'Cycle',
+                x: 200,
+                y: 100,
+                targetMapId: 'skyview',
+                navigation: 'child',
+            },
+        ],
+    });
+    pack.maps[2].markers = [
+        {
+            id: 'other',
+            kind: 'checks',
+            label: 'Other region',
+            x: 100,
+            y: 100,
+            checkIds: Object.keys(dump.checks).slice(1234, 1235),
+        },
+    ];
+    await page.goto('/v2/editor');
+    await importManualEntranceFixture(page, pack);
+    const door = marker(page, 'Dungeon Door');
+    await expect(door).toHaveAttribute('title', 'Dungeon Door - 1 234 checks');
+    await door.dblclick();
+    await expect(marker(page, 'Nested')).toHaveAttribute(
+        'title',
+        'Nested - 1 234 checks',
+    );
+    await expect(marker(page, 'Passage')).toHaveAttribute(
+        'title',
+        'Passage - 1 check',
+    );
+});
+
 test('V2 catalogue selects and places all matches above 1000 and round-trips the full catalogue', async ({
     page,
 }) => {

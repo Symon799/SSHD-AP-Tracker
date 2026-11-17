@@ -9,6 +9,7 @@ import type { useMapDocument } from './documentStore';
 import {
     expandGroupToMap,
     extractChecks,
+    mapCheckIds,
     mergeMarkers,
 } from './editOperations';
 import {
@@ -71,6 +72,32 @@ export default function PackEditor({
     const orderChecks = useMemo(() => createV1CheckOrder(logic), [logic]);
     const [mapId, setMapId] = useState(pack.maps[0].id);
     const map = pack.maps.find((entry) => entry.id === mapId) ?? pack.maps[0];
+    const markerTitles = useMemo(
+        () =>
+            Object.fromEntries(
+                map.markers
+                    .filter((marker) => marker.kind === 'link')
+                    .map((marker) => {
+                        const destination = linkDestination(
+                            marker,
+                            pack,
+                            marker.exitId
+                                ? exits[marker.exitId]?.entrance?.id
+                                : undefined,
+                        );
+                        const count = destination
+                            ? mapCheckIds(pack, destination).length
+                            : undefined;
+                        return [
+                            marker.id,
+                            count === undefined
+                                ? marker.label
+                                : `${marker.label} - ${count.toLocaleString('en-US').replaceAll(',', ' ')} ${count === 1 ? 'check' : 'checks'}`,
+                        ];
+                    }),
+            ),
+        [map, pack, exits],
+    );
     const mapListRef = useRef<HTMLDivElement>(null);
     const activeMapRef = useRef<HTMLButtonElement>(null);
     useLayoutEffect(() => {
@@ -1069,6 +1096,7 @@ export default function PackEditor({
                 <MapCanvas
                     key={map.id}
                     map={map}
+                    markerTitles={markerTitles}
                     images={images}
                     selected={selectedId}
                     onNavigateLink={(marker) => {

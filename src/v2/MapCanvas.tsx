@@ -37,6 +37,7 @@ export default function MapCanvas({
     onBackgroundClick,
     overlay,
     navigation,
+    markerTitles,
     states = emptyStates,
     counts = emptyCounts,
 }: {
@@ -50,6 +51,7 @@ export default function MapCanvas({
     onBackgroundClick?: () => void;
     overlay?: ReactNode;
     navigation?: ReactNode;
+    markerTitles?: Record<string, string>;
     onHover?: (marker: MapMarker, anchor: DOMRect) => void;
     onLeave?: () => void;
     onViewportChange?: () => void;
@@ -423,7 +425,8 @@ export default function MapCanvas({
                                     title={
                                         onHover
                                             ? undefined
-                                            : `${marker.label}${counts[marker.id] !== undefined ? ` · ${counts[marker.id]} remaining` : ''}`
+                                            : (markerTitles?.[marker.id] ??
+                                              `${marker.label}${counts[marker.id] !== undefined ? ` · ${counts[marker.id]} remaining` : ''}`)
                                     }
                                     onPointerEnter={(event) => {
                                         if (!drag.current)
