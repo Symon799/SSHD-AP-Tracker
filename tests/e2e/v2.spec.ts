@@ -2961,6 +2961,71 @@ test('V2 reuses V1 dungeon controls and right-click navigation follows authored 
     });
 });
 
+test('V2 catalogue selects and places all matches above 1000 and round-trips the full catalogue', async ({
+    page,
+}) => {
+    await page.goto('/v2/editor');
+    const search = page.getByRole('textbox', {
+        name: 'Search catalogue',
+        exact: true,
+    });
+    const selectAll = page.getByRole('button', {
+        name: 'Select all',
+        exact: true,
+    });
+    const summary = page.getByText(/^\d+ matches · \d+ selected$/);
+    await search.fill('Lanayru Gorge');
+    const gorgeCount = Number((await summary.textContent())!.match(/^\d+/)![0]);
+    expect(gorgeCount).toBeGreaterThan(1000);
+    const placeSelected = async (count: number, x: number) => {
+        await selectAll.click();
+        await expect(summary).toHaveText(
+            `${count} matches · ${count} selected`,
+        );
+        await page
+            .getByRole('button', { name: 'Place selected checks', exact: true })
+            .click();
+        const stage = page.getByTestId('map-stage');
+        const bounds = (await stage.boundingBox())!;
+        await stage.click({
+            position: { x: bounds.width * x, y: bounds.height * 0.95 },
+        });
+        await expect(
+            page.getByText(`${count} checks`, { exact: true }),
+        ).toBeVisible();
+    };
+    await placeSelected(gorgeCount, 0.5);
+    await search.fill('');
+    const total = Number((await summary.textContent())!.match(/^\d+/)![0]);
+    expect(total).toBeGreaterThan(15000);
+    await placeSelected(total, 0.7);
+    const download = page.waitForEvent('download');
+    await page
+        .getByRole('button', { name: 'Export pack', exact: true })
+        .click();
+    await page
+        .getByRole('button', { name: 'Download ZIP', exact: true })
+        .click();
+    const filename = (await (await download).path())!;
+    const archive = unzipSync(fs.readFileSync(filename));
+    const saved = JSON.parse(strFromU8(archive['pack.json']));
+    const groups = saved.maps
+        .flatMap(
+            (map: { markers: { label: string; checkIds?: string[] }[] }) =>
+                map.markers,
+        )
+        .filter((entry: { label: string }) => entry.label === 'Multi-check');
+    expect(
+        groups.map((entry: { checkIds: string[] }) => entry.checkIds.length),
+    ).toEqual([gorgeCount, total]);
+    await page
+        .getByLabel('Import pack', { exact: true })
+        .setInputFiles(filename);
+    await expect(
+        page.getByRole('status').filter({ hasText: 'Map pack imported.' }),
+    ).toBeVisible();
+});
+
 for (const route of ['/v2', '/v2/editor']) {
     test(`V2 wheel zoom keeps the map point under the cursor on ${route}`, async ({
         page,

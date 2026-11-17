@@ -57,6 +57,15 @@ function fixture(): MapPack {
 }
 
 describe('V2 map packs', () => {
+    it('accepts a full catalogue group while retaining a bounded import size', () => {
+        const pack = fixture();
+        const group = pack.maps[0].markers[0];
+        if (group.kind !== 'checks') throw new Error('Expected checks');
+        group.checkIds = Array.from({ length: 15016 }, (_, i) => `check-${i}`);
+        expect(parsePack(pack).maps[0].markers[0]).toEqual(group);
+        group.checkIds = Array.from({ length: 50001 }, (_, i) => `check-${i}`);
+        expect(() => parsePack(pack)).toThrow('needs check references');
+    });
     it('keeps hover titles optional, preserves explicit choices and rejects invalid flags', () => {
         const pack = fixture();
         const group = pack.maps[0].markers[0];

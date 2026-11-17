@@ -559,10 +559,7 @@ export default function PackEditor({
                                 <div className={styles.catalogueActions}>
                                     <button
                                         type="button"
-                                        disabled={
-                                            !matches.length ||
-                                            matches.length > 1000
-                                        }
+                                        disabled={!matches.length}
                                         onClick={() =>
                                             setSelectedChecks(
                                                 new Set(

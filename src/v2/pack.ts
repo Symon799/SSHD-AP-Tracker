@@ -143,7 +143,7 @@ export function parsePack(input: unknown): MapPack {
                 assert(
                     strings(marker.checkIds) &&
                         marker.checkIds.length > 0 &&
-                        marker.checkIds.length <= 15000,
+                        marker.checkIds.length <= 50000,
                     `Marker ${marker.label} needs check references.`,
                 );
                 assert(
