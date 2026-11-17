@@ -2961,6 +2961,62 @@ test('V2 reuses V1 dungeon controls and right-click navigation follows authored 
     });
 });
 
+for (const route of ['/v2', '/v2/editor']) {
+    test(`V2 wheel zoom keeps the map point under the cursor on ${route}`, async ({
+        page,
+    }) => {
+        await page.goto(route);
+        const viewport = page.getByTestId('map-viewport');
+        const stage = page.getByTestId('map-stage');
+        await expect(stage).toBeVisible();
+        const zoom = page.getByLabel('Map zoom', { exact: true });
+        const image = stage.locator('img');
+        await expect
+            .poll(() =>
+                image.evaluate(
+                    (element: HTMLImageElement) =>
+                        element.complete && element.naturalWidth > 0,
+                ),
+            )
+            .toBe(true);
+        for (let i = 0; i < 5; i++)
+            await page
+                .getByRole('button', { name: 'Zoom in', exact: true })
+                .click();
+        await viewport.evaluate((element) => {
+            element.scrollLeft =
+                (element.scrollWidth - element.clientWidth) / 2;
+            element.scrollTop =
+                (element.scrollHeight - element.clientHeight) / 2;
+        });
+        const view = (await viewport.boundingBox())!;
+        const pointer = {
+            x: view.x + view.width * 0.65,
+            y: view.y + view.height * 0.6,
+        };
+        await page.mouse.move(pointer.x, pointer.y);
+        for (const delta of [-600, 250, -200]) {
+            const before = (await stage.boundingBox())!;
+            const point = {
+                x: (pointer.x - before.x) / before.width,
+                y: (pointer.y - before.y) / before.height,
+            };
+            const previousZoom = await zoom.textContent();
+            await page.mouse.wheel(0, delta);
+            await expect(zoom).not.toHaveText(previousZoom!);
+            await expect
+                .poll(async () => {
+                    const after = (await stage.boundingBox())!;
+                    return Math.hypot(
+                        after.x + point.x * after.width - pointer.x,
+                        after.y + point.y * after.height - pointer.y,
+                    );
+                })
+                .toBeLessThan(2);
+        }
+    });
+}
+
 test('V2 zoom stays between 100 and 1000 percent with buttons and the wheel', async ({
     page,
 }) => {

@@ -1,5 +1,6 @@
 import {
     useEffect,
+    useLayoutEffect,
     useRef,
     useState,
     type PointerEvent,
@@ -66,41 +67,56 @@ export default function MapCanvas({
     const { measuredWidth, measuredHeight } = useElementSize(viewport);
     const [zoom, setZoom] = useState(1);
     const zoomRef = useRef(1);
+    const zoomAnchor = useRef<
+        | {
+              x: number;
+              y: number;
+              clientX: number;
+              clientY: number;
+          }
+        | undefined
+    >(undefined);
     const viewportChanged = useRef(onViewportChange);
     viewportChanged.current = onViewportChange;
     const [dropTarget, setDropTarget] = useState<string>();
     useEffect(() => {
         const element = viewport.current;
         if (!element) return;
-        let frame = 0;
         const wheel = (event: WheelEvent) => {
             event.preventDefault();
-            viewportChanged.current?.();
-            const before = stage.current!.getBoundingClientRect();
-            const x = (event.clientX - before.left) / before.width;
-            const y = (event.clientY - before.top) / before.height;
             const next = clampZoom(
                 zoomRef.current * Math.exp(-event.deltaY * 0.0015),
             );
+            if (next === zoomRef.current || !stage.current) return;
+            viewportChanged.current?.();
+            const before = stage.current.getBoundingClientRect();
+            zoomAnchor.current = {
+                x: (event.clientX - before.left) / before.width,
+                y: (event.clientY - before.top) / before.height,
+                clientX: event.clientX,
+                clientY: event.clientY,
+            };
             zoomRef.current = next;
             setZoom(next);
-            cancelAnimationFrame(frame);
-            frame = requestAnimationFrame(() => {
-                if (!stage.current) return;
-                const after = stage.current.getBoundingClientRect();
-                element.scrollLeft +=
-                    after.left + x * after.width - event.clientX;
-                element.scrollTop +=
-                    after.top + y * after.height - event.clientY;
-            });
         };
         element.addEventListener('wheel', wheel, { passive: false });
         return () => {
             element.removeEventListener('wheel', wheel);
-            cancelAnimationFrame(frame);
         };
     }, []);
+    useLayoutEffect(() => {
+        const anchor = zoomAnchor.current;
+        zoomAnchor.current = undefined;
+        if (!anchor || !stage.current || !viewport.current) return;
+        // Measure the committed map size before painting, not in an earlier wheel frame.
+        const after = stage.current.getBoundingClientRect();
+        viewport.current.scrollLeft +=
+            after.left + anchor.x * after.width - anchor.clientX;
+        viewport.current.scrollTop +=
+            after.top + anchor.y * after.height - anchor.clientY;
+    }, [zoom]);
     const changeZoom = (value: number) => {
+        zoomAnchor.current = undefined;
         const next = clampZoom(value);
         zoomRef.current = next;
         setZoom(next);

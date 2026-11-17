@@ -542,6 +542,7 @@
     min-height: 0;
     min-width: 0;
     overflow: auto;
+    overflow-anchor: none;
     padding: 24px;
     touch-action: none;
     cursor: grab;
