@@ -1,8 +1,9 @@
 # V2 Default Map Pack
 
-`src/v2/data/default-map-pack.zip` is **SSHD_Pack_v0.2**, merged on 2026-11-17:
-Skyloft and its five interior maps are from lehonno, and the remaining maps are
-from Ray's Lanayru pack. It contains 30 maps and 15,016 unique check placements,
+`src/v2/data/default-map-pack.zip` is the supplied **SSHD_Pack_v0.3.zip**, installed
+on 2026-11-17 with its internal name **Sky Added** and authored data unchanged.
+It builds on the merged Skyloft/Lanayru pack and adds Bug Heaven and Lumpy Pumpkin.
+It contains 32 maps and 15,016 unique check placements,
 with no unused or byte-identical duplicate images. It is used for a fresh
 workspace and the editor's **New pack** action. Authored placements are preserved.
 

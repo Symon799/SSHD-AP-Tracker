@@ -78,7 +78,11 @@ test('V2 bundled pack preserves local edits and becomes the base for New pack', 
     await expect(
         page.getByRole('button', { name: 'Edit Skyloft', exact: true }),
     ).toBeVisible();
-    await expect(page.locator('[aria-label="Maps"] > button')).toHaveCount(30);
+    await expect(page.locator('[aria-label="Maps"] > button')).toHaveCount(32);
+    for (const name of ['Bug Heaven', 'Lumpy Pumpkin'])
+        await expect(
+            page.getByRole('button', { name: `Edit ${name}`, exact: true }),
+        ).toHaveCount(1);
     await expect(
         page.getByRole('button', { name: 'Edit Sandship B3', exact: true }),
     ).toHaveCount(1);
