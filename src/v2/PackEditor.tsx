@@ -36,10 +36,15 @@ import {
     encodeArchive,
     importImage,
 } from './packIO';
+import { checkArchiveSize } from './packLimits';
 import { ResizableCatalogue, ResizableWorkspace } from './ResizablePanels';
 import styles from './v2.module.css';
 
 const newId = () => window.crypto.randomUUID();
+const afterPaint = () =>
+    new Promise<void>((resolve) => {
+        requestAnimationFrame(() => setTimeout(resolve, 0));
+    });
 
 export default function PackEditor({
     store,
@@ -106,6 +111,7 @@ export default function PackEditor({
         : pack.maps[0].id;
     const [message, setMessage] = useState('');
     const [busy, setBusy] = useState(false);
+    const [importStatus, setImportStatus] = useState('');
     const [creation, setCreation] = useState<{
         mode: 'map' | 'pack' | 'submap';
         name: string;
@@ -223,6 +229,7 @@ export default function PackEditor({
             setMessage(String(error));
         } finally {
             setBusy(false);
+            setImportStatus('');
         }
     };
     const addImage = async (
@@ -428,23 +435,42 @@ export default function PackEditor({
                                 event.target.value = '';
                                 if (file)
                                     void perform(async () => {
-                                        if (file.size > 32 * 1024 * 1024)
-                                            throw new Error(
-                                                'ZIP exceeds 32 MB.',
-                                            );
-                                        const next = decodeArchive(
-                                            new Uint8Array(
-                                                await file.arrayBuffer(),
-                                            ),
+                                        setMessage('');
+                                        checkArchiveSize(file.size);
+                                        setImportStatus('Reading map pack…');
+                                        await afterPaint();
+                                        const bytes = new Uint8Array(
+                                            await file.arrayBuffer(),
                                         );
+                                        setImportStatus(
+                                            'Processing maps and images…',
+                                        );
+                                        await afterPaint();
+                                        const next = decodeArchive(bytes);
+                                        setImportStatus('Finalizing import…');
+                                        await afterPaint();
                                         const stamped = commit(next);
                                         await markExported(stamped);
                                         setMapId(next.pack.maps[0].id);
                                         setSelectedId(undefined);
+                                        setMessage('Map pack imported.');
                                     });
                             }}
                         />
                     </label>
+                    {importStatus && (
+                        <span
+                            role="status"
+                            aria-label="Pack import status"
+                            aria-live="polite"
+                        >
+                            <i
+                                className="fas fa-spinner fa-spin"
+                                aria-hidden="true"
+                            />{' '}
+                            {importStatus}
+                        </span>
+                    )}
                     <button
                         type="button"
                         disabled={busy}

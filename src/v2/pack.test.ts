@@ -1,5 +1,5 @@
 import { strToU8, zipSync } from 'fflate';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
     linkDestination,
     packWarnings,
@@ -255,6 +255,29 @@ const bytes = Uint8Array.from(atob(png), (character) =>
     character.charCodeAt(0),
 );
 describe('V2 pack archives', () => {
+    it('round-trips an image larger than the previous 8 MB limit', async () => {
+        const larger = new Uint8Array(9 * 1024 * 1024);
+        larger.set(bytes);
+        const original = {
+            pack: fixture(),
+            images: {
+                'images/map.png': `data:image/png;base64,${Buffer.from(larger).toString('base64')}`,
+            },
+        };
+        // Avoid timing the platform's large data-URL parser in an archive test.
+        const fetchImage = vi
+            .spyOn(globalThis, 'fetch')
+            .mockResolvedValueOnce(new Response(larger));
+        try {
+            const restored = decodeArchive(await encodeArchive(original));
+            expect(restored.pack).toEqual(original.pack);
+            expect(restored.images['images/map.png']).toBe(
+                original.images['images/map.png'],
+            );
+        } finally {
+            fetchImage.mockRestore();
+        }
+    }, 15_000);
     it('exports images and imports the same manifest', async () => {
         const original = {
             pack: fixture(),
@@ -304,7 +327,7 @@ describe('V2 pack archives', () => {
             decodeArchive(
                 zipSync({
                     'pack.json': strToU8('{}'),
-                    'images/map.png': new Uint8Array(9 * 1024 * 1024),
+                    'images/map.png': new Uint8Array(17 * 1024 * 1024),
                 }),
             ),
         ).toThrow('expanded-size');

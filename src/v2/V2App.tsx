@@ -165,7 +165,12 @@ export default function V2App() {
     if (!loaded || !initial)
         return (
             <div className={styles.app}>
-                <p role="status">{error || 'Loading SSHD catalogue…'}</p>
+                <p role="status">
+                    {error ||
+                        (!loaded
+                            ? 'Loading SSHD catalogue…'
+                            : 'Loading default map pack…')}
+                </p>
             </div>
         );
     return <Workspace initial={initial} />;

@@ -242,7 +242,11 @@ Screenshots are produced under `test-results/v2-*.png` (ignored by Git).
 Structural validation rejects duplicate IDs, duplicate references inside a group,
 invalid coordinates/dimensions, dangling fixed links and unknown versions.
 ZIP import rejects unexpected/traversal paths, SVG/HTML files and oversized data.
-Limits: 200 maps, 2,000 markers/map, 32 MB compressed, 64 MB expanded, 8 MB/file.
+Limits: 200 maps, 2,000 markers/map, 256 MB compressed, 512 MB expanded, 16 MB/file.
+Import and export share the same limits. These are safety ceilings, not target
+pack sizes: large packs can use substantially more memory while decoding images,
+encoding base64, saving local drafts and creating ZIPs. Export may temporarily
+block the UI; keep backups and optimize images where practical.
 
 ## Remaining Work Before a Real V2 Release
 

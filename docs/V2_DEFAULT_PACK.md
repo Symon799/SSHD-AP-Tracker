@@ -1,8 +1,10 @@
 # V2 Default Map Pack
 
-`src/v2/data/default-map-pack.zip` is the contributor export supplied by Symon
-on 2026-11-16, authored by lehonno. It is used for a fresh workspace and the
-editor's **New pack** action. Images and placements are kept as exported.
+`src/v2/data/default-map-pack.zip` is **SSHD_Pack_v0.2**, merged on 2026-11-17:
+Skyloft and its five interior maps are from lehonno, and the remaining maps are
+from Ray's Lanayru pack. It contains 30 maps and 15,016 unique check placements,
+with no unused or byte-identical duplicate images. It is used for a fresh
+workspace and the editor's **New pack** action. Authored placements are preserved.
 
 Existing IndexedDB drafts take precedence, including older default packs.
 Updating the deployed ZIP never replaces an existing local draft. Export a

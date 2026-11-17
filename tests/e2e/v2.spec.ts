@@ -6,17 +6,30 @@ import path from 'node:path';
 
 // Legacy interaction scenarios retain their original, stable geographic fixture.
 // The bundled-pack scenarios below exercise the actual contributor default.
+let legacyArchive: Buffer | undefined;
 test.beforeEach(async ({ page }, info) => {
-    if (info.title.startsWith('V2 bundled')) return;
+    if (info.title.startsWith('V2 bundled')) {
+        info.setTimeout(90_000);
+        return;
+    }
     await page.route('**/default-map-pack.zip*', async (route) => {
-        const files = unzipSync(
-            fs.readFileSync('src/v2/data/default-map-pack.zip'),
-        );
-        files['pack.json'] = new Uint8Array(
-            fs.readFileSync('tests/e2e/v2-legacy-pack.json'),
-        );
+        if (!legacyArchive) {
+            const manifest = fs.readFileSync('tests/e2e/v2-legacy-pack.json');
+            const files: Record<string, Uint8Array> = { 'pack.json': manifest };
+            for (const [id, image] of Object.entries({
+                world: 'Sky',
+                skyloft: 'Skyloft',
+                faron: 'Faron',
+                eldin: 'Eldin',
+                lanayru: 'Lanayru',
+            }))
+                files[`images/${id}.png`] = fs.readFileSync(
+                    `src/assets/maps/${image}.png`,
+                );
+            legacyArchive = Buffer.from(zipSync(files, { level: 1 }));
+        }
         await route.fulfill({
-            body: Buffer.from(zipSync(files)),
+            body: legacyArchive,
             contentType: 'application/zip',
         });
     });
@@ -31,7 +44,7 @@ test('V2 bundled pack preserves local edits and becomes the base for New pack', 
             name: 'Edit Knight Academy F1',
             exact: true,
         }),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 30_000 });
     await page
         .getByRole('button', { name: 'Edit Skyloft', exact: true })
         .click();
@@ -56,7 +69,7 @@ test('V2 bundled pack preserves local edits and becomes the base for New pack', 
             name: 'Edit My local Skyloft',
             exact: true,
         }),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 30_000 });
     await page.getByRole('button', { name: 'New pack', exact: true }).click();
     await page
         .getByRole('dialog', { name: 'New map pack' })
@@ -65,7 +78,74 @@ test('V2 bundled pack preserves local edits and becomes the base for New pack', 
     await expect(
         page.getByRole('button', { name: 'Edit Skyloft', exact: true }),
     ).toBeVisible();
-    await expect(page.locator('[aria-label="Maps"] > button')).toHaveCount(10);
+    await expect(page.locator('[aria-label="Maps"] > button')).toHaveCount(30);
+    await expect(
+        page.getByRole('button', { name: 'Edit Sandship B3', exact: true }),
+    ).toHaveCount(1);
+});
+
+test('V2 bundled pack import shows reading and completion status', async ({
+    page,
+}) => {
+    let finishDownload!: () => void;
+    const download = new Promise<void>((resolve) => {
+        finishDownload = resolve;
+    });
+    await page.route('**/default-map-pack.zip*', async (route) => {
+        await download;
+        await route.continue();
+    });
+    await page.goto('/v2/editor');
+    await expect(page.getByRole('status')).toHaveText(
+        'Loading default map pack…',
+    );
+    finishDownload();
+    await expect(page.getByLabel('Import pack', { exact: true })).toBeEnabled({
+        timeout: 30_000,
+    });
+    await page.evaluate(() => {
+        const read = File.prototype.arrayBuffer;
+        const control = window as typeof window & {
+            finishPackRead?: () => void;
+        };
+        File.prototype.arrayBuffer = async function () {
+            await new Promise<void>((resolve) => {
+                control.finishPackRead = resolve;
+            });
+            return read.call(this);
+        };
+    });
+    await page
+        .getByLabel('Import pack', { exact: true })
+        .setInputFiles('src/v2/data/default-map-pack.zip');
+    const status = page.getByRole('status', { name: 'Pack import status' });
+    await expect(status).toHaveText('Reading map pack…');
+    await expect(
+        page.getByLabel('Import pack', { exact: true }),
+    ).toBeDisabled();
+    await page.screenshot({ path: 'test-results/v2-pack-import-status.png' });
+    await expect
+        .poll(() =>
+            page.evaluate(
+                () =>
+                    typeof (
+                        window as typeof window & {
+                            finishPackRead?: () => void;
+                        }
+                    ).finishPackRead,
+            ),
+        )
+        .toBe('function');
+    await page.evaluate(() =>
+        (
+            window as typeof window & { finishPackRead?: () => void }
+        ).finishPackRead?.(),
+    );
+    await expect(status).toHaveCount(0);
+    await expect(
+        page.getByRole('status').filter({ hasText: 'Map pack imported.' }),
+    ).toBeVisible();
+    await expect(page.getByLabel('Import pack', { exact: true })).toBeEnabled();
 });
 
 test('V2 bundled markers shrink with the map, hide crowded labels and recover on zoom', async ({
@@ -384,6 +464,9 @@ async function importManualEntranceFixture(page: Page, pack: unknown) {
     await expect(page.getByLabel('Pack name', { exact: true })).toHaveValue(
         'Manual entrance demo',
     );
+    await expect(
+        page.getByRole('status').filter({ hasText: 'Map pack imported.' }),
+    ).toBeVisible();
 }
 
 test('V2 catalogue fills the remaining height down to the placement controls', async ({
@@ -1718,6 +1801,9 @@ test('V2 editor extracts members, merges by drag with undo and redo, expands reg
         'The Sky',
     );
     await expect(
+        page.getByRole('status').filter({ hasText: 'Map pack imported.' }),
+    ).toBeVisible();
+    await expect(
         page.getByRole('status').filter({ hasText: 'Saved locally' }),
     ).toBeVisible();
     await page.reload();
@@ -2038,6 +2124,9 @@ test('V2 editor associates searchable game exits and map arrivals, and manual en
     await page
         .getByLabel('Import pack', { exact: true })
         .setInputFiles(filename);
+    await expect(
+        page.getByRole('status').filter({ hasText: 'Map pack imported.' }),
+    ).toBeVisible();
     await selection.selectOption({ label: 'Dungeon Door' });
     await page.getByRole('button', { name: 'Fixed map', exact: true }).click();
     await expect(
@@ -2249,6 +2338,9 @@ test('V2 editor exports stage rules and player following prefers specific rules 
     await page
         .getByLabel('Import pack', { exact: true })
         .setInputFiles(filename);
+    await expect(
+        page.getByRole('status').filter({ hasText: 'Map pack imported.' }),
+    ).toBeVisible();
     await page.getByRole('link', { name: 'Preview Tracker' }).click();
     await page
         .getByRole('button', { name: 'Follow player', exact: true })

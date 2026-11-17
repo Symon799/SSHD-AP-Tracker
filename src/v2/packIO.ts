@@ -5,10 +5,11 @@ import {
     upgradeLegacyHoverTitles,
     type MapDocument,
 } from './pack';
-
-const maxArchiveSize = 32 * 1024 * 1024;
-const maxAssetSize = 8 * 1024 * 1024;
-const maxExpandedSize = 64 * 1024 * 1024;
+import {
+    checkArchiveSize,
+    checkPackEntryLimits,
+    PACK_LIMITS,
+} from './packLimits';
 
 export function imageMime(bytes: Uint8Array): string | undefined {
     if (
@@ -38,20 +39,14 @@ function imageUrl(bytes: Uint8Array) {
 }
 
 export function decodeArchive(bytes: Uint8Array): MapDocument {
-    if (bytes.length > maxArchiveSize)
-        throw new Error('ZIP exceeds the 32 MB limit.');
+    checkArchiveSize(bytes.length);
     let size = 0;
     let count = 0;
     const files = unzipSync(bytes, {
         filter: (file) => {
             count++;
             size += file.originalSize;
-            if (
-                count > 300 ||
-                size > maxExpandedSize ||
-                file.originalSize > maxAssetSize
-            )
-                throw new Error('ZIP exceeds the expanded-size limits.');
+            checkPackEntryLimits(size, count, file.originalSize);
             if (file.name !== 'pack.json' && !assetPath(file.name))
                 throw new Error(`Unsupported ZIP path: ${file.name}`);
             return true;
@@ -78,6 +73,7 @@ export async function encodeArchive(
         'pack.json': strToU8(JSON.stringify(pack, null, 2)),
     };
     let size = files['pack.json'].length;
+    checkPackEntryLimits(size, 1, size);
     for (const path of new Set(pack.maps.map((map) => map.image))) {
         const url = document.images[path];
         if (!url) throw new Error(`Missing image: ${path}`);
@@ -89,19 +85,21 @@ export async function encodeArchive(
         const response = await fetch(url);
         if (!response.ok) throw new Error(`Cannot read ${path}.`);
         const bytes = new Uint8Array(await response.arrayBuffer());
-        if (!imageMime(bytes) || bytes.length > maxAssetSize)
+        if (!imageMime(bytes) || bytes.length > PACK_LIMITS.asset)
             throw new Error(`Invalid or oversized image: ${path}`);
         size += bytes.length;
-        if (size > maxExpandedSize) throw new Error('Pack exceeds 64 MB.');
+        checkPackEntryLimits(size, Object.keys(files).length + 1, bytes.length);
         files[path] = bytes;
     }
-    return zipSync(files, { level: 6 });
+    const archive = zipSync(files, { level: 6 });
+    checkArchiveSize(archive.length);
+    return archive;
 }
 
 export async function importImage(
     file: File,
 ): Promise<{ url: string; width: number; height: number }> {
-    if (file.size > maxAssetSize) throw new Error('Image exceeds 8 MB.');
+    if (file.size > PACK_LIMITS.asset) throw new Error('Image exceeds 16 MB.');
     const url = imageUrl(new Uint8Array(await file.arrayBuffer()));
     const image = new Image();
     image.src = url;
