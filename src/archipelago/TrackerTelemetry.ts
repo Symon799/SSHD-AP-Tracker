@@ -32,6 +32,29 @@ const id = (value: unknown): value is string =>
 export const validStage = (value: unknown): value is string =>
     typeof value === 'string' && /^[A-Za-z0-9_-]{1,32}$/.test(value);
 
+export const rustLocationKey = (seed: string, slot: number) =>
+    `sshd_rs_${seed}_${slot}_tracker_location`;
+
+export function parseRustLocation(value: unknown): PlayerLocation | undefined {
+    if (
+        !record(value) ||
+        !validStage(value.stage) ||
+        ['room', 'layer', 'entrance'].some(
+            (key) =>
+                value[key] !== undefined &&
+                value[key] !== null &&
+                !integer(value[key]),
+        )
+    )
+        return undefined;
+    return {
+        stage: value.stage,
+        ...(integer(value.room) ? { room: value.room } : {}),
+        ...(integer(value.layer) ? { layer: value.layer } : {}),
+        ...(integer(value.entrance) ? { entrance: value.entrance } : {}),
+    };
+}
+
 /** Proposed protocol, not a claim that the SSHD client currently publishes it. */
 export function parseTrackerTelemetry(
     value: unknown,
@@ -124,6 +147,42 @@ export class TrackerTelemetryStore {
     }
     reset(session?: TelemetrySession) {
         this.publish({ ...empty(), session });
+    }
+    receiveRustLocation(key: string, value: unknown) {
+        const session = this.snapshot.session;
+        if (!session || key !== rustLocationKey(session.seed, session.slot))
+            return;
+        if (value === null) {
+            if (this.snapshot.state === 'waiting' && !this.snapshot.location)
+                return;
+            this.publish({
+                ...this.snapshot,
+                location: undefined,
+                state: 'waiting',
+                issue: undefined,
+            });
+            return;
+        }
+        const location = parseRustLocation(value);
+        if (!location) {
+            this.publish({
+                ...this.snapshot,
+                issue: 'Ignored invalid Rust client location.',
+            });
+            return;
+        }
+        const changed =
+            JSON.stringify(location) !== JSON.stringify(this.snapshot.location);
+        if (!changed && this.snapshot.state === 'ready' && !this.snapshot.issue)
+            return;
+        this.publish({
+            ...this.snapshot,
+            location,
+            state: 'ready',
+            issue: undefined,
+            locationRevision:
+                this.snapshot.locationRevision + (changed ? 1 : 0),
+        });
     }
     receive(value: unknown) {
         if (!this.snapshot.session) return;

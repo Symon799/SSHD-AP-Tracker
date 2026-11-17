@@ -5,12 +5,7 @@ import { formatEntranceName } from '../logic/Entrances';
 import type { ExitMapping } from '../logic/Locations';
 import type { Logic } from '../logic/Logic';
 import { Icon } from './MapCanvas';
-import {
-    linkDestination,
-    type MapLink,
-    type MapPack,
-    type PackMap,
-} from './pack';
+import { linkDestination, type MapLink, type MapPack } from './pack';
 import styles from './v2.module.css';
 
 interface EntranceOption {
@@ -19,7 +14,7 @@ interface EntranceOption {
     isDisabled?: boolean;
 }
 
-function entranceOptions(
+export function entranceOptions(
     definitions: Record<string, { short_name: string }>,
 ): EntranceOption[] {
     const labels = Object.values(definitions).map((entry) =>
@@ -220,79 +215,6 @@ export function MapLinkSettings({
             >
                 <Icon name="sign-out-alt" /> Go to destination
             </button>
-        </section>
-    );
-}
-
-export function MapArrivalSettings({
-    map,
-    pack,
-    logic,
-    onChange,
-}: {
-    map: PackMap;
-    pack: MapPack;
-    logic: Logic;
-    onChange: (map: PackMap) => void;
-}) {
-    const options = entranceOptions(logic.areaGraph.entrances)
-        .filter((option) => !map.entranceIds.includes(option.value))
-        .map((option) => {
-            const owner = pack.maps.find((entry) =>
-                entry.entranceIds.includes(option.value),
-            );
-            return owner
-                ? {
-                      ...option,
-                      label: `${option.label} — ${owner.name}`,
-                      isDisabled: true,
-                  }
-                : option;
-        });
-    return (
-        <section className={styles.bindingSection} aria-label="Map arrivals">
-            <h2>Arrivals on this map ({map.entranceIds.length})</h2>
-            <EntrancePicker
-                label="Add arrival to map"
-                options={options}
-                onChange={(id) => {
-                    if (
-                        !pack.maps.some((entry) =>
-                            entry.entranceIds.includes(id),
-                        )
-                    )
-                        onChange({
-                            ...map,
-                            entranceIds: [...map.entranceIds, id],
-                        });
-                }}
-            />
-            <div className={styles.arrivalList}>
-                {map.entranceIds.map((id) => (
-                    <div className={styles.arrivalRow} key={id}>
-                        <span>
-                            {formatEntranceName(
-                                logic.areaGraph.entrances[id]?.short_name ?? id,
-                            )}
-                        </span>
-                        <button
-                            type="button"
-                            aria-label={`Remove arrival ${id}`}
-                            title="Remove arrival"
-                            onClick={() =>
-                                onChange({
-                                    ...map,
-                                    entranceIds: map.entranceIds.filter(
-                                        (entry) => entry !== id,
-                                    ),
-                                })
-                            }
-                        >
-                            <Icon name="times" />
-                        </button>
-                    </div>
-                ))}
-            </div>
         </section>
     );
 }

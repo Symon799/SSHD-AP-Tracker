@@ -2,10 +2,22 @@
 
 ## Status
 
-This is tested preparation, NOT a claim that Wesley's client already publishes
-compatible telemetry. The proposed contract needs his confirmation.
+The tracker reads the Rust client's announced DataStorage contract:
+`sshd_rs_{RoomInfo.seed_name}_{slot}_tracker_location`. It requests the current
+value on login (Get) and subscribes to updates (SetNotify). The object contains
+`stage`, optional `stage_name`, `room`, `layer`, `entrance`. Routing uses the stage
+code, not the human-readable name. Null resets telemetry to waiting without moving
+the visible map. Invalid values and other seed/slot keys are ignored.
 
-- Follow player is off by default. The crosshair beside the map title toggles it.
+This adapter is tested with the simulated server, including login snapshots,
+updates and resets. A real Rust-client session is still needed to validate the
+announced key namespace and payload end to end. X/Y/Z position updates are not
+subscribed. The earlier proposed Bounced adapter below remains supported.
+
+- Follow player is on by default on first use; the saved preference is respected.
+  The crosshair beside the map title toggles it and enabling it immediately
+  returns to the player's map when valid telemetry and a unique association exist.
+  Right-clicking returns to that map without changing the follow preference.
   No valid telemetry means no automatic navigation.
 - Unknown stages, ambiguous maps, loading, stale frames and other-player data
   never choose a new map. The preference is saved locally.
@@ -24,15 +36,42 @@ Continue authoring normally. One image for an entire dungeon is supported: sever
 stage IDs can point to that map. Room/layer/arrival constraints are optional.
 A game layer is not a dungeon floor.
 
-In map properties, expand **Auto-follow: game areas for this map**, choose a named game area and **Associate game area**.
-The area list uses the old V1 region table, with stage IDs shown in parentheses.
-Imported rules and received unknown stages remain selectable. **Use player's area** fills the stage
-from received telemetry, leaving the optional constraints unrestricted.
+In map properties, choose **Configure associations**. The dialog has two
+independent tabs. **Apply Changes** commits all edits as one undo step, after a
+transfer review if another map owns any selected associations. **Discard Changes**
+restores the last applied associations. Neither action closes the settings dialog,
+including the transfer review's **Apply Change** and **Discard Changes** actions.
+The footer reports pending edits; Apply/Discard are disabled when there are none.
+Closing via the cross, Escape or backdrop warns about unapplied edits, offering
+**Apply & close**, **Keep editing**, or **Discard & close**, in that order.
+Apply stays to the left of Discard throughout. Both confirmation paths display any
+transfers directly, without a checkbox. Existing pack IDs and assignments are preserved.
+
+- **Player following:** search areas by name/code, optionally filter the region,
+  and tick those represented by this image. **Select filtered** adds the visible
+  matches; **Clear selection** removes only the filtered matches. Unknown stages
+  in imported rules or client telemetry remain selectable. **Use player's current
+  area** adds the received stage to the pending selection. Room, layer and spawn
+  index are under **Advanced conditions** and should normally stay blank. They
+  constrain newly selected areas only. Use verified values, not guessed ones.
+- **Entrance destinations:** select the AP entrances ending on this image. These
+  associations serve game-entrance links, not player following. A link's **Game
+  entrance** identifies the physical exit on its source image; its manual ER
+  destination is resolved through these map-arrival associations. Fixed links
+  need neither association type.
+- Assignments owned by another map are labelled. Transfers require confirmation;
+  Apply removes the exact association from the old map and adds it to the new map
+  atomically. A specific room rule may coexist with a broad province fallback.
+
+Example: one whole Knight Academy image can use F001r with no advanced fields.
+Two floor images sharing F001r need verified room conditions. A whole-dungeon
+image may have several stage codes, one per internal area represented. None of
+these require Game entrance links or AP arrival bindings for Follow player.
 
 More specific rules take precedence. Equal specificity on different maps is
-ambiguous, so no switch occurs. Exact duplicate rules are rejected. To transfer a
-stage-only rule from a province to a new detailed map, remove the province's rule
-first. New V1 starter packs get coarse stage rules; customized packs are not
+ambiguous, so no switch occurs. Exact duplicate rules are rejected. A confirmed
+transfer moves a stage-only rule from a province to a new detailed map in one
+operation. New V1 starter packs get coarse stage rules; customized packs are not
 silently changed. Rules autosave, support undo/redo and travel in the pack ZIP.
 
 Entrance bindings remain separate: location rules describe where Link really is;
@@ -42,6 +81,11 @@ No VGCartography assets were added; confirm reuse permission and credits before
 distributing new images.
 
 ## Simulated Testing
+
+Connect as **Rust Player** to test the real DataStorage adapter. It starts with
+F100 already stored; enabling Follow immediately opens Faron. Commands
+`!demo-rust-stage F200`, `!demo-rust-clear`, `!demo-rust-stage F000` simulate
+notifications, a cleared value and recovery. This does not require X/Y/Z updates.
 
 Run run-v2-demo.bat and connect as Entrance Player, no password. Enable Follow
 player and send these commands in Tools:

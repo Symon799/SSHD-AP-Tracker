@@ -204,10 +204,12 @@ exact IDs as the existing logic/menu, not names or seed-specific guesses.
    for the actual outgoing door in **Exit on this map**. Fixed map links remain
    available for ordinary browsing and are not randomized.
 2. Select each destination map (background click or Current selection dropdown),
-   then add its real incoming doors under **Arrivals on this map**. Search accepts
+   then open **Configure associations > Entrance destinations** and select its
+   real incoming doors. Search accepts
    name fragments in any order and technical IDs; labels use `name (via source)`.
    Several arrivals may belong to one map, but one arrival cannot belong to two
-   maps. Arrivals assigned elsewhere are disabled and show the owning map.
+   maps. Arrivals assigned elsewhere show their owner; moving them requires
+   explicit transfer confirmation. Apply commits the whole edit as one undo step.
 3. During play, set the actual connection in the existing **Entrances** menu.
    The editor binds physical doors/maps; it does not edit seed connections.
 

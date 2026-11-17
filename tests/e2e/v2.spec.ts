@@ -267,6 +267,327 @@ async function connectV2(page: Page, slot = 'Vegetation Player') {
     await page.getByRole('button', { name: 'Launch New Tracker' }).click();
 }
 
+test('V2 map associations filter, cancel, confirm transfers and undo atomically', async ({
+    page,
+}) => {
+    await page.goto('/v2/editor');
+    await page
+        .getByRole('button', { name: 'Edit Skyloft', exact: true })
+        .click();
+    const summary = page.getByText(/^Player following: \d+ game areas$/);
+    const before = await summary.textContent();
+    await page.getByRole('button', { name: 'Configure associations' }).click();
+    const dialog = page.getByRole('dialog', {
+        name: 'Map associations: Skyloft',
+        exact: true,
+    });
+    await expect(
+        dialog.getByRole('button', { name: 'Close map associations' }),
+    ).toBeInViewport();
+    for (const tab of ['Player following', 'Entrance destinations']) {
+        await dialog.getByRole('tab', { name: tab, exact: true }).click();
+        await expect(
+            dialog.getByRole('tab', { name: tab, exact: true }),
+        ).toHaveAttribute('aria-selected', 'true');
+        await expect
+            .poll(() =>
+                dialog
+                    .getByRole('region', {
+                        name: 'Selected associations',
+                        exact: true,
+                    })
+                    .evaluate((element) => {
+                        const list =
+                            element.lastElementChild!.getBoundingClientRect();
+                        const section = element.getBoundingClientRect();
+                        return Math.abs(list.bottom - section.bottom);
+                    }),
+            )
+            .toBeLessThan(2);
+    }
+    await dialog
+        .getByRole('tab', { name: 'Player following', exact: true })
+        .click();
+    await dialog.getByLabel('Search associations').fill('F100');
+    await dialog
+        .getByRole('button', { name: 'Select filtered', exact: true })
+        .click();
+    await expect(
+        dialog.getByRole('button', { name: 'Apply Changes', exact: true }),
+    ).toBeEnabled();
+    await dialog
+        .getByRole('button', { name: 'Close map associations', exact: true })
+        .click();
+    const confirmation = page.getByRole('dialog', {
+        name: 'You have unapplied changes.',
+        exact: true,
+    });
+    await expect(
+        confirmation.getByRole('region', { name: 'Association transfers' }),
+    ).toContainText('From Faron Province to Skyloft');
+    await expect(confirmation.getByRole('heading')).toHaveCSS(
+        'text-align',
+        'center',
+    );
+    await expect(confirmation.getByRole('button')).toHaveText([
+        'Apply & close',
+        'Keep editing',
+        'Discard & close',
+    ]);
+    await expect(
+        confirmation.getByRole('button', { name: 'Apply & close' }),
+    ).toBeEnabled();
+    await confirmation.getByRole('button', { name: 'Keep editing' }).click();
+    await expect(
+        dialog.getByRole('checkbox', {
+            name: 'Confirm transfers',
+            exact: true,
+        }),
+    ).toHaveCount(0);
+    await dialog
+        .getByRole('button', { name: 'Discard Changes', exact: true })
+        .click();
+    await expect(dialog.getByRole('status')).toHaveText('No pending changes');
+    await expect(dialog).toBeVisible();
+    await expect(summary).toHaveText(before!);
+    await dialog.getByLabel('Game area region').selectOption('Faron');
+    await dialog.getByLabel('Search associations').fill('F100');
+    await dialog
+        .getByRole('button', { name: 'Select filtered', exact: true })
+        .click();
+    await dialog
+        .getByRole('button', { name: 'Clear selection', exact: true })
+        .click();
+    await expect(
+        dialog.getByRole('button', { name: 'Apply Changes', exact: true }),
+    ).toBeDisabled();
+    await dialog
+        .getByRole('button', { name: 'Select filtered', exact: true })
+        .click();
+    await page.screenshot({ path: 'test-results/v2-associations-desktop.png' });
+    await expect(
+        dialog.getByRole('button', { name: 'Apply Changes', exact: true }),
+    ).toBeInViewport();
+    await page.setViewportSize({ width: 600, height: 820 });
+    await expect(dialog).toBeVisible();
+    await expect(
+        dialog.getByRole('button', { name: 'Apply Changes', exact: true }),
+    ).toBeInViewport();
+    await page.screenshot({ path: 'test-results/v2-associations-mobile.png' });
+    await dialog
+        .getByRole('button', { name: 'Apply Changes', exact: true })
+        .click();
+    const review = page.getByRole('dialog', {
+        name: 'Review association transfers',
+        exact: true,
+    });
+    await expect(
+        review.getByRole('region', { name: 'Association transfers' }),
+    ).toContainText('Faron');
+    await expect(review.getByRole('checkbox')).toHaveCount(0);
+    await expect(review.getByRole('button')).toHaveText([
+        'Apply Change',
+        'Keep editing',
+        'Discard Changes',
+    ]);
+    await expect(summary).toHaveText(before!);
+    await review.getByRole('button', { name: 'Keep editing' }).click();
+    await dialog
+        .getByRole('button', { name: 'Apply Changes', exact: true })
+        .click();
+    await review
+        .getByRole('button', { name: 'Discard Changes', exact: true })
+        .click();
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('status')).toHaveText('No pending changes');
+    await expect(summary).toHaveText(before!);
+    await dialog
+        .getByRole('button', { name: 'Select filtered', exact: true })
+        .click();
+    await dialog
+        .getByRole('button', { name: 'Apply Changes', exact: true })
+        .click();
+    await review.evaluate((element) =>
+        Promise.all(
+            element.getAnimations().map((animation) => animation.finished),
+        ),
+    );
+    await page.screenshot({
+        path: 'test-results/v2-transfer-confirmation-mobile.png',
+    });
+    await review
+        .getByRole('button', { name: 'Apply Change', exact: true })
+        .click();
+    await expect(review).not.toBeVisible();
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('status')).toHaveText('No pending changes');
+    await expect(summary).not.toHaveText(before!);
+    await dialog
+        .getByRole('button', { name: 'Clear selection', exact: true })
+        .click();
+    await expect(dialog.getByRole('status')).toHaveText('Unapplied changes');
+    await dialog
+        .getByRole('button', { name: 'Discard Changes', exact: true })
+        .click();
+    await expect(dialog.getByRole('status')).toHaveText('No pending changes');
+    await expect(
+        dialog.getByRole('checkbox', {
+            name: 'Faron Woods (F100)',
+            exact: true,
+        }),
+    ).toBeChecked();
+    await dialog
+        .getByRole('button', { name: 'Close map associations', exact: true })
+        .click();
+    await page.getByRole('button', { name: 'Undo', exact: true }).click();
+    await expect(summary).toHaveText(before!);
+});
+
+test('V2 association close protection handles Escape, backdrop, discard and apply', async ({
+    page,
+}) => {
+    await page.goto('/v2/editor');
+    await page
+        .getByRole('button', { name: 'Edit Skyloft', exact: true })
+        .click();
+    const summary = page.getByText(/^Player following: \d+ game areas$/);
+    const before = await summary.textContent();
+    const open = page.getByRole('button', { name: 'Configure associations' });
+    const dialog = page.getByRole('dialog', {
+        name: 'Map associations: Skyloft',
+        exact: true,
+    });
+    const confirmation = page.getByRole('dialog', {
+        name: 'You have unapplied changes.',
+        exact: true,
+    });
+    await open.click();
+    await dialog.getByLabel('Search associations').fill('F000');
+    await page.keyboard.press('Escape');
+    await expect(dialog).not.toBeVisible();
+    await expect(confirmation).not.toBeVisible();
+    await open.click();
+    await dialog.getByLabel('Search associations').fill('F000');
+    const sky = dialog.getByRole('checkbox', {
+        name: 'Skyloft (F000)',
+        exact: true,
+    });
+    await expect(sky).toBeChecked();
+    await sky.uncheck();
+    await page.keyboard.press('Escape');
+    await expect(confirmation).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(confirmation).not.toBeVisible();
+    await expect(sky).not.toBeChecked();
+    await page.mouse.click(5, 5);
+    await expect(confirmation).toBeVisible();
+    const keepEditing = confirmation.getByRole('button', {
+        name: 'Keep editing',
+    });
+    await expect
+        .poll(() =>
+            keepEditing.evaluate((element) => {
+                const rect = element.getBoundingClientRect();
+                const top = document.elementFromPoint(
+                    rect.x + rect.width / 2,
+                    rect.y + rect.height / 2,
+                );
+                return top !== null && element.contains(top);
+            }),
+        )
+        .toBe(true);
+    await confirmation.evaluate((element) =>
+        Promise.all(
+            element.getAnimations().map((animation) => animation.finished),
+        ),
+    );
+    await page.screenshot({
+        path: 'test-results/v2-unapplied-associations.png',
+    });
+    await confirmation.getByRole('button', { name: 'Discard & close' }).click();
+    await expect(summary).toHaveText(before!);
+    await open.click();
+    await dialog.getByLabel('Search associations').fill('F000');
+    await expect(sky).toBeChecked();
+    await sky.uncheck();
+    await dialog
+        .getByRole('button', { name: 'Close map associations' })
+        .click();
+    await confirmation.getByRole('button', { name: 'Apply & close' }).click();
+    await expect(dialog).not.toBeVisible();
+    await expect(summary).not.toHaveText(before!);
+    await page.getByRole('button', { name: 'Undo', exact: true }).click();
+    await expect(summary).toHaveText(before!);
+});
+
+test('V2 follows Rust DataStorage on login and notifications without position subscriptions', async ({
+    page,
+}) => {
+    const packets: Array<{ cmd: string; keys?: string[] }> = [];
+    page.on('websocket', (socket) =>
+        socket.on('framesent', ({ payload }) => {
+            if (typeof payload === 'string')
+                packets.push(...JSON.parse(payload));
+        }),
+    );
+    await connectV2(page, 'Rust Player');
+    const follow = page.getByRole('button', {
+        name: 'Follow player',
+        exact: true,
+    });
+    await expect(follow).toHaveAttribute('aria-pressed', 'true');
+    await expect(
+        page.getByRole('region', { name: 'Map: Faron Province', exact: true }),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'World map', exact: true }).click();
+    await follow.click({ button: 'right' });
+    await expect(
+        page.getByRole('region', { name: 'Map: Faron Province', exact: true }),
+    ).toBeVisible();
+    await expect(follow).toHaveAttribute('aria-pressed', 'true');
+    await page.getByRole('button', { name: 'World map', exact: true }).click();
+    await follow.click();
+    await follow.click();
+    await expect(
+        page.getByRole('region', { name: 'Map: Faron Province', exact: true }),
+    ).toBeVisible();
+    await follow.click();
+    await page.getByRole('button', { name: 'World map', exact: true }).click();
+    await follow.click({ button: 'right' });
+    await expect(
+        page.getByRole('region', { name: 'Map: Faron Province', exact: true }),
+    ).toBeVisible();
+    await expect(follow).toHaveAttribute('aria-pressed', 'false');
+    await follow.click();
+    expect(
+        packets.some(
+            (p) =>
+                p.cmd === 'Get' &&
+                p.keys?.includes('sshd_rs_SSHD-E2E-SEED_1_tracker_location'),
+        ),
+    ).toBe(true);
+    expect(
+        packets.some((p) =>
+            p.keys?.some((key) => key.endsWith('_tracker_position')),
+        ),
+    ).toBe(false);
+    await sendTelemetryCommand(page, '!demo-rust-stage F200');
+    await expect(
+        page.getByRole('region', { name: 'Map: Eldin Province', exact: true }),
+    ).toBeVisible();
+    await sendTelemetryCommand(page, '!demo-rust-clear');
+    await expect(
+        page.getByRole('region', { name: 'Map: Eldin Province', exact: true }),
+    ).toBeVisible();
+    await sendTelemetryCommand(page, '!demo-rust-stage F000');
+    await expect(
+        page.getByRole('region', { name: 'Map: Skyloft', exact: true }),
+    ).toBeVisible();
+    await follow.click();
+    await page.reload();
+    await expect(follow).toHaveAttribute('aria-pressed', 'false');
+});
+
 test('V2 offline presets are isolated from saved settings and hidden for AP sessions', async ({
     page,
 }) => {
@@ -348,15 +669,15 @@ async function sendTelemetryCommand(
         name: 'Player tracking diagnostics',
         exact: true,
     });
-    const before = await diagnostics.getByText(/^Sequence:/).textContent();
+    const field = command.startsWith('!demo-rust')
+        ? /^Location:/
+        : /^Sequence:/;
+    const before = await diagnostics.getByText(field).textContent();
     await page.getByPlaceholder('Enter a command here').fill(command);
     await page.getByPlaceholder('Enter a command here').press('Enter');
     if (ignored)
         await expect(diagnostics).toContainText('Ignored invalid telemetry');
-    else
-        await expect(diagnostics.getByText(/^Sequence:/)).not.toHaveText(
-            before!,
-        );
+    else await expect(diagnostics.getByText(field)).not.toHaveText(before!);
     await page.getByRole('button', { name: 'Tracker', exact: true }).click();
 }
 
@@ -1975,12 +2296,22 @@ test('V2 editor associates searchable game exits and map arrivals, and manual en
             .getByRole('button', { name: `Edit ${mapName}`, exact: true })
             .click();
         await page
-            .getByRole('combobox', { name: 'Add arrival to map', exact: true })
-            .fill(query);
-        await page.getByRole('option', { name: option, exact: true }).click();
+            .getByRole('button', { name: 'Configure associations' })
+            .click();
+        await page.getByRole('tab', { name: 'Entrance destinations' }).click();
+        await page.getByLabel('Search associations').fill(query);
+        await page.getByRole('checkbox', { name: option, exact: true }).check();
+        await page
+            .getByRole('button', { name: 'Apply Changes', exact: true })
+            .click();
+        await page
+            .getByRole('button', {
+                name: 'Close map associations',
+                exact: true,
+            })
+            .click();
         await expect(
-            page.getByRole('heading', {
-                name: 'Arrivals on this map (1)',
+            page.getByText('Entrance destinations: 1 entrances', {
                 exact: true,
             }),
         ).toBeVisible();
@@ -1988,16 +2319,27 @@ test('V2 editor associates searchable game exits and map arrivals, and manual en
     await page
         .getByRole('button', { name: 'Edit Door Map', exact: true })
         .click();
+    await page.getByRole('button', { name: 'Configure associations' }).click();
+    await page.getByRole('tab', { name: 'Entrance destinations' }).click();
+    await page.getByLabel('Search associations').fill('earth temple eldin');
     await page
-        .getByRole('combobox', { name: 'Add arrival to map', exact: true })
-        .fill('earth temple eldin');
-    await expect(
-        page.getByRole('option', {
-            name: 'Earth Temple (via Eldin Volcano) — Earth Temple Map',
+        .getByRole('checkbox', {
+            name: 'Earth Temple (via Eldin Volcano)',
             exact: true,
-        }),
-    ).toHaveAttribute('aria-disabled', 'true');
-    await page.keyboard.press('Escape');
+        })
+        .check();
+    await expect(
+        page.getByText('Assigned to Earth Temple Map', { exact: true }),
+    ).toBeVisible();
+    await expect(
+        page.getByRole('button', { name: 'Apply Changes', exact: true }),
+    ).toBeEnabled();
+    await page
+        .getByRole('button', { name: 'Discard Changes', exact: true })
+        .click();
+    await page
+        .getByRole('button', { name: 'Close map associations', exact: true })
+        .click();
     await selection.selectOption({ label: 'Dungeon Door' });
     await expect(
         page.getByRole('button', { name: 'Game entrance', exact: true }),
@@ -2179,33 +2521,40 @@ test('V2 game links keep vanilla routing without ER and require an assigned arri
     await page
         .getByRole('button', { name: 'Edit Skyview Map', exact: true })
         .click();
+    await page.getByRole('button', { name: 'Configure associations' }).click();
+    await page.getByRole('tab', { name: 'Entrance destinations' }).click();
     await page
-        .getByRole('combobox', { name: 'Add arrival to map', exact: true })
-        .fill('Skyview Temple Deep Woods');
-    await page
-        .getByRole('option', {
+        .getByRole('checkbox', {
             name: 'Skyview Temple (via Deep Woods)',
             exact: true,
         })
+        .check();
+    await page
+        .getByRole('button', { name: 'Apply Changes', exact: true })
         .click();
+    await page
+        .getByRole('button', { name: 'Close map associations', exact: true })
+        .click();
+    await page.getByRole('button', { name: 'Configure associations' }).click();
+    await page.getByRole('tab', { name: 'Entrance destinations' }).click();
     await page
         .getByRole('button', {
             name: `Remove arrival ${arrivalA}`,
             exact: true,
         })
         .click();
+    await page
+        .getByRole('button', { name: 'Apply Changes', exact: true })
+        .click();
+    await page
+        .getByRole('button', { name: 'Close map associations', exact: true })
+        .click();
     await expect(
-        page.getByRole('heading', {
-            name: 'Arrivals on this map (0)',
-            exact: true,
-        }),
+        page.getByText('Entrance destinations: 0 entrances', { exact: true }),
     ).toBeVisible();
     await page.getByRole('button', { name: 'Undo', exact: true }).click();
     await expect(
-        page.getByRole('heading', {
-            name: 'Arrivals on this map (1)',
-            exact: true,
-        }),
+        page.getByText('Entrance destinations: 1 entrances', { exact: true }),
     ).toBeVisible();
     await page
         .getByRole('button', { name: 'Edit Door Map', exact: true })
@@ -2237,8 +2586,7 @@ test('V2 optional player following handles absent telemetry, real movement, manu
         name: 'Follow player',
         exact: true,
     });
-    await expect(follow).toHaveAttribute('aria-pressed', 'false');
-    await follow.click();
+    await expect(follow).toHaveAttribute('aria-pressed', 'true');
     await expect(
         page.getByRole('region', { name: 'Map: The Sky', exact: true }),
     ).toBeVisible();
@@ -2300,24 +2648,26 @@ test('V2 editor exports stage rules and player following prefers specific rules 
             .getByRole('button', { name: `Edit ${name}`, exact: true })
             .click();
         await page
-            .getByText('Auto-follow: game areas for this map (0)', {
+            .getByRole('button', { name: 'Configure associations' })
+            .click();
+        await page
+            .getByText('Advanced conditions (optional)', { exact: true })
+            .click();
+        await page.getByLabel('Tracking Room', { exact: true }).fill(room);
+        await page.getByLabel('Tracking Layer', { exact: true }).fill(layer);
+        await page.getByLabel('Search associations').fill('F000');
+        await page
+            .getByRole('checkbox', { name: 'Skyloft (F000)', exact: true })
+            .check();
+        await page
+            .getByRole('button', { name: 'Apply Changes', exact: true })
+            .click();
+        await page
+            .getByRole('button', {
+                name: 'Close map associations',
                 exact: true,
             })
             .click();
-        await expect(
-            page
-                .getByLabel('Tracking stage')
-                .getByRole('option', { name: 'Skyloft (F000)', exact: true }),
-        ).toHaveCount(1);
-        await page.getByLabel('Tracking stage').selectOption('F000');
-        await page.getByLabel('Tracking Room', { exact: true }).fill(room);
-        await page.getByLabel('Tracking Layer', { exact: true }).fill(layer);
-        await page
-            .getByRole('button', { name: 'Associate game area', exact: true })
-            .click();
-        await expect(
-            page.getByLabel('Game areas associated with this map'),
-        ).toContainText('Skyloft (F000)');
     }
     await page.screenshot({
         path: 'test-results/v2-tracking-rules.png',
@@ -2342,9 +2692,9 @@ test('V2 editor exports stage rules and player following prefers specific rules 
         page.getByRole('status').filter({ hasText: 'Map pack imported.' }),
     ).toBeVisible();
     await page.getByRole('link', { name: 'Preview Tracker' }).click();
-    await page
-        .getByRole('button', { name: 'Follow player', exact: true })
-        .click();
+    await expect(
+        page.getByRole('button', { name: 'Follow player', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true');
     await sendTelemetryCommand(page, '!demo-stage F000 1 1');
     await expect(
         page.getByRole('region', { name: 'Map: Skyview Map', exact: true }),

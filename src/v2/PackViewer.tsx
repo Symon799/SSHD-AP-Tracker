@@ -102,9 +102,9 @@ export default function PackViewer({
     const telemetry = useTrackerTelemetry();
     const [followPlayer, setFollowPlayer] = useState(() => {
         try {
-            return localStorage.getItem('sshd-v2:follow-player') === 'true';
+            return localStorage.getItem('sshd-v2:follow-player') !== 'false';
         } catch {
-            return false;
+            return true;
         }
     });
     const followed = useRef('');
@@ -176,6 +176,17 @@ export default function PackViewer({
     const close = () => {
         keepOpen();
         setHover(undefined);
+    };
+    const goToPlayer = () => {
+        if (
+            !telemetry.session ||
+            telemetry.state !== 'ready' ||
+            trackingPaused ||
+            !playerMap.mapId
+        )
+            return;
+        close();
+        setMapId(playerMap.mapId);
     };
     const closeSoon = () => {
         keepOpen();
@@ -396,11 +407,12 @@ export default function PackViewer({
                                     type="button"
                                     aria-label="Follow player"
                                     aria-pressed={followPlayer}
-                                    title={`Follow player: ${followPlayer ? 'on' : 'off'} (${telemetry.state === 'waiting' ? 'waiting for client telemetry' : playerMap.reason})`}
+                                    title={`Follow player: ${followPlayer ? 'on' : 'off'} (${telemetry.state === 'waiting' ? 'waiting for client telemetry' : playerMap.reason}). Right-click to go to player`}
                                     onClick={() => {
                                         const next = !followPlayer;
                                         followed.current = '';
                                         setFollowPlayer(next);
+                                        if (next) goToPlayer();
                                         try {
                                             localStorage.setItem(
                                                 'sshd-v2:follow-player',
@@ -409,6 +421,10 @@ export default function PackViewer({
                                         } catch {
                                             /* Optional preference. */
                                         }
+                                    }}
+                                    onContextMenu={(event) => {
+                                        event.preventDefault();
+                                        goToPlayer();
                                     }}
                                 >
                                     <Icon name="crosshairs" />

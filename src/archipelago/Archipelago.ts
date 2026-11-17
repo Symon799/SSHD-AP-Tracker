@@ -673,7 +673,7 @@ function getSlotDataLocationCount(slotData: SlotData): number | undefined {
     return undefined;
 }
 
-import { TrackerTelemetryStore } from './TrackerTelemetry';
+import { rustLocationKey, TrackerTelemetryStore } from './TrackerTelemetry';
 
 const MAX_MESSAGES = 1000;
 const GAME_NAME = 'Skyward Sword HD';
@@ -1341,6 +1341,7 @@ export class APClientManager {
                     progressiveSwordDataStorageKeys(content.team, content.slot);
                 const dataStorageKeys = [
                     this.cubeDataKey,
+                    rustLocationKey(telemetrySeed, content.slot),
                     ...this.gratitudeDataStorageKeys,
                     ...this.progressiveSwordDataStorageKeys,
                 ];
@@ -1523,6 +1524,17 @@ export class APClientManager {
         });
 
         client.socket.on('retrieved', (content) => {
+            if (telemetryEpoch === this.telemetryEpoch && this.connectedData) {
+                const key = rustLocationKey(
+                    telemetrySeed,
+                    this.connectedData.slot,
+                );
+                if (Object.hasOwn(content.keys, key))
+                    this.trackerTelemetry.receiveRustLocation(
+                        key,
+                        content.keys[key],
+                    );
+            }
             this.recordApDataStorageKeys(
                 content.keys as Record<string, unknown>,
             );
@@ -1536,6 +1548,11 @@ export class APClientManager {
         });
 
         client.socket.on('setReply', (content) => {
+            if (telemetryEpoch === this.telemetryEpoch)
+                this.trackerTelemetry.receiveRustLocation(
+                    content.key,
+                    content.value,
+                );
             this.recordApDataStorage(content.key, content.value);
             if (this.cubeDataKey === content.key) {
                 const new_cubes = content.value;

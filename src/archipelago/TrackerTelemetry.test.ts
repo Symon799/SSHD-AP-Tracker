@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+    parseRustLocation,
     parseTrackerTelemetry,
+    rustLocationKey,
     TrackerTelemetryStore,
 } from './TrackerTelemetry';
 const session = { server: 'local', seed: 'test', team: 0, slot: 1 };
@@ -11,6 +13,53 @@ const frame = (sequence = 1) => ({
     slot: 1,
     sequence,
     location: { stage: 'F100', room: 0 },
+});
+
+describe('Rust DataStorage location', () => {
+    it('validates stage and optional numeric fields without using the display name', () => {
+        expect(
+            parseRustLocation({
+                stage: 'F001r',
+                stage_name: 'Knight Academy',
+                room: 1,
+                layer: null,
+            }),
+        ).toEqual({ stage: 'F001r', room: 1 });
+        for (const value of [
+            { stage: 'F000', room: -1 },
+            { stage: '', room: 0 },
+            { stage_name: 'F000' },
+            { stage: 'F000', layer: '0' },
+        ])
+            expect(parseRustLocation(value)).toBeUndefined();
+    });
+    it('accepts only the current seed and slot, clears on null, and suppresses repeated updates', () => {
+        const store = new TrackerTelemetryStore();
+        store.reset(session);
+        store.receiveRustLocation(rustLocationKey('other', 1), {
+            stage: 'F200',
+        });
+        store.receiveRustLocation(rustLocationKey('test', 2), {
+            stage: 'F200',
+        });
+        expect(store.getSnapshot().location).toBeUndefined();
+        const key = rustLocationKey('test', 1);
+        store.receiveRustLocation(key, { stage: 'F100' });
+        const snapshot = store.getSnapshot();
+        store.receiveRustLocation(key, { stage: 'F100' });
+        expect(store.getSnapshot()).toBe(snapshot);
+        store.receiveRustLocation(key, null);
+        expect(store.getSnapshot().state).toBe('waiting');
+        expect(store.getSnapshot().location).toBeUndefined();
+        store.receiveRustLocation(key, { stage: 'F200', layer: 0 });
+        expect(store.getSnapshot().location).toEqual({
+            stage: 'F200',
+            layer: 0,
+        });
+        store.reset();
+        store.receiveRustLocation(key, { stage: 'F100' });
+        expect(store.getSnapshot().location).toBeUndefined();
+    });
 });
 describe('Proposed tracker telemetry contract', () => {
     it('validates explicit seed/team/slot identity and rejects unqualified legacy data', () => {

@@ -68,6 +68,8 @@ export function Dialog({
     extraWide = false,
     hideFooter = false,
     focusContentOnOpen = false,
+    layer,
+    contentClassName,
     className,
     children,
 }: {
@@ -78,6 +80,8 @@ export function Dialog({
     extraWide?: boolean;
     hideFooter?: boolean;
     focusContentOnOpen?: boolean;
+    layer?: number;
+    contentClassName?: string;
     className?: string;
     children: React.ReactNode;
 }) {
@@ -85,8 +89,13 @@ export function Dialog({
     return (
         <Root open={open} onOpenChange={onOpenChange}>
             <Portal>
-                <Overlay />
+                <Overlay
+                    style={layer === undefined ? undefined : { zIndex: layer }}
+                />
                 <Content
+                    style={
+                        layer === undefined ? undefined : { zIndex: layer + 1 }
+                    }
                     ref={contentRef}
                     onOpenAutoFocus={
                         focusContentOnOpen
@@ -97,7 +106,10 @@ export function Dialog({
                             : undefined
                     }
                     narrow={!wide}
-                    className={clsx(extraWide && styles.extraWide)}
+                    className={clsx(
+                        extraWide && styles.extraWide,
+                        contentClassName,
+                    )}
                 >
                     <Title>{title}</Title>
                     <div className={className}>{children}</div>

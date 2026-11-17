@@ -90,6 +90,9 @@ webSocketServer.on('connection', (socket) => {
     let authenticated = false;
     let itemsSent = false;
     let telemetrySequence = 0;
+    let rustLocation;
+    const rustKey = `sshd_rs_${roomInfo.seed_name}_1_tracker_location`;
+    const notifyKeys = new Set();
     send(socket, roomInfo);
 
     socket.on('message', (rawMessage) => {
@@ -101,6 +104,14 @@ webSocketServer.on('connection', (socket) => {
                 loftwingMode = loftwingScenarios[packet.name];
                 vegetation = vegetationFixture(packet.name);
                 authenticated = true;
+                if (packet.name === 'Rust Player')
+                    rustLocation = {
+                        stage: 'F100',
+                        stage_name: 'Faron Woods',
+                        room: 0,
+                        layer: 0,
+                        entrance: 0,
+                    };
                 send(socket, {
                     cmd: 'Connected',
                     team: 0,
@@ -281,6 +292,32 @@ webSocketServer.on('connection', (socket) => {
                         command === '!demo-old-stage' ? 0 : ++telemetrySequence,
                 };
                 if (
+                    command === '!demo-rust-stage' ||
+                    command === '!demo-rust-clear'
+                ) {
+                    rustLocation =
+                        command === '!demo-rust-clear'
+                            ? null
+                            : {
+                                  stage,
+                                  stage_name: 'Demo area',
+                                  ...(room !== undefined
+                                      ? { room: Number(room) }
+                                      : {}),
+                                  ...(layer !== undefined
+                                      ? { layer: Number(layer) }
+                                      : {}),
+                              };
+                    if (notifyKeys.has(rustKey))
+                        send(socket, {
+                            cmd: 'SetReply',
+                            key: rustKey,
+                            value: rustLocation,
+                            original_value: null,
+                        });
+                    continue;
+                }
+                if (
                     [
                         '!demo-stage',
                         '!demo-loading',
@@ -309,8 +346,17 @@ webSocketServer.on('connection', (socket) => {
                     cmd: 'Bounced',
                     data: { sshd_tracker: telemetry },
                 });
+            } else if (packet.cmd === 'SetNotify') {
+                for (const key of packet.keys) notifyKeys.add(key);
             } else if (packet.cmd === 'Get') {
-                send(socket, { cmd: 'Retrieved', keys: {} });
+                send(socket, {
+                    cmd: 'Retrieved',
+                    keys:
+                        packet.keys.includes(rustKey) &&
+                        rustLocation !== undefined
+                            ? { [rustKey]: rustLocation }
+                            : {},
+                });
             } else if (packet.cmd === 'LocationScouts') {
                 send(socket, {
                     cmd: 'LocationInfo',

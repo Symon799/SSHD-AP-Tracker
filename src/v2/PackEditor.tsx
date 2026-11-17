@@ -17,8 +17,8 @@ import {
     NameInput,
     NewPackDialog,
 } from './EditorDialogs';
-import { MapArrivalSettings, MapLinkSettings } from './EntranceBindings';
-import LocationRuleEditor from './LocationRuleEditor';
+import { MapLinkSettings } from './EntranceBindings';
+import MapAssociationSettings from './MapAssociationSettings';
 import MapCanvas, { Icon } from './MapCanvas';
 import {
     linkDestination,
@@ -995,18 +995,14 @@ export default function PackEditor({
                                         }}
                                     />
                                 </label>
-                                <MapArrivalSettings
+                                <MapAssociationSettings
                                     key={map.id}
                                     map={map}
                                     pack={pack}
                                     logic={logic}
-                                    onChange={updateMap}
-                                />
-                                <LocationRuleEditor
-                                    key={`tracking:${map.id}`}
-                                    map={map}
-                                    pack={pack}
-                                    onChange={updateMap}
+                                    onChange={(next) =>
+                                        commit({ ...document, pack: next })
+                                    }
                                 />
                                 <button
                                     type="button"

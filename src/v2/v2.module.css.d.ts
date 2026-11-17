@@ -1,12 +1,24 @@
 declare const classNames: {
     readonly app: 'app';
+    readonly associationDialog: 'associationDialog';
+    readonly associationHost: 'associationHost';
+    readonly closeConfirmation: 'closeConfirmation';
+    readonly associationConfirmation: 'associationConfirmation';
+    readonly actions: 'actions';
+    readonly associationTransfers: 'associationTransfers';
+    readonly associationBody: 'associationBody';
+    readonly associationFooter: 'associationFooter';
+    readonly associationDirty: 'associationDirty';
+    readonly associationColumns: 'associationColumns';
+    readonly associationOptions: 'associationOptions';
+    readonly associationTabs: 'associationTabs';
+    readonly associationClose: 'associationClose';
     readonly header: 'header';
     readonly editorHeader: 'editorHeader';
     readonly badge: 'badge';
     readonly body: 'body';
     readonly sidebar: 'sidebar';
     readonly inspector: 'inspector';
-    readonly actions: 'actions';
     readonly scroll: 'scroll';
     readonly list: 'list';
     readonly row: 'row';
