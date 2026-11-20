@@ -604,10 +604,10 @@
     box-shadow: 0 0 0 5px #ffffff9c;
 }
 .app .marker[data-check-era='past'] {
-    border-color: #7634a8;
+    border-color: #82deff;
 }
 .app .marker[data-check-era='present'] {
-    border-color: #82deff;
+    border-color: #7634a8;
 }
 .app .marker[data-batch-selected='true'] {
     outline: 2px solid #fff;

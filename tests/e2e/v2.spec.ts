@@ -3018,6 +3018,11 @@ test('V2 editor selects, moves and scales placed markers without merging them', 
     await expect(signs).not.toHaveAttribute('data-check-era', 'past');
     await page.getByRole('button', { name: 'Redo', exact: true }).click();
     await expect(signs).toHaveAttribute('data-check-era', 'past');
+    await expect(signs).toHaveCSS('border-top-color', 'rgb(130, 222, 255)');
+    await page
+        .getByRole('combobox', { name: 'Check timeline' })
+        .selectOption('present');
+    await expect(signs).toHaveCSS('border-top-color', 'rgb(118, 52, 168)');
 
     const pack: import('../../src/v2/pack').MapPack =
         manualEntranceFixture().pack;
