@@ -70,6 +70,33 @@ test('V2 bundled pack preserves local edits and becomes the base for New pack', 
             exact: true,
         }),
     ).toBeVisible({ timeout: 30_000 });
+    await page.evaluate(() => {
+        const put = IDBObjectStore.prototype.put;
+        IDBObjectStore.prototype.put = function (
+            value: unknown,
+            key?: IDBValidKey,
+        ) {
+            if (key === 'current-images')
+                throw new Error('Rewrote unchanged pack images');
+            return put.call(this, value, key);
+        };
+    });
+    await page
+        .getByRole('button', { name: 'Edit My local Skyloft', exact: true })
+        .click();
+    await page
+        .getByLabel('Map name', { exact: true })
+        .fill('My updated Skyloft');
+    await expect(
+        page.getByRole('status').filter({ hasText: 'Saved locally' }),
+    ).toBeVisible();
+    await page.reload();
+    await expect(
+        page.getByRole('button', {
+            name: 'Edit My updated Skyloft',
+            exact: true,
+        }),
+    ).toBeVisible({ timeout: 30_000 });
     await page.getByRole('button', { name: 'New pack', exact: true }).click();
     await page
         .getByRole('dialog', { name: 'New map pack' })
@@ -1391,11 +1418,18 @@ test('V2 editor selection distinguishes background clicks from panning and separ
     const bounds = (await stage.boundingBox())!;
     const x = bounds.x + bounds.width * 0.8,
         y = bounds.y + bounds.height * 0.8;
+    await expect(page.getByTestId('map-viewport')).toHaveCSS(
+        'user-select',
+        'none',
+    );
     await page.mouse.move(x, y);
     await page.mouse.down();
     await page.mouse.move(x - 45, y - 35, { steps: 5 });
     await page.mouse.move(x, y, { steps: 5 });
     await page.mouse.up();
+    expect(await page.evaluate(() => window.getSelection()?.toString())).toBe(
+        '',
+    );
     await expect(selection.locator('option:checked')).toHaveText('Faron Woods');
     await page
         .getByRole('region', { name: 'Map: Faron Province', exact: true })
@@ -2014,6 +2048,7 @@ test('V2 editor extracts members, merges by drag with undo and redo, expands reg
     const to = (await destination.boundingBox())!;
     await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
     await page.mouse.down();
+    await page.waitForTimeout(100);
     await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, {
         steps: 8,
     });
@@ -2963,6 +2998,180 @@ test('V2 reuses V1 dungeon controls and right-click navigation follows authored 
         path: 'test-results/v2-dungeons.png',
         animations: 'disabled',
     });
+});
+
+test('V2 editor selects, moves and scales placed markers without merging them', async ({
+    page,
+}) => {
+    await page.goto('/v2/editor');
+    await importManualEntranceFixture(page, manualEntranceFixture().pack);
+    await page
+        .getByRole('button', { name: 'Edit Skyview Map', exact: true })
+        .click();
+    const signs = marker(page, 'Signs');
+    await signs.click();
+    await page
+        .getByRole('combobox', { name: 'Check timeline' })
+        .selectOption('past');
+    await expect(signs).toHaveAttribute('data-check-era', 'past');
+    await page.getByRole('button', { name: 'Undo', exact: true }).click();
+    await expect(signs).not.toHaveAttribute('data-check-era', 'past');
+    await page.getByRole('button', { name: 'Redo', exact: true }).click();
+    await expect(signs).toHaveAttribute('data-check-era', 'past');
+
+    const pack: import('../../src/v2/pack').MapPack =
+        manualEntranceFixture().pack;
+    pack.maps[1].markers.push({
+        ...pack.maps[1].markers[0],
+        id: 'second-signs',
+        label: 'Other signs',
+        x: 520,
+        y: 280,
+    });
+    pack.maps[1].markers.push({
+        id: 'batch-link',
+        kind: 'link',
+        label: 'Mixed selection link',
+        x: 450,
+        y: 218,
+        targetMapId: 'earth',
+    });
+    await importManualEntranceFixture(page, pack);
+    await page
+        .getByRole('button', { name: 'Edit Skyview Map', exact: true })
+        .click();
+    const other = marker(page, 'Other signs');
+    const link = marker(page, 'Mixed selection link');
+    const center = async (item: typeof signs) => {
+        const box = (await item.boundingBox())!;
+        return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    };
+    const a = await center(signs);
+    const b = await center(other);
+    const originalLink = await center(link);
+    await signs.click();
+    await expect(
+        page
+            .getByRole('combobox', { name: 'Check timeline' })
+            .locator('option:checked'),
+    ).toHaveText('None');
+    await page.getByRole('button', { name: 'Select map markers' }).click();
+    await expect(page.getByLabel('Select check or link')).toHaveValue('');
+    const selectionCount = page.getByLabel('Selected map markers');
+    await expect(selectionCount).toHaveText('0 marker selected');
+    await expect(selectionCount).toHaveCSS('margin-inline-end', '8px');
+    await signs.click();
+    await expect(selectionCount).toHaveText('1 marker selected');
+    await signs.click();
+    await page.mouse.move(a.x - 24, a.y - 24);
+    await page.mouse.down();
+    await page.mouse.move(b.x + 24, b.y + 24, { steps: 5 });
+    await page.mouse.up();
+    await expect(selectionCount).toHaveText('3 markers selected');
+    await link.click();
+    await expect(selectionCount).toHaveText('2 markers selected');
+    await link.click();
+    await expect(link).toHaveAttribute('data-batch-selected', 'true');
+    const frame = page.getByTestId('map-selection-frame');
+    await expect(frame.getByRole('button')).toHaveCount(8);
+    const border = (await frame.boundingBox())!;
+    const first = (await signs.boundingBox())!;
+    const last = (await other.boundingBox())!;
+    expect(first.x - border.x).toBeGreaterThan(5);
+    expect(first.y - border.y).toBeGreaterThan(5);
+    expect(border.x + border.width - last.x - last.width).toBeGreaterThan(5);
+    expect(border.y + border.height - last.y - last.height).toBeGreaterThan(5);
+    const middle = await center(frame);
+    await page.mouse.move(middle.x, middle.y);
+    await page.mouse.down();
+    await page.mouse.move(middle.x + 30, middle.y + 45, { steps: 5 });
+    await expect
+        .poll(async () => Math.round((await center(link)).x - originalLink.x))
+        .toBe(30);
+    await page.mouse.up();
+    await expect
+        .poll(async () => Math.round((await center(signs)).x - a.x))
+        .toBe(30);
+    await expect
+        .poll(async () => Math.round((await center(other)).x - b.x))
+        .toBe(30);
+    const resize = async (name: string, x: number, y: number) => {
+        const handle = await center(
+            page.getByRole('button', { name, exact: true }),
+        );
+        await page.mouse.move(handle.x, handle.y);
+        await page.mouse.down();
+        await page.mouse.move(handle.x + x, handle.y + y, { steps: 4 });
+        await expect
+            .poll(async () =>
+                Math.hypot(
+                    (
+                        await center(
+                            page.getByRole('button', { name, exact: true }),
+                        )
+                    ).x - handle.x,
+                    (
+                        await center(
+                            page.getByRole('button', { name, exact: true }),
+                        )
+                    ).y - handle.y,
+                ),
+            )
+            .toBeGreaterThan(10);
+        await page.mouse.up();
+    };
+    await resize('Resize selection: right', 25, 10);
+    await expect
+        .poll(async () => Math.round((await center(other)).x - b.x))
+        .toBe(55);
+    await expect
+        .poll(async () => Math.round((await center(other)).y - b.y))
+        .toBe(45);
+    await resize('Resize selection: bottom', 15, 20);
+    await expect
+        .poll(async () => Math.round((await center(other)).x - b.x))
+        .toBe(55);
+    await expect
+        .poll(async () => Math.round((await center(other)).y - b.y))
+        .toBe(65);
+    await resize('Resize selection: top left', -20, -15);
+    await expect
+        .poll(async () => Math.round((await center(signs)).x - a.x))
+        .toBe(10);
+    await expect
+        .poll(async () => Math.round((await center(signs)).y - a.y))
+        .toBe(30);
+    await expect
+        .poll(async () => Math.round((await center(other)).x - b.x))
+        .toBe(55);
+    await expect
+        .poll(async () => Math.round((await center(other)).y - b.y))
+        .toBe(65);
+    await page.screenshot({ path: 'test-results/v2-selection-handles.png' });
+    await page.getByRole('button', { name: 'Undo', exact: true }).click();
+    await page.getByRole('button', { name: 'Undo', exact: true }).click();
+    await expect
+        .poll(async () => Math.round((await center(other)).y - b.y))
+        .toBe(45);
+    await page.getByRole('button', { name: 'Undo', exact: true }).click();
+    await expect
+        .poll(async () => Math.round((await center(signs)).x - a.x))
+        .toBe(30);
+    await page.getByRole('button', { name: 'Undo', exact: true }).click();
+    await expect
+        .poll(async () => Math.round((await center(other)).x - b.x))
+        .toBe(0);
+    await expect
+        .poll(async () => Math.round((await center(link)).x - originalLink.x))
+        .toBe(0);
+    await page.getByRole('button', { name: 'Select map markers' }).click();
+    await link.dblclick();
+    await expect(
+        page.getByRole('region', {
+            name: 'Map: Earth Temple Map',
+            exact: true,
+        }),
+    ).toBeVisible();
 });
 
 test('V2 editor link tooltips count unique checks across nested sub-maps', async ({

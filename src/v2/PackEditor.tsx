@@ -22,10 +22,13 @@ import { MapLinkSettings } from './EntranceBindings';
 import MapAssociationSettings from './MapAssociationSettings';
 import MapCanvas, { Icon } from './MapCanvas';
 import {
+    checkEra,
     linkDestination,
+    markerEra,
     packWarnings,
     parsePack,
     placedChecks,
+    type CheckEra,
     type CheckMarker,
     type MapDocument,
     type MapMarker,
@@ -123,6 +126,15 @@ export default function PackEditor({
         setMemberQuery('');
     };
     const selected = map.markers.find((entry) => entry.id === selectedId);
+    const eraIds =
+        selected?.kind === 'checks'
+            ? selected.checkIds.filter(
+                  (id) => !memberSelection.size || memberSelection.has(id),
+              )
+            : [];
+    const selectedEra =
+        markerEra(pack.checkEras, eraIds) ??
+        (eraIds.some((id) => checkEra(pack.checkEras, id)) ? 'mixed' : '');
     const [query, setQuery] = useState('');
     const [region, setRegion] = useState('');
     const [onlyUnplaced, setOnlyUnplaced] = useState(false);
@@ -146,10 +158,11 @@ export default function PackEditor({
         checkIds?: string[];
     }>();
     const [exporting, setExporting] = useState(false);
-    const placed = placedChecks(pack);
-    const placedCount = catalogue.filter((entry) =>
-        placed.has(entry.id),
-    ).length;
+    const placed = useMemo(() => placedChecks(pack), [pack]);
+    const placedCount = useMemo(
+        () => catalogue.filter((entry) => placed.has(entry.id)).length,
+        [catalogue, placed],
+    );
     const regions = useMemo(
         () =>
             [...new Set(catalogue.map((entry) => entry.region))].sort((a, b) =>
@@ -157,17 +170,24 @@ export default function PackEditor({
             ),
         [catalogue],
     );
-    const matches = catalogue.filter(
-        (entry) =>
-            (!region || entry.region === region) &&
-            entry.name.toLowerCase().includes(query.toLowerCase()) &&
-            (!onlyUnplaced || !placed.has(entry.id)),
-    );
-    const warnings = packWarnings(
-        pack,
-        new Set(catalogue.map((entry) => entry.id)),
-        new Set(Object.keys(logic.areaGraph.exits)),
-        new Set(Object.keys(logic.areaGraph.entrances)),
+    const matches = useMemo(() => {
+        const search = query.toLowerCase();
+        return catalogue.filter(
+            (entry) =>
+                (!region || entry.region === region) &&
+                entry.name.toLowerCase().includes(search) &&
+                (!onlyUnplaced || !placed.has(entry.id)),
+        );
+    }, [catalogue, region, query, onlyUnplaced, placed]);
+    const warnings = useMemo(
+        () =>
+            packWarnings(
+                pack,
+                new Set(catalogue.map((entry) => entry.id)),
+                new Set(Object.keys(logic.areaGraph.exits)),
+                new Set(Object.keys(logic.areaGraph.entrances)),
+            ),
+        [pack, catalogue, logic],
     );
     const names = useMemo(
         () =>
@@ -214,6 +234,14 @@ export default function PackEditor({
                 marker.id === next.id ? next : marker,
             ),
         });
+    const updateEra = (era: CheckEra | '') => {
+        const checkEras = { ...pack.checkEras };
+        for (const id of eraIds) {
+            if (era) checkEras[id] = era;
+            else delete checkEras[id];
+        }
+        commit({ ...document, pack: { ...pack, checkEras } });
+    };
     const extractSelection = (
         sourceId: string,
         ids: string[],
@@ -818,6 +846,39 @@ export default function PackEditor({
                                         <span className={styles.memberCount}>
                                             {selected.checkIds.length} checks
                                         </span>
+                                        <label>
+                                            {memberSelection.size
+                                                ? 'Timeline (selected checks)'
+                                                : 'Timeline'}
+                                            <select
+                                                aria-label="Check timeline"
+                                                value={selectedEra}
+                                                disabled={!eraIds.length}
+                                                onChange={(event) =>
+                                                    updateEra(
+                                                        event.target.value as
+                                                            | CheckEra
+                                                            | '',
+                                                    )
+                                                }
+                                            >
+                                                <option value="">None</option>
+                                                <option value="past">
+                                                    Past
+                                                </option>
+                                                <option value="present">
+                                                    Present
+                                                </option>
+                                                {selectedEra === 'mixed' && (
+                                                    <option
+                                                        value="mixed"
+                                                        disabled
+                                                    >
+                                                        Mixed
+                                                    </option>
+                                                )}
+                                            </select>
+                                        </label>
 
                                         <div className={styles.memberSearchRow}>
                                             <input
@@ -1097,6 +1158,8 @@ export default function PackEditor({
                     key={map.id}
                     map={map}
                     markerTitles={markerTitles}
+                    checkEras={pack.checkEras}
+                    onTransformChecks={updateMap}
                     images={images}
                     selected={selectedId}
                     onNavigateLink={(marker) => {

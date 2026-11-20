@@ -57,6 +57,15 @@ function fixture(): MapPack {
 }
 
 describe('V2 map packs', () => {
+    it('preserves optional per-check timeline annotations without changing the pack version', () => {
+        const pack = fixture();
+        expect(parsePack(pack)).not.toHaveProperty('checkEras');
+        pack.checkEras = { a: 'past', b: 'present' };
+        expect(parsePack(pack)).toEqual(pack);
+        expect(() =>
+            parsePack({ ...pack, checkEras: { a: 'future' } }),
+        ).toThrow('timeline annotations');
+    });
     it('accepts a full catalogue group while retaining a bounded import size', () => {
         const pack = fixture();
         const group = pack.maps[0].markers[0];

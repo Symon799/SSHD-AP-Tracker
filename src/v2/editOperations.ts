@@ -1,5 +1,65 @@
 import type { CheckMarker, MapMarker, MapPack, PackMap } from './pack';
 
+export function markerSelectionBounds(map: PackMap, ids: ReadonlySet<string>) {
+    const group = map.markers.filter((marker) => ids.has(marker.id));
+    if (!group.length) return undefined;
+    const xs = group.map((marker) => marker.x);
+    const ys = group.map((marker) => marker.y);
+    const left = Math.min(...xs),
+        right = Math.max(...xs);
+    const top = Math.min(...ys),
+        bottom = Math.max(...ys);
+    return { left, right, top, bottom };
+}
+
+export type ResizeDirection = { x: -1 | 0 | 1; y: -1 | 0 | 1 };
+
+export function transformMarkers(
+    map: PackMap,
+    ids: ReadonlySet<string>,
+    dx: number,
+    dy: number,
+    resize?: ResizeDirection,
+): PackMap {
+    const bounds = markerSelectionBounds(map, ids);
+    if (!bounds) return map;
+    const { left, right, top, bottom } = bounds;
+    const clamp = (value: number, low: number, high: number) =>
+        Math.max(low, Math.min(high, value));
+    const axis = (
+        start: number,
+        end: number,
+        limit: number,
+        delta: number,
+        edge?: number,
+    ) => {
+        if (edge === undefined)
+            return {
+                origin: start + clamp(delta, -start, limit - end),
+                scale: 1,
+            };
+        const span = end - start;
+        if (!edge || !span) return { origin: start, scale: 1 };
+        const min = Math.min(1, span);
+        const low = edge < 0 ? clamp(start + delta, 0, end - min) : start;
+        const high = edge > 0 ? clamp(end + delta, start + min, limit) : end;
+        return { origin: low, scale: (high - low) / span };
+    };
+    const x = axis(left, right, map.width, dx, resize?.x);
+    const y = axis(top, bottom, map.height, dy, resize?.y);
+    const markers = map.markers.map((marker) => {
+        if (!ids.has(marker.id)) return marker;
+        const nextX = x.origin + (marker.x - left) * x.scale;
+        const nextY = y.origin + (marker.y - top) * y.scale;
+        return nextX === marker.x && nextY === marker.y
+            ? marker
+            : { ...marker, x: nextX, y: nextY };
+    });
+    return markers.some((marker, index) => marker !== map.markers[index])
+        ? { ...map, markers }
+        : map;
+}
+
 function checkGroup(map: PackMap, id: string): CheckMarker {
     const marker = map.markers.find((entry) => entry.id === id);
     if (!marker || marker.kind !== 'checks')

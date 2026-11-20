@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { MapDocument, MapPack } from './pack';
 import { parsePack, upgradeLegacyHoverTitles } from './pack';
 
+const imageRevisions = new WeakMap<MapDocument['images'], string>();
+
 function database(): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open('sshd-v2-map-packs', 1);
@@ -18,7 +20,20 @@ export async function saveDocument(document: MapDocument): Promise<void> {
     try {
         await new Promise<void>((resolve, reject) => {
             const transaction = db.transaction('drafts', 'readwrite');
-            transaction.objectStore('drafts').put(document, 'current');
+            const store = transaction.objectStore('drafts');
+            const { images, ...metadata } = document;
+            const revision =
+                imageRevisions.get(images) ?? window.crypto.randomUUID();
+            imageRevisions.set(images, revision);
+            const request = store.get('current-image-revision');
+            request.onsuccess = () => {
+                // Keep metadata and assets in one transaction, but don't clone unchanged images.
+                if (request.result !== revision) {
+                    store.put(images, 'current-images');
+                    store.put(revision, 'current-image-revision');
+                }
+                store.put(metadata, 'current');
+            };
             transaction.oncomplete = () => resolve();
             transaction.onerror = () =>
                 reject(new Error('Local save failed. Export a ZIP backup.'));
@@ -38,31 +53,38 @@ async function loadDocument(): Promise<MapDocument | undefined> {
     const db = await database();
     try {
         return await new Promise<MapDocument | undefined>((resolve, reject) => {
-            const request = db
-                .transaction('drafts')
-                .objectStore('drafts')
-                .get('current');
+            const store = db.transaction('drafts').objectStore('drafts');
+            const assetRequest = store.get('current-images');
+            const revisionRequest = store.get('current-image-revision');
+            const request = store.get('current');
             request.onsuccess = () => {
                 try {
                     const value: unknown = request.result;
                     if (value === undefined) return resolve(undefined);
+                    const legacy =
+                        value && typeof value === 'object' && 'images' in value;
+                    const images: unknown = legacy
+                        ? value.images
+                        : assetRequest.result;
                     if (
                         !value ||
                         typeof value !== 'object' ||
                         !('pack' in value) ||
-                        !('images' in value) ||
-                        !value.images ||
-                        typeof value.images !== 'object' ||
-                        !Object.values(value.images).every(
+                        !images ||
+                        typeof images !== 'object' ||
+                        !Object.values(images).every(
                             (entry: unknown) => typeof entry === 'string',
                         )
                     )
                         throw new Error('Invalid local pack draft.');
                     const parsed = parsePack(value.pack);
                     const pack = upgradeLegacyHoverTitles(parsed);
+                    const assets = images as MapDocument['images'];
+                    if (!legacy && typeof revisionRequest.result === 'string')
+                        imageRevisions.set(assets, revisionRequest.result);
                     resolve({
                         pack,
-                        images: value.images as Record<string, string>,
+                        images: assets,
                         ...(pack !== parsed
                             ? { draftRevision: window.crypto.randomUUID() }
                             : 'draftRevision' in value &&

@@ -8,6 +8,7 @@ import {
     extractChecks,
     mapCheckIds,
     mergeMarkers,
+    transformMarkers,
 } from './editOperations';
 import { legacyDocument } from './legacyPack';
 import { parsePack, placedChecks, type MapPack } from './pack';
@@ -55,6 +56,36 @@ const names = {
     blade1: 'Woods - Grass Patch 1 - Blade 1',
     blade2: 'Woods - Grass Patch 1 - Blade 2',
 };
+it('translates and scales check markers as one bounded selection', () => {
+    const map = fixture().maps[0];
+    const selected = new Set(['first', 'second']);
+    const moved = transformMarkers(map, selected, -200, 500);
+    expect(moved.markers.map(({ x, y }) => [x, y])).toEqual([
+        [0, 365],
+        [100, 465],
+    ]);
+    const scaled = transformMarkers(map, selected, 100, -50, {
+        x: 1,
+        y: 1,
+    });
+    expect(scaled.markers.map(({ x, y }) => [x, y])).toEqual([
+        [100, 100],
+        [300, 150],
+    ]);
+    const opposite = transformMarkers(map, selected, -200, -50, {
+        x: -1,
+        y: -1,
+    });
+    expect(opposite.markers.map(({ x, y }) => [x, y])).toEqual([
+        [0, 50],
+        [200, 200],
+    ]);
+    expect(map.markers[0]).toMatchObject({
+        x: 100,
+        y: 100,
+        checkIds: ['a', 'b', 'patch', 'blade1', 'blade2'],
+    });
+});
 const idFactory = () => {
     let index = 0;
     return () => `new-${index++}`;

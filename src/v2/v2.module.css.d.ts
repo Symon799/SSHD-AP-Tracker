@@ -28,6 +28,7 @@ declare const classNames: {
     readonly footer: 'footer';
     readonly canvas: 'canvas';
     readonly mapToolbar: 'mapToolbar';
+    readonly selectionCount: 'selectionCount';
     readonly mapHeading: 'mapHeading';
     readonly selectionHeader: 'selectionHeader';
     readonly selectionIdentity: 'selectionIdentity';
@@ -42,6 +43,10 @@ declare const classNames: {
     readonly marker: 'marker';
     readonly linkMarker: 'linkMarker';
     readonly selectedMarker: 'selectedMarker';
+    readonly marqueeMode: 'marqueeMode';
+    readonly marquee: 'marquee';
+    readonly selectionFrame: 'selectionFrame';
+    readonly resizeHandle: 'resizeHandle';
     readonly status: 'status';
     readonly checkList: 'checkList';
     readonly grow: 'grow';

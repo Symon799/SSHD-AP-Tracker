@@ -440,6 +440,9 @@
     font-weight: 650;
     overflow-wrap: anywhere;
 }
+.selectionCount {
+    margin-inline-end: 8px;
+}
 .mapHeading {
     display: flex;
     align-items: center;
@@ -544,6 +547,7 @@
     overflow: auto;
     overflow-anchor: none;
     padding: 24px;
+    user-select: none;
     touch-action: none;
     cursor: grab;
 }
@@ -598,6 +602,44 @@
     border-color: white;
     outline: 2px solid #242424;
     box-shadow: 0 0 0 5px #ffffff9c;
+}
+.app .marker[data-check-era='past'] {
+    border-color: #7634a8;
+}
+.app .marker[data-check-era='present'] {
+    border-color: #82deff;
+}
+.app .marker[data-batch-selected='true'] {
+    outline: 2px solid #fff;
+    box-shadow: 0 0 0 4px #225e98;
+}
+.marqueeMode,
+.marqueeMode:active {
+    cursor: crosshair;
+}
+.marquee {
+    position: absolute;
+    z-index: 3;
+    pointer-events: none;
+    border: 1px solid #225e98;
+    background: #68aeed40;
+}
+.selectionFrame {
+    background: transparent;
+    box-sizing: border-box;
+    outline: 1px solid #ffffffe0;
+}
+.app .resizeHandle {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+    min-height: 12px;
+    padding: 0;
+    border: 1px solid #225e98;
+    border-radius: 2px;
+    background: white;
+    pointer-events: auto;
 }
 .status {
     font-variant-numeric: tabular-nums;

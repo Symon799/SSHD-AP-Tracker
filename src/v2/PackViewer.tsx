@@ -31,12 +31,14 @@ import MapCanvas, { Icon } from './MapCanvas';
 import MapHoverPanel from './MapHoverPanel';
 import { findMapForChecks } from './mapNavigation';
 import {
+    checkEra,
     linkDestination,
     placedChecks,
     summarizeChecks,
     type CheckMarker,
     type MapDocument,
     type MapMarker,
+    type MapPack,
 } from './pack';
 import { ResizableWorkspace } from './ResizablePanels';
 import TrackerTools from './TrackerTools';
@@ -46,10 +48,12 @@ function CheckPopup({
     marker,
     active,
     onEntrances,
+    eras,
 }: {
     marker: CheckMarker;
     active: Set<string>;
     onEntrances: (exitId?: string) => void;
+    eras?: MapPack['checkEras'];
 }) {
     const logic = useSelector(logicSelector);
     const checked = useSelector(checkedChecksSelector);
@@ -57,13 +61,22 @@ function CheckPopup({
     const orderChecks = useMemo(() => createV1CheckOrder(logic), [logic]);
     const entries = orderChecks(marker.checkIds)
         .filter((id) => active.has(id) && logic.checks[id])
-        .map((id) => ({
-            id,
-            name: logic.checks[id].name,
-            type: logic.checks[id].type,
-            checked: checked.has(id),
-            accessible: logicalState(id) === 'inLogic',
-        }));
+        .map((id) => {
+            const era = checkEra(eras, id);
+            return {
+                id,
+                name:
+                    logic.checks[id].name +
+                    (era === 'past'
+                        ? ' (Past)'
+                        : era === 'present'
+                          ? ' (Present)'
+                          : ''),
+                type: logic.checks[id].type,
+                checked: checked.has(id),
+                accessible: logicalState(id) === 'inLogic',
+            };
+        });
     return (
         <>
             {marker.note && <p className={styles.hoverNote}>{marker.note}</p>}
@@ -398,6 +411,7 @@ export default function PackViewer({
                     }
                 >
                     <MapCanvas
+                        checkEras={pack.checkEras}
                         key={`${pack.id}:${map.id}`}
                         map={map}
                         images={images}
@@ -568,6 +582,7 @@ export default function PackViewer({
                         )}
                         {hovered.kind === 'checks' ? (
                             <CheckPopup
+                                eras={pack.checkEras}
                                 key={`${map.id}:${hovered.id}`}
                                 marker={hovered}
                                 active={active}
@@ -575,6 +590,7 @@ export default function PackViewer({
                             />
                         ) : target ? (
                             <CheckPopup
+                                eras={pack.checkEras}
                                 key={`${map.id}:${hovered.id}`}
                                 marker={{
                                     ...hovered,

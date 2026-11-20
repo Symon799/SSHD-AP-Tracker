@@ -97,6 +97,14 @@ Undo remains available within the current session.
   its row with Unplaced. The inspector also has Select all / Clear next to its
   member search, selecting the matching members (including virtualized rows).
 - Undo/redo (30 edit snapshots), shared live reader preview.
+- **Select map markers** switches the canvas to box selection. Drag on the
+  background to select checks and links (or click markers to toggle them), drag a
+  point inside the selection frame to move it. Drag any of the eight edge or
+  corner handles to resize the layout without merging checks or changing marker sizes.
+- **Timeline** assigns Past/Present to a check marker's members, or only the
+  members selected in its inspector. Annotations are optional pack metadata
+  shared by repeat placements, not access requirements. Mixed markers keep
+  their normal border and show the timeline for each annotated check on hover.
 - ZIP import/export with `pack.json` and raster images.
 - IndexedDB autosave for pack/image drafts, separate from tracker saves.
 - Resizable left/right panels and Maps/Check catalogue split, saved in localStorage.

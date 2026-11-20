@@ -7,14 +7,40 @@ import {
     type ReactNode,
 } from 'react';
 import { useElementSize } from '../utils/React';
+import {
+    markerSelectionBounds,
+    transformMarkers,
+    type ResizeDirection,
+} from './editOperations';
 import { markerDisplayScale, markerMetrics } from './markerSizing';
-import type { MapDocument, MapMarker, MarkerStatus, PackMap } from './pack';
+import {
+    markerEra,
+    type MapDocument,
+    type MapMarker,
+    type MapPack,
+    type MarkerStatus,
+    type PackMap,
+} from './pack';
 import styles from './v2.module.css';
 
 const emptyStates: Record<string, MarkerStatus> = {};
 const emptyCounts: Record<string, number> = {};
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 10;
+const MARKER_DRAG_DELAY = 85;
+const resizeHandles = [
+    { x: -1, y: -1, side: 'top left', cursor: 'nwse' },
+    { x: 0, y: -1, side: 'top', cursor: 'ns' },
+    { x: 1, y: -1, side: 'top right', cursor: 'nesw' },
+    { x: 1, y: 0, side: 'right', cursor: 'ew' },
+    { x: 1, y: 1, side: 'bottom right', cursor: 'nwse' },
+    { x: 0, y: 1, side: 'bottom', cursor: 'ns' },
+    { x: -1, y: 1, side: 'bottom left', cursor: 'nesw' },
+    { x: -1, y: 0, side: 'left', cursor: 'ew' },
+] as const satisfies readonly (ResizeDirection & {
+    side: string;
+    cursor: string;
+})[];
 const clampZoom = (value: number) =>
     Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, value));
 
@@ -38,6 +64,8 @@ export default function MapCanvas({
     overlay,
     navigation,
     markerTitles,
+    checkEras,
+    onTransformChecks,
     states = emptyStates,
     counts = emptyCounts,
 }: {
@@ -52,6 +80,8 @@ export default function MapCanvas({
     overlay?: ReactNode;
     navigation?: ReactNode;
     markerTitles?: Record<string, string>;
+    checkEras?: MapPack['checkEras'];
+    onTransformChecks?: (next: PackMap) => void;
     onHover?: (marker: MapMarker, anchor: DOMRect) => void;
     onLeave?: () => void;
     onViewportChange?: () => void;
@@ -129,9 +159,62 @@ export default function MapCanvas({
         x: number;
         y: number;
     }>();
+    const [batchMode, setBatchMode] = useState(false);
+    const [batchIds, setBatchIds] = useState<Set<string>>(() => new Set());
+    const [marquee, setMarquee] = useState<{
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    }>();
+    type TransformPreview = {
+        x: number;
+        y: number;
+        resize?: ResizeDirection;
+    };
+    const [offset, setOffset] = useState<TransformPreview>();
+    const previewFrame = useRef<number>(0);
+    const pendingOffset = useRef<TransformPreview | undefined>(undefined);
+    const queueOffset = (next: TransformPreview) => {
+        pendingOffset.current = next;
+        if (!previewFrame.current) {
+            previewFrame.current = requestAnimationFrame(() => {
+                previewFrame.current = 0;
+                setOffset(pendingOffset.current);
+            });
+        }
+    };
+    const resetOffset = () => {
+        cancelAnimationFrame(previewFrame.current);
+        previewFrame.current = 0;
+        pendingOffset.current = undefined;
+        setOffset(undefined);
+    };
+    useEffect(() => () => cancelAnimationFrame(previewFrame.current), []);
+    const selectionFrame = useRef<HTMLDivElement>(null);
+    const markerScale = markerDisplayScale(measuredWidth, measuredHeight, zoom);
+    const framePadding = markerMetrics(markerScale, 0).size / 2 + 8;
+    const skipBatchClick = useRef(false);
+    const batchCount = map.markers.filter((marker) =>
+        batchIds.has(marker.id),
+    ).length;
+    const displayedMap = offset
+        ? transformMarkers(map, batchIds, offset.x, offset.y, offset.resize)
+        : map;
+    const selectionBounds =
+        batchMode && !onPlace
+            ? markerSelectionBounds(displayedMap, batchIds)
+            : undefined;
+    const transform = (dx: number, dy: number, resize?: ResizeDirection) => {
+        const next = transformMarkers(map, batchIds, dx, dy, resize);
+        if (next !== map) onTransformChecks?.(next);
+    };
     const drag = useRef<
         | {
               id?: string;
+              resize?: ResizeDirection;
+              insideSelection: boolean;
+              startedAt: number;
               x: number;
               y: number;
               left: number;
@@ -172,14 +255,31 @@ export default function MapCanvas({
             ),
         };
     };
-    const begin = (event: PointerEvent, id?: string) => {
+    const begin = (
+        event: PointerEvent,
+        id?: string,
+        resize?: ResizeDirection,
+    ) => {
         if (event.button !== 0) return;
         if (id && !onMove) return;
+        skipBatchClick.current = false;
         viewportChanged.current?.();
         event.stopPropagation();
         const element = viewport.current!;
+        const frame = selectionFrame.current?.getBoundingClientRect();
+        const insideSelection = Boolean(
+            frame &&
+                event.clientX >= frame.left &&
+                event.clientX <= frame.right &&
+                event.clientY >= frame.top &&
+                event.clientY <= frame.bottom,
+        );
+        if (insideSelection && !id) event.preventDefault();
         drag.current = {
             id,
+            resize,
+            insideSelection,
+            startedAt: event.timeStamp,
             x: event.clientX,
             y: event.clientY,
             left: element.scrollLeft,
@@ -191,11 +291,45 @@ export default function MapCanvas({
     const move = (event: PointerEvent) => {
         const current = drag.current;
         if (!current) return;
+        const distance = Math.hypot(
+            current.x - event.clientX,
+            current.y - event.clientY,
+        );
         if (
-            Math.hypot(current.x - event.clientX, current.y - event.clientY) > 3
+            distance > 3 &&
+            (!current.id ||
+                event.timeStamp - current.startedAt >= MARKER_DRAG_DELAY)
         )
             current.moved = true;
+        if (current.resize) {
+            if (current.moved)
+                queueOffset({
+                    x: (event.clientX - current.x) / (fit * zoom),
+                    y: (event.clientY - current.y) / (fit * zoom),
+                    resize: current.resize,
+                });
+            return;
+        }
+        if (batchMode && !onPlace) {
+            if (!current.moved) return;
+            if (current.insideSelection) {
+                queueOffset({
+                    x: (event.clientX - current.x) / (fit * zoom),
+                    y: (event.clientY - current.y) / (fit * zoom),
+                });
+            } else if (!current.id) {
+                const bounds = stage.current!.getBoundingClientRect();
+                setMarquee({
+                    x: Math.min(current.x, event.clientX) - bounds.left,
+                    y: Math.min(current.y, event.clientY) - bounds.top,
+                    width: Math.abs(event.clientX - current.x),
+                    height: Math.abs(event.clientY - current.y),
+                });
+            }
+            return;
+        }
         if (current.id) {
+            if (!current.moved) return;
             setPreview({ id: current.id, ...point(event) });
             const source = map.markers.find(
                 (marker) => marker.id === current.id,
@@ -232,9 +366,47 @@ export default function MapCanvas({
         if (!current) return;
         const moved =
             current.moved ||
-            Math.hypot(current.x - event.clientX, current.y - event.clientY) >
-                3;
-        if (current.id && moved) {
+            (!current.id &&
+                Math.hypot(
+                    current.x - event.clientX,
+                    current.y - event.clientY,
+                ) > 3);
+        if (current.resize) {
+            if (moved)
+                transform(
+                    (event.clientX - current.x) / (fit * zoom),
+                    (event.clientY - current.y) / (fit * zoom),
+                    current.resize,
+                );
+        } else if (batchMode && !onPlace) {
+            skipBatchClick.current = moved;
+            if (current.insideSelection) {
+                if (moved)
+                    transform(
+                        (event.clientX - current.x) / (fit * zoom),
+                        (event.clientY - current.y) / (fit * zoom),
+                    );
+            } else if (!current.id) {
+                const bounds = stage.current!.getBoundingClientRect();
+                const ids = map.markers
+                    .filter((marker) => {
+                        const x =
+                            bounds.left + (marker.x / map.width) * bounds.width;
+                        const y =
+                            bounds.top +
+                            (marker.y / map.height) * bounds.height;
+                        return (
+                            moved &&
+                            x >= Math.min(current.x, event.clientX) &&
+                            x <= Math.max(current.x, event.clientX) &&
+                            y >= Math.min(current.y, event.clientY) &&
+                            y <= Math.max(current.y, event.clientY)
+                        );
+                    })
+                    .map((marker) => marker.id);
+                setBatchIds(new Set(ids));
+            }
+        } else if (current.id && moved) {
             const position = point(event);
             const source = map.markers.find(
                 (marker) => marker.id === current.id,
@@ -263,6 +435,8 @@ export default function MapCanvas({
         drag.current = undefined;
         setPreview(undefined);
         setDropTarget(undefined);
+        setMarquee(undefined);
+        resetOffset();
     };
     return (
         <section className={styles.canvas} aria-label={`Map: ${map.name}`}>
@@ -272,6 +446,31 @@ export default function MapCanvas({
                     <h2>{map.name}</h2>
                 </div>
                 <div className={styles.actions}>
+                    {onTransformChecks && (
+                        <button
+                            type="button"
+                            aria-label="Select map markers"
+                            title="Select map markers"
+                            aria-pressed={batchMode && !onPlace}
+                            disabled={Boolean(onPlace)}
+                            onClick={() => {
+                                if (!batchMode) onBackgroundClick?.();
+                                setBatchMode(!batchMode);
+                                setBatchIds(new Set());
+                            }}
+                        >
+                            <Icon name="object-group" />
+                        </button>
+                    )}
+                    {batchMode && !onPlace && (
+                        <output
+                            className={styles.selectionCount}
+                            aria-label="Selected map markers"
+                        >
+                            {batchCount} {batchCount > 1 ? 'markers' : 'marker'}{' '}
+                            selected
+                        </output>
+                    )}
                     <button
                         type="button"
                         title="Zoom out"
@@ -312,7 +511,7 @@ export default function MapCanvas({
                     <div className={styles.mapOverlay}>{overlay}</div>
                 )}
                 <div
-                    className={styles.viewport}
+                    className={`${styles.viewport} ${batchMode && !onPlace ? styles.marqueeMode : ''}`}
                     ref={viewport}
                     data-testid="map-viewport"
                     onDragOver={(event) => {
@@ -360,6 +559,9 @@ export default function MapCanvas({
                     onPointerCancel={() => {
                         drag.current = undefined;
                         setPreview(undefined);
+                        setMarquee(undefined);
+                        resetOffset();
+                        setDropTarget(undefined);
                     }}
                 >
                     <div
@@ -376,13 +578,115 @@ export default function MapCanvas({
                             alt={map.name}
                             draggable={false}
                         />
-                        {map.markers.map((marker) => {
+                        {marquee && (
+                            <div
+                                className={styles.marquee}
+                                style={{
+                                    left: marquee.x,
+                                    top: marquee.y,
+                                    width: marquee.width,
+                                    height: marquee.height,
+                                }}
+                            />
+                        )}
+                        {selectionBounds && !marquee && (
+                            <div
+                                className={`${styles.marquee} ${styles.selectionFrame}`}
+                                ref={selectionFrame}
+                                data-testid="map-selection-frame"
+                                style={{
+                                    left:
+                                        selectionBounds.left * fit * zoom -
+                                        framePadding,
+                                    top:
+                                        selectionBounds.top * fit * zoom -
+                                        framePadding,
+                                    width:
+                                        (selectionBounds.right -
+                                            selectionBounds.left) *
+                                            fit *
+                                            zoom +
+                                        framePadding * 2,
+                                    height:
+                                        (selectionBounds.bottom -
+                                            selectionBounds.top) *
+                                            fit *
+                                            zoom +
+                                        framePadding * 2,
+                                }}
+                            >
+                                {batchCount > 1 &&
+                                    resizeHandles.map((handle) => {
+                                        const label = `Resize selection: ${handle.side}`;
+                                        return (
+                                            <button
+                                                key={handle.side}
+                                                type="button"
+                                                className={styles.resizeHandle}
+                                                aria-label={label}
+                                                title={label}
+                                                style={{
+                                                    left: `${(handle.x + 1) * 50}%`,
+                                                    top: `${(handle.y + 1) * 50}%`,
+                                                    cursor: `${handle.cursor}-resize`,
+                                                }}
+                                                onPointerDown={(event) =>
+                                                    begin(
+                                                        event,
+                                                        undefined,
+                                                        handle,
+                                                    )
+                                                }
+                                                onKeyDown={(event) => {
+                                                    const x =
+                                                        handle.x === 0
+                                                            ? 0
+                                                            : event.key ===
+                                                                'ArrowRight'
+                                                              ? 1
+                                                              : event.key ===
+                                                                  'ArrowLeft'
+                                                                ? -1
+                                                                : 0;
+                                                    const y =
+                                                        handle.y === 0
+                                                            ? 0
+                                                            : event.key ===
+                                                                'ArrowDown'
+                                                              ? 1
+                                                              : event.key ===
+                                                                  'ArrowUp'
+                                                                ? -1
+                                                                : 0;
+                                                    if (!x && !y) return;
+                                                    event.preventDefault();
+                                                    const step =
+                                                        (event.shiftKey
+                                                            ? 10
+                                                            : 1) /
+                                                        (fit * zoom);
+                                                    transform(
+                                                        x * step,
+                                                        y * step,
+                                                        handle,
+                                                    );
+                                                }}
+                                            />
+                                        );
+                                    })}
+                            </div>
+                        )}
+                        {displayedMap.markers.map((marker) => {
+                            const batchSelected =
+                                batchMode &&
+                                !onPlace &&
+                                batchIds.has(marker.id);
+                            const era =
+                                marker.kind === 'checks'
+                                    ? markerEra(checkEras, marker.checkIds)
+                                    : undefined;
                             const metrics = markerMetrics(
-                                markerDisplayScale(
-                                    measuredWidth,
-                                    measuredHeight,
-                                    zoom,
-                                ),
+                                markerScale,
                                 marker.kind === 'checks'
                                     ? (counts[marker.id] ??
                                           marker.checkIds.length)
@@ -397,6 +701,10 @@ export default function MapCanvas({
                                         states[marker.id] ?? 'available'
                                     }
                                     data-marker-id={marker.id}
+                                    data-check-era={era}
+                                    data-batch-selected={
+                                        batchSelected || undefined
+                                    }
                                     data-count-visible={
                                         marker.kind === 'checks' &&
                                         metrics.showCount
@@ -404,6 +712,7 @@ export default function MapCanvas({
                                     aria-label={marker.label}
                                     onDoubleClick={(event) => {
                                         if (
+                                            !batchMode &&
                                             marker.kind === 'link' &&
                                             onNavigateLink
                                         ) {
@@ -413,6 +722,7 @@ export default function MapCanvas({
                                     }}
                                     onContextMenu={(event) => {
                                         if (
+                                            !batchMode &&
                                             marker.kind === 'link' &&
                                             onNavigateLink
                                         ) {
@@ -421,7 +731,11 @@ export default function MapCanvas({
                                             onNavigateLink(marker);
                                         }
                                     }}
-                                    aria-pressed={selected === marker.id}
+                                    aria-pressed={
+                                        batchMode && !onPlace
+                                            ? batchSelected
+                                            : selected === marker.id
+                                    }
                                     title={
                                         onHover
                                             ? undefined
@@ -479,6 +793,22 @@ export default function MapCanvas({
                                     }}
                                     onClick={(event) => {
                                         event.stopPropagation();
+                                        if (batchMode && !onPlace) {
+                                            if (
+                                                !skipBatchClick.current ||
+                                                event.detail === 0
+                                            )
+                                                setBatchIds((previous) => {
+                                                    const next = new Set(
+                                                        previous,
+                                                    );
+                                                    if (next.has(marker.id))
+                                                        next.delete(marker.id);
+                                                    else next.add(marker.id);
+                                                    return next;
+                                                });
+                                            return;
+                                        }
                                         onSelect(
                                             marker,
                                             event.currentTarget.getBoundingClientRect(),

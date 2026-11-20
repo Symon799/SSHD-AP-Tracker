@@ -44,7 +44,10 @@ export interface MapPack {
     id: string;
     name: string;
     maps: PackMap[];
+    checkEras?: Record<string, CheckEra>;
 }
+
+export type CheckEra = 'past' | 'present';
 
 export interface MapDocument {
     pack: MapPack;
@@ -244,7 +247,36 @@ export function parsePack(input: unknown): MapPack {
                     `Missing destination for ${marker.label}.`,
                 );
         }
-    return { version: 1, id: input.id, name: input.name, maps };
+    const checkEras = input.checkEras;
+    const eras: [string, CheckEra][] = [];
+    if (checkEras !== undefined) {
+        assert(record(checkEras), 'Invalid check timeline annotations.');
+        for (const [id, era] of Object.entries(checkEras)) {
+            assert(
+                text(id) && (era === 'past' || era === 'present'),
+                'Invalid check timeline annotations.',
+            );
+            eras.push([id, era]);
+        }
+    }
+    return {
+        version: 1,
+        id: input.id,
+        name: input.name,
+        maps,
+        ...(eras.length ? { checkEras: Object.fromEntries(eras) } : {}),
+    };
+}
+
+export function checkEra(eras: MapPack['checkEras'], id: string) {
+    return eras && Object.hasOwn(eras, id) ? eras[id] : undefined;
+}
+
+export function markerEra(eras: MapPack['checkEras'], ids: string[]) {
+    const first = checkEra(eras, ids[0]);
+    return first && ids.every((id) => checkEra(eras, id) === first)
+        ? first
+        : undefined;
 }
 
 export function placedChecks(pack: MapPack): Set<string> {
