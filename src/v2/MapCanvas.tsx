@@ -12,8 +12,12 @@ import {
     transformMarkers,
     type ResizeDirection,
 } from './editOperations';
+import MapRangeControl from './MapRangeControl';
 import {
+    CHECK_MARKER_SCALE,
     COMPLETED_MARKER_SCALE,
+    MAX_MARKER_PERCENT,
+    MIN_MARKER_PERCENT,
     markerDisplayScale,
     markerMetrics,
 } from './markerSizing';
@@ -31,6 +35,7 @@ const emptyStates: Record<string, MarkerStatus> = {};
 const emptyCounts: Record<string, number> = {};
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 10;
+const MARKER_SIZE_PREFERENCE = 'sshd-v2:marker-size-percent';
 const MARKER_DRAG_DELAY = 85;
 const resizeHandles = [
     { x: -1, y: -1, side: 'top left', cursor: 'nwse' },
@@ -104,6 +109,20 @@ export default function MapCanvas({
     const stage = useRef<HTMLDivElement>(null);
     const { measuredWidth, measuredHeight } = useElementSize(viewport);
     const [zoom, setZoom] = useState(1);
+    const [markerPercent, setMarkerPercent] = useState(() => {
+        try {
+            const value = Number(localStorage.getItem(MARKER_SIZE_PREFERENCE));
+            if (
+                Number.isInteger(value) &&
+                value >= MIN_MARKER_PERCENT &&
+                value <= MAX_MARKER_PERCENT
+            )
+                return value;
+        } catch {
+            /* Optional preference. */
+        }
+        return MAX_MARKER_PERCENT;
+    });
     const zoomRef = useRef(1);
     const zoomAnchor = useRef<
         | {
@@ -153,9 +172,26 @@ export default function MapCanvas({
         viewport.current.scrollTop +=
             after.top + anchor.y * after.height - anchor.clientY;
     }, [zoom]);
-    const changeZoom = (value: number) => {
+    const changeZoom = (value: number, center = false) => {
         zoomAnchor.current = undefined;
         const next = clampZoom(value);
+        if (
+            center &&
+            next !== zoomRef.current &&
+            viewport.current &&
+            stage.current
+        ) {
+            const view = viewport.current.getBoundingClientRect();
+            const before = stage.current.getBoundingClientRect();
+            const clientX = view.left + viewport.current.clientWidth / 2;
+            const clientY = view.top + viewport.current.clientHeight / 2;
+            zoomAnchor.current = {
+                x: (clientX - before.left) / before.width,
+                y: (clientY - before.top) / before.height,
+                clientX,
+                clientY,
+            };
+        }
         zoomRef.current = next;
         setZoom(next);
         viewportChanged.current?.();
@@ -199,7 +235,8 @@ export default function MapCanvas({
     useEffect(() => () => cancelAnimationFrame(previewFrame.current), []);
     const selectionFrame = useRef<HTMLDivElement>(null);
     const markerScale = markerDisplayScale(measuredWidth, measuredHeight, zoom);
-    const framePadding = markerMetrics(markerScale, 0).size / 2 + 8;
+    const framePadding =
+        markerMetrics(markerScale, 0, markerPercent).size / 2 + 8;
     const skipBatchClick = useRef(false);
     const batchCount = map.markers.filter((marker) =>
         batchIds.has(marker.id),
@@ -478,27 +515,39 @@ export default function MapCanvas({
                         </output>
                     )}
                     {beforeZoom}
-                    <button
-                        type="button"
-                        title="Zoom out"
-                        aria-label="Zoom out"
-                        disabled={zoom <= MIN_ZOOM}
-                        onClick={() => changeZoom(zoom / 1.25)}
+                    <MapRangeControl
+                        label="Marker size"
+                        sliderLabel="Marker size percentage"
+                        value={markerPercent}
+                        min={MIN_MARKER_PERCENT}
+                        max={MAX_MARKER_PERCENT}
+                        onChange={(value) => {
+                            setMarkerPercent(value);
+                            viewportChanged.current?.();
+                            try {
+                                localStorage.setItem(
+                                    MARKER_SIZE_PREFERENCE,
+                                    String(value),
+                                );
+                            } catch {
+                                /* Optional preference. */
+                            }
+                        }}
                     >
-                        <Icon name="minus" />
-                    </button>
-                    <output aria-label="Map zoom">
-                        {Math.round(zoom * 100)}%
-                    </output>
-                    <button
-                        type="button"
-                        title="Zoom in"
-                        aria-label="Zoom in"
-                        disabled={zoom >= MAX_ZOOM}
-                        onClick={() => changeZoom(zoom * 1.25)}
+                        <Icon name="expand-arrows-alt" />
+                    </MapRangeControl>
+                    <MapRangeControl
+                        label="Map zoom"
+                        sliderLabel="Zoom level"
+                        value={Math.round(zoom * 100)}
+                        min={MIN_ZOOM * 100}
+                        max={MAX_ZOOM * 100}
+                        onChange={(value) => changeZoom(value / 100, true)}
                     >
-                        <Icon name="plus" />
-                    </button>
+                        <span className={styles.mapZoomValue}>
+                            {Math.round(zoom * 100)}%
+                        </span>
+                    </MapRangeControl>
                     <button
                         type="button"
                         title="Fit map"
@@ -698,6 +747,10 @@ export default function MapCanvas({
                                     ? (counts[marker.id] ??
                                           marker.checkIds.length)
                                     : 0,
+                                markerPercent,
+                                marker.kind === 'checks'
+                                    ? CHECK_MARKER_SCALE
+                                    : 1,
                             );
                             const completed =
                                 marker.kind === 'checks' &&
@@ -706,9 +759,7 @@ export default function MapCanvas({
                                 ? metrics.size * COMPLETED_MARKER_SCALE
                                 : metrics.size;
                             const showCount =
-                                marker.kind === 'checks' &&
-                                !completed &&
-                                metrics.showCount;
+                                marker.kind === 'checks' && !completed;
                             return states[marker.id] === 'empty' ? null : (
                                 <button
                                     type="button"

@@ -1,11 +1,18 @@
 // Size depends on available screen space, never on the image's native resolution.
 export const MIN_MARKER_SIZE = 7;
 export const MAX_MARKER_SIZE = 38;
+export const CHECK_MARKER_SCALE = 0.9;
 export const COMPLETED_MARKER_SCALE = 2 / 3;
 export const NATIVE_MARKER_SIZE = 19;
 export const MARKER_REFERENCE_WIDTH = 843;
 export const MARKER_REFERENCE_HEIGHT = 465;
-export const COUNT_VISIBILITY_SIZE = 18;
+export const MIN_MARKER_PERCENT = 50;
+export const MAX_MARKER_PERCENT = 100;
+
+const countFormatter = new Intl.NumberFormat('en', {
+    notation: 'compact',
+    maximumFractionDigits: 0,
+});
 
 export function markerDisplayScale(
     width: number,
@@ -23,20 +30,24 @@ export function markerDisplayScale(
     );
 }
 
-export function markerMetrics(scale: number, count: number) {
-    const size = Math.max(
-        MIN_MARKER_SIZE,
-        Math.min(MAX_MARKER_SIZE, NATIVE_MARKER_SIZE * scale),
-    );
-    const label = new Intl.NumberFormat('en', {
-        notation: 'compact',
-        maximumFractionDigits: 0,
-    }).format(count);
+export function markerMetrics(
+    scale: number,
+    count: number,
+    percent = MAX_MARKER_PERCENT,
+    sizeRatio = 1,
+) {
+    const size =
+        Math.max(
+            MIN_MARKER_SIZE,
+            Math.min(MAX_MARKER_SIZE, NATIVE_MARKER_SIZE * scale),
+        ) *
+        (percent / MAX_MARKER_PERCENT) *
+        sizeRatio;
+    const label = countFormatter.format(count);
     const fontSize = Math.min(
         16,
-        Math.max(9, size * 0.46),
-        (size - 4) / (label.length * 0.65),
+        size * 0.56,
+        (size - (size < 18 ? 2 : 4) - 0.5) / (label.length * 0.75),
     );
-    const showCount = size >= COUNT_VISIBILITY_SIZE;
-    return { size, label, fontSize, showCount };
+    return { size, label, fontSize };
 }

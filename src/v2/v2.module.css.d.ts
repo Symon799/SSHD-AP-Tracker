@@ -29,6 +29,9 @@ declare const classNames: {
     readonly canvas: 'canvas';
     readonly mapToolbar: 'mapToolbar';
     readonly selectionCount: 'selectionCount';
+    readonly mapRangeControl: 'mapRangeControl';
+    readonly mapZoomValue: 'mapZoomValue';
+    readonly mapRangePopover: 'mapRangePopover';
     readonly mapHeading: 'mapHeading';
     readonly selectionHeader: 'selectionHeader';
     readonly selectionIdentity: 'selectionIdentity';

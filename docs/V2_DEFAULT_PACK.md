@@ -16,8 +16,9 @@ The V1 tracker does not load this archive.
 
 V2 markers scale with the available viewport and zoom, independently of image
 resolution. Their minimum, maximum
-and native sizes are in `src/v2/markerSizing.ts`. Counts are hidden when the
-marker cannot contain them legibly; hover contents and check state are unchanged.
+and native sizes are in `src/v2/markerSizing.ts`. Use the Marker size slider to
+reduce those rendered sizes to 50% without changing map zoom. Unfinished checks
+retain their counts even on small markers; completed markers have no count.
 Dense placements may still overlap at extreme zoom-out; zooming in restores
 space and numeric labels without changing authored coordinates.
 

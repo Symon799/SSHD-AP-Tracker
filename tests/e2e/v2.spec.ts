@@ -185,7 +185,14 @@ test('V2 bundled pack import shows reading and completion status', async ({
     await expect(page.getByLabel('Import pack', { exact: true })).toBeEnabled();
 });
 
-test('V2 bundled markers shrink with the map, hide crowded labels and recover on zoom', async ({
+async function setMapZoom(page: Page, percent: number) {
+    await page.getByRole('button', { name: 'Map zoom', exact: true }).click();
+    const slider = page.getByRole('slider', { name: 'Zoom level' });
+    await slider.fill(String(percent));
+    await slider.press('Escape');
+}
+
+test('V2 bundled markers resize independently of zoom and keep their counts', async ({
     page,
 }) => {
     await page.setViewportSize({ width: 940, height: 515 });
@@ -207,10 +214,43 @@ test('V2 bundled markers shrink with the map, hide crowded labels and recover on
             );
     const small = await sizes();
     expect(Math.max(...small)).toBeLessThan(16);
-    expect(Math.min(...small)).toBeGreaterThanOrEqual(7);
+    expect(Math.min(...small)).toBeGreaterThanOrEqual(6.25);
     await expect(
-        page.locator('[data-count-visible="false"]').first(),
-    ).toBeVisible();
+        page.locator('[data-count-visible="true"]').first(),
+    ).toHaveText(/\d/);
+    const markerSize = page.getByRole('button', {
+        name: 'Marker size',
+        exact: true,
+    });
+    await markerSize.click();
+    const sizeSlider = page.getByRole('slider', {
+        name: 'Marker size percentage',
+    });
+    await expect(sizeSlider).toHaveCSS('writing-mode', 'vertical-lr');
+    const check = page.locator('[data-count-visible="true"]').first();
+    const mapLink = page.getByRole('button', {
+        name: 'Waterfall Cave',
+        exact: true,
+    });
+    const ratio = async () =>
+        (await check.boundingBox())!.width /
+        (await mapLink.boundingBox())!.width;
+    await expect.poll(ratio).toBeCloseTo(0.9, 2);
+    await sizeSlider.fill('50');
+    await expect.poll(ratio).toBeCloseTo(0.9, 2);
+    await expect
+        .poll(async () => Math.max(...(await sizes())))
+        .toBeCloseTo(Math.max(...small) / 2, 1);
+    await expect(
+        page.locator('[data-count-visible="true"]').first(),
+    ).toHaveText(/\d/);
+    await expect(
+        page.getByRole('button', { name: 'Map zoom', exact: true }),
+    ).toHaveText('100%');
+    await page.screenshot({ path: 'test-results/v2-marker-size-slider.png' });
+    await sizeSlider.fill('100');
+    await sizeSlider.press('Escape');
+    await expect(sizeSlider).toHaveCount(0);
     await page.screenshot({ path: 'test-results/v2-dense-small.png' });
     await page
         .getByRole('button', { name: 'Waterfall Cave', exact: true })
@@ -232,10 +272,7 @@ test('V2 bundled markers shrink with the map, hide crowded labels and recover on
     await expect(
         page.getByTestId('map-stage').getByRole('img'),
     ).toHaveAttribute('alt', 'Skyloft');
-    for (let n = 0; n < 5; n++)
-        await page
-            .getByRole('button', { name: 'Zoom in', exact: true })
-            .click();
+    await setMapZoom(page, 350);
     await expect.poll(async () => Math.max(...(await sizes()))).toBe(38);
     await expect(
         page.locator('[data-count-visible="true"]').first(),
@@ -1419,7 +1456,7 @@ test('V2 editor selection distinguishes background clicks from panning and separ
     await expect(
         page.getByRole('heading', { name: 'Faron Province', exact: true }),
     ).toHaveCSS('font-weight', '650');
-    await page.getByRole('button', { name: 'Zoom in', exact: true }).click();
+    await setMapZoom(page, 125);
     const stage = page.getByTestId('map-stage');
     const bounds = (await stage.boundingBox())!;
     const x = bounds.x + bounds.width * 0.8,
@@ -1881,13 +1918,13 @@ test('V2 repeat placements share check state and link colours match their conten
     });
     await expect(
         controls.getByRole('button', {
-            name: /^(World map|Previous map|Follow player|Hide completed checks|Zoom out)$/,
+            name: /^(World map|Previous map|Follow player|Hide completed checks|Marker size|Map zoom)$/,
         }),
-    ).toHaveCount(5);
+    ).toHaveCount(6);
     expect(
         await controls
             .getByRole('button', {
-                name: /^(World map|Previous map|Follow player|Hide completed checks|Zoom out)$/,
+                name: /^(World map|Previous map|Follow player|Hide completed checks|Marker size|Map zoom)$/,
             })
             .evaluateAll((buttons) =>
                 buttons.map((button) => button.getAttribute('aria-label')),
@@ -1897,7 +1934,8 @@ test('V2 repeat placements share check state and link colours match their conten
         'Previous map',
         'Follow player',
         'Hide completed checks',
-        'Zoom out',
+        'Marker size',
+        'Map zoom',
     ]);
     const hide = page.getByRole('button', {
         name: 'Hide completed checks',
@@ -3452,10 +3490,7 @@ for (const route of ['/v2', '/v2/editor']) {
                 ),
             )
             .toBe(true);
-        for (let i = 0; i < 5; i++)
-            await page
-                .getByRole('button', { name: 'Zoom in', exact: true })
-                .click();
+        await setMapZoom(page, 305);
         await viewport.evaluate((element) => {
             element.scrollLeft =
                 (element.scrollWidth - element.clientWidth) / 2;
@@ -3490,30 +3525,27 @@ for (const route of ['/v2', '/v2/editor']) {
     });
 }
 
-test('V2 zoom stays between 100 and 1000 percent with buttons and the wheel', async ({
+test('V2 zoom stays between 100 and 1000 percent with the slider and wheel', async ({
     page,
 }) => {
     await page.goto('/v2/editor');
     const zoom = page.getByLabel('Map zoom', { exact: true });
     await expect(zoom).toHaveText('100%');
-    await expect(
-        page.getByRole('button', { name: 'Zoom out', exact: true }),
-    ).toBeDisabled();
+    await zoom.click();
+    const slider = page.getByRole('slider', { name: 'Zoom level' });
+    await expect(slider).toHaveCSS('writing-mode', 'vertical-lr');
+    await expect(slider).toHaveAttribute('min', '100');
+    await expect(slider).toHaveAttribute('max', '1000');
+    await slider.press('Escape');
     const stage = page
         .getByRole('region', { name: 'Map: The Sky', exact: true })
         .getByTestId('map-stage');
     await stage.hover({ position: { x: 100, y: 100 } });
     await page.mouse.wheel(0, -10000);
     await expect(zoom).toHaveText('1000%');
-    await expect(
-        page.getByRole('button', { name: 'Zoom in', exact: true }),
-    ).toBeDisabled();
     await page.mouse.wheel(0, 10000);
     await expect(zoom).toHaveText('100%');
-    for (let i = 0; i < 11; i++)
-        await page
-            .getByRole('button', { name: 'Zoom in', exact: true })
-            .click();
+    await setMapZoom(page, 1000);
     await expect(zoom).toHaveText('1000%');
     await page.getByRole('button', { name: 'Fit map', exact: true }).click();
     await expect(zoom).toHaveText('100%');

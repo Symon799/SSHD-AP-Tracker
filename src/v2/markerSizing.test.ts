@@ -19,20 +19,21 @@ it('uses viewport dimensions and zoom instead of image resolution', () => {
     expect(markerDisplayScale(1734, 978, 1)).toBe(2);
     expect(markerDisplayScale(400, 300, 1)).toBeLessThan(1);
 });
-it('hides counts on small markers and restores them when zooming', () => {
-    expect(markerMetrics(0.4, 42).showCount).toBe(false);
-    expect(markerMetrics(1, 42).showCount).toBe(true);
-    expect(markerMetrics(0.7, 999).showCount).toBe(false);
+it('scales from half to full size after applying normal marker bounds', () => {
+    for (const scale of [0.01, 1, 100]) {
+        expect(markerMetrics(scale, 42, 50).size).toBe(
+            markerMetrics(scale, 42).size / 2,
+        );
+    }
     expect(markerMetrics(1, 12579).label).toBe('13K');
 });
-it('hides one, two and three digit counts at the same size and fits their text', () => {
+it('fits count labels at the smallest marker size', () => {
     for (const count of [1, 42, 999, 12579]) {
-        expect(markerMetrics(17.9 / 19, count).showCount).toBe(false);
-        const metrics = markerMetrics(18 / 19, count);
-        expect(metrics.showCount).toBe(true);
+        const metrics = markerMetrics(0.01, count, 50);
+        expect(metrics.fontSize).toBeGreaterThan(0);
         expect(
-            metrics.label.length * metrics.fontSize * 0.65,
-        ).toBeLessThanOrEqual(metrics.size - 4);
+            metrics.label.length * metrics.fontSize * 0.75,
+        ).toBeLessThanOrEqual(metrics.size - 2);
     }
     expect(markerMetrics(1, 999).fontSize).toBeLessThan(
         markerMetrics(1, 1).fontSize,
