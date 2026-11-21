@@ -105,8 +105,14 @@ test('V2 bundled pack preserves local edits and becomes the base for New pack', 
     await expect(
         page.getByRole('button', { name: 'Edit Skyloft', exact: true }),
     ).toBeVisible();
-    await expect(page.locator('[aria-label="Maps"] > button')).toHaveCount(32);
-    for (const name of ['Bug Heaven', 'Lumpy Pumpkin'])
+    await expect(page.locator('[aria-label="Maps"] > button')).toHaveCount(35);
+    for (const name of [
+        'Bug Heaven',
+        'Lumpy Pumpkin',
+        'Temple of Time',
+        'LMF Boss Room',
+        'Hall of Robots',
+    ])
         await expect(
             page.getByRole('button', { name: `Edit ${name}`, exact: true }),
         ).toHaveCount(1);
@@ -1697,6 +1703,14 @@ test('V2 repeat placements share check state and link colours match their conten
                         checkIds: [sign],
                     },
                     {
+                        id: 'partial',
+                        kind: 'checks',
+                        label: 'Partly completed',
+                        x: 220,
+                        y: 120,
+                        checkIds: [sign, blocked],
+                    },
+                    {
                         id: 'second',
                         kind: 'checks',
                         label: 'Second placement',
@@ -1711,6 +1725,14 @@ test('V2 repeat placements share check state and link colours match their conten
                         x: 400,
                         y: 200,
                         targetMapId: 'locked',
+                    },
+                    {
+                        id: 'finished-link',
+                        kind: 'link',
+                        label: 'Completed destination',
+                        x: 500,
+                        y: 200,
+                        targetMapId: 'finished',
                     },
                 ],
             },
@@ -1729,6 +1751,24 @@ test('V2 repeat placements share check state and link colours match their conten
                         x: 200,
                         y: 200,
                         checkIds: [blocked],
+                    },
+                ],
+            },
+            {
+                id: 'finished',
+                name: 'Completed map',
+                image: 'images/map.png',
+                width: 843,
+                height: 465,
+                entranceIds: [],
+                markers: [
+                    {
+                        id: 'finished-check',
+                        kind: 'checks',
+                        label: 'Completed check',
+                        x: 120,
+                        y: 120,
+                        checkIds: [sign],
                     },
                 ],
             },
@@ -1819,6 +1859,59 @@ test('V2 repeat placements share check state and link colours match their conten
     const link = marker(page, 'Locked destination');
     await expect(link).toHaveAttribute('data-status', 'unavailable');
     await expect(link).toHaveCSS('background-color', 'rgb(213, 75, 70)');
+    const partial = marker(page, 'Partly completed');
+    await expect(partial).toHaveAttribute('data-status', 'unavailable');
+    await expect(partial).toHaveCSS('z-index', '1');
+    const completed = marker(page, 'Second placement');
+    await expect(completed).toHaveCSS('z-index', '0');
+    await expect(completed).toHaveAttribute('data-count-visible', 'false');
+    await expect(completed).toHaveText('');
+    expect((await completed.boundingBox())!.width).toBeCloseTo(
+        ((await partial.boundingBox())!.width * 2) / 3,
+        1,
+    );
+    const completedLink = marker(page, 'Completed destination');
+    await expect(completedLink).toHaveAttribute('data-status', 'done');
+    expect((await completedLink.boundingBox())!.width).toBe(
+        (await link.boundingBox())!.width,
+    );
+    const controls = page.getByRole('region', {
+        name: 'Map: Root',
+        exact: true,
+    });
+    await expect(
+        controls.getByRole('button', {
+            name: /^(World map|Previous map|Follow player|Hide completed checks|Zoom out)$/,
+        }),
+    ).toHaveCount(5);
+    expect(
+        await controls
+            .getByRole('button', {
+                name: /^(World map|Previous map|Follow player|Hide completed checks|Zoom out)$/,
+            })
+            .evaluateAll((buttons) =>
+                buttons.map((button) => button.getAttribute('aria-label')),
+            ),
+    ).toEqual([
+        'World map',
+        'Previous map',
+        'Follow player',
+        'Hide completed checks',
+        'Zoom out',
+    ]);
+    const hide = page.getByRole('button', {
+        name: 'Hide completed checks',
+        exact: true,
+    });
+    await expect(hide).toHaveAttribute('aria-pressed', 'false');
+    await hide.click();
+    await expect(hide).toHaveAttribute('aria-pressed', 'true');
+    await expect(marker(page, 'First placement')).toHaveCount(0);
+    await expect(marker(page, 'Second placement')).toHaveCount(0);
+    await expect(partial).toBeVisible();
+    await expect(completedLink).toBeVisible();
+    await hide.click();
+    await expect(marker(page, 'First placement')).toBeVisible();
     await link.hover();
     const popup = page.getByRole('dialog', {
         name: 'Locked destination',

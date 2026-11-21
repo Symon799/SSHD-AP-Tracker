@@ -1,9 +1,10 @@
 # V2 Default Map Pack
 
-`src/v2/data/default-map-pack.zip` is the supplied **SSHD_Pack_v0.3.zip**, installed
-on 2026-11-17 with its internal name **Sky Added** and authored data unchanged.
-It builds on the merged Skyloft/Lanayru pack and adds Bug Heaven and Lumpy Pumpkin.
-It contains 32 maps and 15,016 unique check placements,
+`src/v2/data/default-map-pack.zip` retains **Sky Added** (v0.3) outside Lanayru,
+including Bug Heaven and Lumpy Pumpkin. On 2026-11-20, Lanayru and its sub-maps
+were replaced with Ray's **SSHD-Lanayru-V18.zip** region, including its
+Past/Present annotations.
+It contains 35 maps and 15,016 unique check placements,
 with no unused or byte-identical duplicate images. It is used for a fresh
 workspace and the editor's **New pack** action. Authored placements are preserved.
 

@@ -125,6 +125,13 @@ export default function PackViewer({
     const logic = useSelector(logicSelector);
     const [navigationNotice, setNavigationNotice] = useState('');
     const [toolsOpen, setToolsOpen] = useState(false);
+    const [hideCompleted, setHideCompleted] = useState(() => {
+        try {
+            return localStorage.getItem('sshd-v2:hide-completed') === 'true';
+        } catch {
+            return false;
+        }
+    });
     const inventoryRef = useRef<HTMLDivElement>(null);
     const { measuredWidth: inventoryWidth } = useElementSize(inventoryRef);
     const ids = useSelector(apCountedCheckIdsSelector);
@@ -295,7 +302,11 @@ export default function PackViewer({
             if (anchor) openHover(marker, anchor);
         }
     };
-    const hovered = hover?.marker;
+    const hidden = (marker: MapMarker) =>
+        hideCompleted &&
+        marker.kind === 'checks' &&
+        summaries[marker.id]?.status === 'done';
+    const hovered = hover && !hidden(hover.marker) ? hover.marker : undefined;
     const target = hovered ? destination(hovered) : undefined;
     const footer = (
         <footer className={`${styles.footer} ${styles.footerDock}`}>
@@ -419,6 +430,34 @@ export default function PackViewer({
                             <div className={styles.actions}>
                                 <button
                                     type="button"
+                                    title="World map"
+                                    aria-label="World map"
+                                    onClick={() => navigate(pack.maps[0].id)}
+                                >
+                                    <Icon name="globe" />
+                                </button>
+                                <button
+                                    type="button"
+                                    aria-label="Previous map"
+                                    title="Previous map"
+                                    disabled={!history.length}
+                                    onClick={() => {
+                                        const previous = history.at(-1);
+                                        if (previous) {
+                                            close();
+                                            setMapId(previous);
+                                            setHistory(history.slice(0, -1));
+                                        }
+                                    }}
+                                >
+                                    <Icon name="arrow-left" />
+                                </button>
+                            </div>
+                        }
+                        beforeZoom={
+                            <>
+                                <button
+                                    type="button"
                                     aria-label="Follow player"
                                     aria-pressed={followPlayer}
                                     title={`Follow player: ${followPlayer ? 'on' : 'off'} (${telemetry.state === 'waiting' ? 'waiting for client telemetry' : playerMap.reason}). Right-click to go to player`}
@@ -445,29 +484,34 @@ export default function PackViewer({
                                 </button>
                                 <button
                                     type="button"
-                                    aria-label="Previous map"
-                                    title="Previous map"
-                                    disabled={!history.length}
+                                    aria-label="Hide completed checks"
+                                    aria-pressed={hideCompleted}
+                                    title={
+                                        hideCompleted
+                                            ? 'Show completed checks'
+                                            : 'Hide completed checks'
+                                    }
                                     onClick={() => {
-                                        const previous = history.at(-1);
-                                        if (previous) {
-                                            close();
-                                            setMapId(previous);
-                                            setHistory(history.slice(0, -1));
+                                        close();
+                                        const next = !hideCompleted;
+                                        setHideCompleted(next);
+                                        try {
+                                            localStorage.setItem(
+                                                'sshd-v2:hide-completed',
+                                                String(next),
+                                            );
+                                        } catch {
+                                            /* Optional preference. */
                                         }
                                     }}
                                 >
-                                    <Icon name="arrow-left" />
+                                    <Icon
+                                        name={
+                                            hideCompleted ? 'eye-slash' : 'eye'
+                                        }
+                                    />
                                 </button>
-                                <button
-                                    type="button"
-                                    title="World map"
-                                    aria-label="World map"
-                                    onClick={() => navigate(pack.maps[0].id)}
-                                >
-                                    <Icon name="globe" />
-                                </button>
-                            </div>
+                            </>
                         }
                         selected={hovered?.id}
                         onSelect={activate}
@@ -492,14 +536,18 @@ export default function PackViewer({
                             ) : undefined
                         }
                         states={Object.fromEntries(
-                            Object.entries(summaries).map(([id, summary]) => [
-                                id,
-                                map.markers.find((marker) => marker.id === id)
-                                    ?.kind === 'link' &&
-                                summary.status === 'empty'
-                                    ? 'unavailable'
-                                    : summary.status,
-                            ]),
+                            map.markers.map((marker) => {
+                                const status = summaries[marker.id].status;
+                                return [
+                                    marker.id,
+                                    hidden(marker)
+                                        ? 'empty'
+                                        : marker.kind === 'link' &&
+                                            status === 'empty'
+                                          ? 'unavailable'
+                                          : status,
+                                ];
+                            }),
                         )}
                         counts={Object.fromEntries(
                             Object.entries(summaries).map(([id, summary]) => [

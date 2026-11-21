@@ -12,7 +12,11 @@ import {
     transformMarkers,
     type ResizeDirection,
 } from './editOperations';
-import { markerDisplayScale, markerMetrics } from './markerSizing';
+import {
+    COMPLETED_MARKER_SCALE,
+    markerDisplayScale,
+    markerMetrics,
+} from './markerSizing';
 import {
     markerEra,
     type MapDocument,
@@ -63,6 +67,7 @@ export default function MapCanvas({
     onBackgroundClick,
     overlay,
     navigation,
+    beforeZoom,
     markerTitles,
     checkEras,
     onTransformChecks,
@@ -79,6 +84,7 @@ export default function MapCanvas({
     onBackgroundClick?: () => void;
     overlay?: ReactNode;
     navigation?: ReactNode;
+    beforeZoom?: ReactNode;
     markerTitles?: Record<string, string>;
     checkEras?: MapPack['checkEras'];
     onTransformChecks?: (next: PackMap) => void;
@@ -471,6 +477,7 @@ export default function MapCanvas({
                             selected
                         </output>
                     )}
+                    {beforeZoom}
                     <button
                         type="button"
                         title="Zoom out"
@@ -692,6 +699,16 @@ export default function MapCanvas({
                                           marker.checkIds.length)
                                     : 0,
                             );
+                            const completed =
+                                marker.kind === 'checks' &&
+                                states[marker.id] === 'done';
+                            const size = completed
+                                ? metrics.size * COMPLETED_MARKER_SCALE
+                                : metrics.size;
+                            const showCount =
+                                marker.kind === 'checks' &&
+                                !completed &&
+                                metrics.showCount;
                             return states[marker.id] === 'empty' ? null : (
                                 <button
                                     type="button"
@@ -705,10 +722,7 @@ export default function MapCanvas({
                                     data-batch-selected={
                                         batchSelected || undefined
                                     }
-                                    data-count-visible={
-                                        marker.kind === 'checks' &&
-                                        metrics.showCount
-                                    }
+                                    data-count-visible={showCount}
                                     aria-label={marker.label}
                                     onDoubleClick={(event) => {
                                         if (
@@ -758,9 +772,9 @@ export default function MapCanvas({
                                     }
                                     onBlur={onLeave}
                                     style={{
-                                        width: metrics.size,
-                                        height: metrics.size,
-                                        minHeight: metrics.size,
+                                        width: size,
+                                        height: size,
+                                        minHeight: size,
                                         fontSize:
                                             marker.kind === 'link'
                                                 ? Math.max(
@@ -768,14 +782,11 @@ export default function MapCanvas({
                                                       metrics.size * 0.45,
                                                   )
                                                 : metrics.fontSize,
-                                        borderWidth: metrics.size < 18 ? 1 : 2,
+                                        borderWidth: size < 18 ? 1 : 2,
                                         borderRadius:
                                             marker.kind === 'link'
                                                 ? '50%'
-                                                : Math.min(
-                                                      5,
-                                                      metrics.size * 0.18,
-                                                  ),
+                                                : Math.min(5, size * 0.18),
                                         left: `${((preview?.id === marker.id ? preview.x : marker.x) / map.width) * 100}%`,
                                         top: `${((preview?.id === marker.id ? preview.y : marker.y) / map.height) * 100}%`,
                                     }}
@@ -817,7 +828,7 @@ export default function MapCanvas({
                                 >
                                     {marker.kind === 'link' ? (
                                         <Icon name="arrow-right" />
-                                    ) : metrics.showCount ? (
+                                    ) : showCount ? (
                                         metrics.label
                                     ) : null}
                                 </button>

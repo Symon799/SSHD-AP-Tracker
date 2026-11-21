@@ -568,6 +568,7 @@
 }
 .app .marker {
     position: absolute;
+    z-index: 1;
     transform: translate(-50%, -50%);
     padding: 0;
     width: 28px;
@@ -591,6 +592,9 @@
 }
 .app .marker[data-status='done'] {
     background: #b9bec3;
+}
+.app .marker[data-status='done']:not(.linkMarker) {
+    z-index: 0;
 }
 .app .linkMarker {
     border-radius: 50%;

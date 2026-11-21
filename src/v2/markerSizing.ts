@@ -1,6 +1,7 @@
 // Size depends on available screen space, never on the image's native resolution.
 export const MIN_MARKER_SIZE = 7;
 export const MAX_MARKER_SIZE = 38;
+export const COMPLETED_MARKER_SCALE = 2 / 3;
 export const NATIVE_MARKER_SIZE = 19;
 export const MARKER_REFERENCE_WIDTH = 843;
 export const MARKER_REFERENCE_HEIGHT = 465;
