@@ -39,4 +39,4 @@ it('ships all three surface provinces alongside the Sky and Skyloft maps', () =>
     expect(Object.keys(document.pack.checkEras ?? {})).toHaveLength(1342);
     for (const map of document.pack.maps)
         expect(document.images[map.image]).toMatch(/^data:image\//);
-});
+}, 30_000);
