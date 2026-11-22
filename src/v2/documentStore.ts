@@ -3,6 +3,8 @@ import type { MapDocument, MapPack } from './pack';
 import { parsePack, upgradeLegacyHoverTitles } from './pack';
 
 const imageRevisions = new WeakMap<MapDocument['images'], string>();
+const imageKey = (path: string) => `current-image:${path}`;
+const imageKeyRange = () => IDBKeyRange.bound(imageKey(''), imageKey('\uffff'));
 
 function database(): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
@@ -29,7 +31,11 @@ export async function saveDocument(document: MapDocument): Promise<void> {
             request.onsuccess = () => {
                 // Keep metadata and assets in one transaction, but don't clone unchanged images.
                 if (request.result !== revision) {
-                    store.put(images, 'current-images');
+                    // Individual images keep each structured-clone record within browser limits.
+                    store.delete(imageKeyRange());
+                    for (const [path, url] of Object.entries(images))
+                        store.put(url, imageKey(path));
+                    store.put(Object.keys(images), 'current-images');
                     store.put(revision, 'current-image-revision');
                 }
                 store.put(metadata, 'current');
@@ -57,15 +63,35 @@ async function loadDocument(): Promise<MapDocument | undefined> {
             const assetRequest = store.get('current-images');
             const revisionRequest = store.get('current-image-revision');
             const request = store.get('current');
-            request.onsuccess = () => {
+            const restore = async () => {
                 try {
                     const value: unknown = request.result;
                     if (value === undefined) return resolve(undefined);
                     const legacy =
                         value && typeof value === 'object' && 'images' in value;
-                    const images: unknown = legacy
+                    let images: unknown = legacy
                         ? value.images
                         : assetRequest.result;
+                    if (!legacy && Array.isArray(images)) {
+                        const records = images.map((path: unknown) => {
+                            if (typeof path !== 'string')
+                                throw new Error('Invalid local image path.');
+                            return new Promise<[string, unknown]>(
+                                (resolve, reject) => {
+                                    const asset = store.get(imageKey(path));
+                                    asset.onsuccess = () =>
+                                        resolve([path, asset.result]);
+                                    asset.onerror = () =>
+                                        reject(
+                                            new Error(
+                                                'Cannot read a local map image.',
+                                            ),
+                                        );
+                                },
+                            );
+                        });
+                        images = Object.fromEntries(await Promise.all(records));
+                    }
                     if (
                         !value ||
                         typeof value !== 'object' ||
@@ -99,6 +125,9 @@ async function loadDocument(): Promise<MapDocument | undefined> {
                         ),
                     );
                 }
+            };
+            request.onsuccess = () => {
+                void restore();
             };
             request.onerror = () =>
                 reject(new Error('Cannot read the local pack draft.'));

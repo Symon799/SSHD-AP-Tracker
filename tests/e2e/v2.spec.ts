@@ -12,7 +12,11 @@ test.beforeEach(async ({ page }, info) => {
         info.setTimeout(90_000);
         return;
     }
-    await page.route('**/default-map-pack.zip*', async (route) => {
+    await page.route('**/default-map-pack.zip.*', async (route) => {
+        if (route.request().url().endsWith('.2')) {
+            await route.fulfill({ body: '' });
+            return;
+        }
         if (!legacyArchive) {
             const manifest = fs.readFileSync('tests/e2e/v2-legacy-pack.json');
             const files: Record<string, Uint8Array> = { 'pack.json': manifest };
@@ -105,13 +109,15 @@ test('V2 bundled pack preserves local edits and becomes the base for New pack', 
     await expect(
         page.getByRole('button', { name: 'Edit Skyloft', exact: true }),
     ).toBeVisible();
-    await expect(page.locator('[aria-label="Maps"] > button')).toHaveCount(35);
+    await expect(page.locator('[aria-label="Maps"] > button')).toHaveCount(71);
     for (const name of [
         'Bug Heaven',
         'Lumpy Pumpkin',
         'Temple of Time',
         'LMF Boss Room',
         'Hall of Robots',
+        'Deep Woods',
+        'Fire Sanctuary F1',
     ])
         await expect(
             page.getByRole('button', { name: `Edit ${name}`, exact: true }),
@@ -123,12 +129,12 @@ test('V2 bundled pack preserves local edits and becomes the base for New pack', 
 
 test('V2 bundled pack import shows reading and completion status', async ({
     page,
-}) => {
+}, info) => {
     let finishDownload!: () => void;
     const download = new Promise<void>((resolve) => {
         finishDownload = resolve;
     });
-    await page.route('**/default-map-pack.zip*', async (route) => {
+    await page.route('**/default-map-pack.zip.*', async (route) => {
         await download;
         await route.continue();
     });
@@ -152,9 +158,19 @@ test('V2 bundled pack import shows reading and completion status', async ({
             return read.call(this);
         };
     });
+    const archive = info.outputPath('default-map-pack.zip');
+    fs.mkdirSync(path.dirname(archive), { recursive: true });
+    fs.writeFileSync(
+        archive,
+        Buffer.concat(
+            [1, 2].map((part) =>
+                fs.readFileSync(`src/v2/data/default-map-pack.zip.${part}`),
+            ),
+        ),
+    );
     await page
         .getByLabel('Import pack', { exact: true })
-        .setInputFiles('src/v2/data/default-map-pack.zip');
+        .setInputFiles(archive);
     const status = page.getByRole('status', { name: 'Pack import status' });
     await expect(status).toHaveText('Reading map pack…');
     await expect(
