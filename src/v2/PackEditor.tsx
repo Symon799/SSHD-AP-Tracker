@@ -134,7 +134,19 @@ export default function PackEditor({
                                 : undefined,
                         );
                         const count = destination
-                            ? mapCheckIds(pack, destination).length
+                            ? mapCheckIds(
+                                  pack,
+                                  destination,
+                                  (child) =>
+                                      linkDestination(
+                                          child,
+                                          pack,
+                                          child.exitId
+                                              ? exits[child.exitId]?.entrance
+                                                    ?.id
+                                              : undefined,
+                                      ) === child.targetMapId,
+                              ).length
                             : undefined;
                         return [
                             marker.id,

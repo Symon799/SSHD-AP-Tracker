@@ -1,4 +1,4 @@
-import type { CheckMarker, MapMarker, MapPack, PackMap } from './pack';
+import type { CheckMarker, MapLink, MapMarker, MapPack, PackMap } from './pack';
 
 export function markerSelectionBounds(map: PackMap, ids: ReadonlySet<string>) {
     const group = map.markers.filter((marker) => ids.has(marker.id));
@@ -291,22 +291,25 @@ export function expandGroupToMap(
 export function mapCheckIds(
     pack: MapPack,
     mapId: string,
-    visited = new Set<string>(),
+    includeGameChild?: (marker: MapLink) => boolean,
 ): string[] {
-    if (visited.has(mapId)) return [];
-    visited.add(mapId);
-    const map = pack.maps.find((entry) => entry.id === mapId);
-    return [
-        ...new Set(
-            map?.markers.flatMap((marker) =>
-                marker.kind === 'checks'
-                    ? marker.checkIds
-                    : marker.navigation === 'child' &&
-                        !marker.exitId &&
-                        marker.targetMapId
-                      ? mapCheckIds(pack, marker.targetMapId, visited)
-                      : [],
-            ) ?? [],
-        ),
-    ];
+    const visited = new Set<string>();
+    const checks = new Set<string>();
+    const visit = (id: string) => {
+        if (visited.has(id)) return;
+        visited.add(id);
+        for (const marker of pack.maps.find((map) => map.id === id)?.markers ??
+            []) {
+            if (marker.kind === 'checks') {
+                for (const check of marker.checkIds) checks.add(check);
+            } else if (
+                marker.navigation === 'child' &&
+                marker.targetMapId &&
+                (!marker.exitId || includeGameChild?.(marker))
+            )
+                visit(marker.targetMapId);
+        }
+    };
+    visit(mapId);
+    return [...checks];
 }

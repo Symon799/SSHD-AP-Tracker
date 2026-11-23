@@ -109,7 +109,7 @@ test('V2 bundled pack preserves local edits and becomes the base for New pack', 
     await expect(
         page.getByRole('button', { name: 'Edit Skyloft', exact: true }),
     ).toBeVisible();
-    await expect(page.locator('[aria-label="Maps"] > button')).toHaveCount(71);
+    await expect(page.locator('[aria-label="Maps"] > button')).toHaveCount(74);
     for (const name of [
         'Bug Heaven',
         'Lumpy Pumpkin',
@@ -118,6 +118,9 @@ test('V2 bundled pack preserves local edits and becomes the base for New pack', 
         'Hall of Robots',
         'Deep Woods',
         'Fire Sanctuary F1',
+        'Sky Keep',
+        "The Goddess's Silent Realm",
+        "Din's Silent Realm",
     ])
         await expect(
             page.getByRole('button', { name: `Edit ${name}`, exact: true }),
@@ -125,6 +128,16 @@ test('V2 bundled pack preserves local edits and becomes the base for New pack', 
     await expect(
         page.getByRole('button', { name: 'Edit Sandship B3', exact: true }),
     ).toHaveCount(1);
+    await page
+        .getByRole('button', { name: 'Edit Deep Woods', exact: true })
+        .click();
+    await marker(page, 'Skyview Temple').click();
+    await expect(
+        page.getByRole('button', { name: 'Game entrance', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await expect(
+        page.getByLabel('Link routing').getByRole('status'),
+    ).toContainText('Map: Skyview Temple');
 });
 
 test('V2 bundled pack import shows reading and completion status', async ({

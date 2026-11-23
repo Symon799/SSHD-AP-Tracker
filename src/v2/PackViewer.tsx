@@ -265,13 +265,19 @@ export default function PackViewer({
                       : undefined,
               )
             : undefined;
+    const checksOnMap = (id: string) =>
+        mapCheckIds(
+            pack,
+            id,
+            (marker) => destination(marker) === marker.targetMapId,
+        );
     const summaries = Object.fromEntries(
         map.markers.map((marker) => [
             marker.id,
             summarizeChecks(
                 marker.kind === 'checks'
                     ? marker.checkIds
-                    : mapCheckIds(pack, destination(marker) ?? ''),
+                    : checksOnMap(destination(marker) ?? ''),
                 active,
                 checked,
                 available,
@@ -643,7 +649,7 @@ export default function PackViewer({
                                 marker={{
                                     ...hovered,
                                     kind: 'checks',
-                                    checkIds: mapCheckIds(pack, target ?? ''),
+                                    checkIds: checksOnMap(target ?? ''),
                                 }}
                                 active={active}
                                 onEntrances={onEntrances}

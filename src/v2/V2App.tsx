@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSelector, useStore } from 'react-redux';
 import { Route, Routes } from 'react-router-dom';
 import { DragAndDropContext } from '../dragAndDrop/DragAndDrop';
 import EntranceTracker from '../entranceTracker/EntranceTracker';
 import { loadRemoteLogic } from '../loader/LogicLoader';
-import { isLogicLoadedSelector } from '../logic/Selectors';
+import { isLogicLoadedSelector, logicSelector } from '../logic/Selectors';
 import { loadLogic } from '../logic/Slice';
 import Options from '../options/Options';
 import { defaultSettings } from '../permalink/Settings';
@@ -14,6 +14,7 @@ import { TrackerContents } from '../Tracker';
 import { exitsByIdSelector } from '../tracker/Selectors';
 import { acceptSettings } from '../tracker/Slice';
 import { loadDefaultDocument } from './defaultPack';
+import { applyDefaultPackEntrances } from './defaultPackEntrances';
 import { useMapDocument } from './documentStore';
 import OfflinePreview from './OfflinePreview';
 import type { MapDocument } from './pack';
@@ -22,7 +23,15 @@ import PackViewer from './PackViewer';
 import styles from './v2.module.css';
 
 function Workspace({ initial }: { initial: MapDocument }) {
-    const store = useMapDocument(initial);
+    const { areaGraph } = useSelector(logicSelector);
+    const defaultDocument = useMemo(
+        () => ({
+            ...initial,
+            pack: applyDefaultPackEntrances(initial.pack, areaGraph),
+        }),
+        [initial, areaGraph],
+    );
+    const store = useMapDocument(defaultDocument);
     const [entrancesOpen, setEntrancesOpen] = useState(false);
     const [requestedExit, setRequestedExit] = useState<string>();
     const openEntrances = (exitId?: string) => {
@@ -65,7 +74,7 @@ function Workspace({ initial }: { initial: MapDocument }) {
                         element={
                             <PackEditor
                                 store={store}
-                                defaultDocument={initial}
+                                defaultDocument={defaultDocument}
                             />
                         }
                     />

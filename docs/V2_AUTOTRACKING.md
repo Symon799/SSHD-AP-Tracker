@@ -75,8 +75,9 @@ operation. New V1 starter packs get coarse stage rules; customized packs are not
 silently changed. Rules autosave, support undo/redo and travel in the pack ZIP.
 
 Entrance bindings remain separate: location rules describe where Link really is;
-door bindings describe physical exits represented by links.
-Artwork, check placements and door/map associations remain authoring work.
+door bindings describe physical exits represented by links. See the
+[default-pack merge checklist and open associations](V2_DEFAULT_PACK.md) for the
+current reviewed coverage and what still needs authoring or an in-game check.
 No VGCartography assets were added; confirm reuse permission and credits before
 distributing new images.
 

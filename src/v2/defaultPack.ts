@@ -1,3 +1,4 @@
+import { applyDefaultTrackingRules } from './defaultPackTracking';
 import type { MapDocument } from './pack';
 import { decodeArchive } from './packIO';
 import { checkArchiveSize } from './packLimits';
@@ -24,5 +25,6 @@ export async function loadDefaultDocument(): Promise<MapDocument> {
         archive.set(chunk, offset);
         offset += chunk.length;
     }
-    return decodeArchive(archive);
+    const document = decodeArchive(archive);
+    return { ...document, pack: applyDefaultTrackingRules(document.pack) };
 }
