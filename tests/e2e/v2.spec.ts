@@ -1351,6 +1351,7 @@ test('V2 editor keeps the active map visible in its own list and compacts the in
         page.getByRole('heading', { name: 'Create map link', exact: true }),
     ).toHaveCSS('font-weight', '700');
     await marker(page, 'Lanayru Province').click({ button: 'right' });
+    await page.getByRole('menuitem', { name: 'Go to map' }).click();
     await activeVisible();
     await expect(page.getByLabel('Map name', { exact: true })).toHaveValue(
         'Lanayru Province',
@@ -1696,6 +1697,7 @@ test('V2 panel splitters persist and placement notices do not move the map', asy
         String(topStart - 12),
     );
     await marker(page, 'Faron Province').click({ button: 'right' });
+    await page.getByRole('menuitem', { name: 'Go to map' }).click();
     await expect(
         page.getByRole('region', { name: 'Map: Faron Province', exact: true }),
     ).toBeVisible();
@@ -2584,6 +2586,7 @@ test('V2 editor associates searchable game exits and map arrivals, and manual en
         .getByRole('button', { name: 'Edit Door Map', exact: true })
         .click();
     await marker(page, 'Dungeon Door').click({ button: 'right' });
+    await page.getByRole('menuitem', { name: 'Go to map' }).click();
     await expect(page.getByLabel('Map name', { exact: true })).toHaveValue(
         'Earth Temple Map',
     );
@@ -3146,6 +3149,194 @@ test('V2 reuses V1 dungeon controls and right-click navigation follows authored 
         path: 'test-results/v2-dungeons.png',
         animations: 'disabled',
     });
+});
+
+test('V2 editor previews and moves a mixed selection between maps as one edit', async ({
+    page,
+}) => {
+    const pack: import('../../src/v2/pack').MapPack =
+        manualEntranceFixture().pack;
+    pack.maps[1].markers.push({
+        id: 'return-link',
+        kind: 'link',
+        label: 'Return to Door Map',
+        x: 460,
+        y: 250,
+        targetMapId: 'root',
+        navigation: 'back',
+    });
+    await page.goto('/v2/editor');
+    await importManualEntranceFixture(page, pack);
+    const editMap = (name: string) =>
+        page.getByRole('button', { name: `Edit ${name}`, exact: true }).click();
+    const stage = page.getByTestId('map-stage');
+    const count = page.getByLabel('Selected map markers');
+    const signs = marker(page, 'Signs');
+    const link = marker(page, 'Return to Door Map');
+    await editMap('Skyview Map');
+    await page.getByRole('button', { name: 'Select map markers' }).click();
+    await signs.click();
+    await link.click();
+    const previewMove = async () => {
+        const frame = (await page
+            .getByTestId('map-selection-frame')
+            .boundingBox())!;
+        await page.mouse.click(
+            frame.x + frame.width / 2,
+            frame.y + frame.height / 2,
+            { button: 'right' },
+        );
+        await page
+            .getByRole('menuitem', { name: 'Move to map', exact: true })
+            .click();
+        const dialog = page.getByRole('dialog', { name: 'Move to map' });
+        await dialog.getByLabel('Destination map').selectOption('earth');
+        await dialog.getByRole('button', { name: 'Preview placement' }).click();
+        await expect(stage.getByRole('img')).toHaveAttribute(
+            'alt',
+            'Earth Temple Map',
+        );
+        await expect(stage.locator('[data-transfer-marker]')).toHaveCount(2);
+        await expect(signs).toHaveCount(0);
+    };
+    await previewMove();
+    await page.keyboard.press('Escape');
+    await expect(stage.getByRole('img')).toHaveAttribute('alt', 'Skyview Map');
+    await expect(count).toHaveText('2 markers selected');
+    await expect(signs).toBeVisible();
+    await previewMove();
+    const ghost = stage.locator('[data-transfer-marker="signs"]');
+    const before = await ghost.evaluate(
+        (element) => (element as HTMLElement).style.left,
+    );
+    const bounds = (await stage.boundingBox())!;
+    await page.mouse.move(
+        bounds.x + bounds.width * 0.7,
+        bounds.y + bounds.height * 0.6,
+    );
+    await expect
+        .poll(() =>
+            ghost.evaluate((element) => (element as HTMLElement).style.left),
+        )
+        .not.toBe(before);
+    await page.mouse.click(
+        bounds.x + bounds.width * 0.7,
+        bounds.y + bounds.height * 0.6,
+    );
+    await expect(count).toHaveText('2 markers selected');
+    await expect(signs).toHaveAttribute('data-batch-selected', 'true');
+    await expect(link).toHaveAttribute('data-batch-selected', 'true');
+    await expect(
+        page.getByTestId('map-selection-frame').getByRole('button'),
+    ).toHaveCount(8);
+    await expect(marker(page, 'Bell')).toBeVisible();
+    await editMap('Skyview Map');
+    await expect(signs).toHaveCount(0);
+    await expect(link).toHaveCount(0);
+    await page.getByRole('button', { name: 'Undo', exact: true }).click();
+    await expect(signs).toBeVisible();
+    await expect(link).toBeVisible();
+    await editMap('Earth Temple Map');
+    await expect(signs).toHaveCount(0);
+    await page.getByRole('button', { name: 'Redo', exact: true }).click();
+    await expect(signs).toBeVisible();
+    await link.dblclick();
+    await expect(stage.getByRole('img')).toHaveAttribute('alt', 'Door Map');
+});
+
+test('V2 marker menu copies and deletes individual markers and groups, and pastes across maps', async ({
+    page,
+}) => {
+    const pack: import('../../src/v2/pack').MapPack =
+        manualEntranceFixture().pack;
+    pack.maps[1].markers.push({
+        id: 'return-link',
+        kind: 'link',
+        label: 'Return to Door Map',
+        x: 460,
+        y: 250,
+        targetMapId: 'root',
+        navigation: 'back',
+    });
+    await page.goto('/v2/editor');
+    await importManualEntranceFixture(page, pack);
+    const editMap = (name: string) =>
+        page.getByRole('button', { name: `Edit ${name}`, exact: true }).click();
+    const item = (name: string) =>
+        page.getByRole('menuitem', { name, exact: true });
+    const menu = (name: string) =>
+        marker(page, name).click({ button: 'right' });
+    const undo = () =>
+        page.getByRole('button', { name: 'Undo', exact: true }).click();
+    const stage = page.getByTestId('map-stage');
+    const menuOnBackground = async () => {
+        const bounds = (await stage.boundingBox())!;
+        await stage.click({
+            button: 'right',
+            position: { x: bounds.width * 0.7, y: bounds.height * 0.65 },
+        });
+    };
+    await editMap('Skyview Map');
+    await menu('Signs');
+    await expect(item('Paste')).toBeDisabled();
+    await item('Copy').click();
+    await menuOnBackground();
+    await expect(item('Delete')).toHaveCount(0);
+    await item('Paste').click();
+    await expect(
+        stage.getByRole('button', { name: 'Signs', exact: true }),
+    ).toHaveCount(2);
+    const duplicate = stage
+        .locator('[data-marker-id]:not([data-marker-id="signs"])')
+        .filter({ hasText: '2' });
+    await duplicate.click({ button: 'right' });
+    await item('Delete').click();
+    await expect(duplicate).toHaveCount(0);
+    await undo();
+    await expect(duplicate).toBeVisible();
+    await undo();
+    await expect(duplicate).toHaveCount(0);
+
+    const select = page.getByRole('button', { name: 'Select map markers' });
+    await select.click();
+    await marker(page, 'Signs').click();
+    await marker(page, 'Return to Door Map').click();
+    await menu('Signs');
+    await item('Copy').click();
+    await menu('Return to Door Map');
+    await item('Delete').click();
+    await expect(marker(page, 'Signs')).toHaveCount(0);
+    await expect(marker(page, 'Return to Door Map')).toHaveCount(0);
+    await undo();
+    await expect(marker(page, 'Signs')).toBeVisible();
+    await expect(marker(page, 'Return to Door Map')).toBeVisible();
+    await editMap('Earth Temple Map');
+    await menuOnBackground();
+    await item('Paste').click();
+    await expect(page.getByLabel('Selected map markers')).toHaveText(
+        '2 markers selected',
+    );
+    await expect(
+        stage.locator(
+            '[data-marker-id="signs"], [data-marker-id="return-link"]',
+        ),
+    ).toHaveCount(0);
+    await expect(marker(page, 'Bell')).toBeVisible();
+    await undo();
+    await expect(marker(page, 'Signs')).toHaveCount(0);
+    await expect(marker(page, 'Return to Door Map')).toHaveCount(0);
+
+    await editMap('Skyview Map');
+    await menu('Signs');
+    await item('Move to map').click();
+    await page.getByLabel('Destination map').selectOption('earth');
+    await page.getByRole('button', { name: 'Preview placement' }).click();
+    await page.getByRole('button', { name: 'Place at map center' }).click();
+    await expect(stage.locator('[data-marker-id="signs"]')).toHaveAttribute(
+        'aria-pressed',
+        'true',
+    );
+    await expect(page.getByLabel('Selected map markers')).toHaveCount(0);
 });
 
 test('V2 editor selects, moves and scales placed markers without merging them', async ({

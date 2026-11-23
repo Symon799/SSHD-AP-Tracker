@@ -14,6 +14,39 @@ export function markerSelectionBounds(map: PackMap, ids: ReadonlySet<string>) {
 
 export type ResizeDirection = { x: -1 | 0 | 1; y: -1 | 0 | 1 };
 
+export function positionTransferredMarkers(
+    markers: readonly MapMarker[],
+    destination: Pick<PackMap, 'width' | 'height'>,
+    x: number,
+    y: number,
+): MapMarker[] {
+    if (!markers.length) return [];
+    const left = Math.min(...markers.map((marker) => marker.x));
+    const right = Math.max(...markers.map((marker) => marker.x));
+    const top = Math.min(...markers.map((marker) => marker.y));
+    const bottom = Math.max(...markers.map((marker) => marker.y));
+    const width = right - left;
+    const height = bottom - top;
+    const scale = Math.min(
+        1,
+        width ? destination.width / width : 1,
+        height ? destination.height / height : 1,
+    );
+    const originX = Math.max(
+        0,
+        Math.min(x - (width * scale) / 2, destination.width - width * scale),
+    );
+    const originY = Math.max(
+        0,
+        Math.min(y - (height * scale) / 2, destination.height - height * scale),
+    );
+    return markers.map((marker) => ({
+        ...marker,
+        x: Math.min(destination.width, originX + (marker.x - left) * scale),
+        y: Math.min(destination.height, originY + (marker.y - top) * scale),
+    }));
+}
+
 export function transformMarkers(
     map: PackMap,
     ids: ReadonlySet<string>,

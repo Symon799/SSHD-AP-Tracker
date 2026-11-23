@@ -443,6 +443,32 @@
 .selectionCount {
     margin-inline-end: 8px;
 }
+.markerMenu {
+    --contexify-menu-minWidth: 132px;
+    --contexify-menu-bgColor: var(--scheme-background);
+    --contexify-item-color: var(--scheme-text);
+    --contexify-activeItem-bgColor: color-mix(
+        in srgb,
+        var(--scheme-text) 13%,
+        var(--scheme-background)
+    );
+    --contexify-activeItem-color: var(--scheme-text);
+    --contexify-separator-color: color-mix(
+        in srgb,
+        var(--scheme-text) 22%,
+        transparent
+    );
+    border: 1px solid var(--contexify-separator-color);
+}
+.markerMenu i {
+    width: 1.25em;
+    margin-inline-end: 5px;
+    text-align: center;
+}
+.markerMenuDelete {
+    --contexify-item-color: var(--scheme-outLogic);
+    --contexify-activeItem-color: var(--scheme-outLogic);
+}
 .mapRangeControl {
     position: relative;
 }
@@ -632,6 +658,21 @@
 }
 .app .linkMarker {
     border-radius: 50%;
+}
+.transferActive .stage {
+    cursor: crosshair;
+}
+.transferActive .marker {
+    pointer-events: none;
+}
+.app .transferGhost {
+    z-index: 5;
+    display: grid;
+    place-items: center;
+    background: #92c8ff;
+    border: 1px dashed #194778;
+    outline: 1px solid white;
+    opacity: 0.85;
 }
 .app .marker[data-status='unavailable'] {
     background: #d54b46;

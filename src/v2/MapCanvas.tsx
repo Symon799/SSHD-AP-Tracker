@@ -3,12 +3,14 @@ import {
     useLayoutEffect,
     useRef,
     useState,
+    type MouseEvent,
     type PointerEvent,
     type ReactNode,
 } from 'react';
 import { useElementSize } from '../utils/React';
 import {
     markerSelectionBounds,
+    positionTransferredMarkers,
     transformMarkers,
     type ResizeDirection,
 } from './editOperations';
@@ -33,6 +35,7 @@ import styles from './v2.module.css';
 
 const emptyStates: Record<string, MarkerStatus> = {};
 const emptyCounts: Record<string, number> = {};
+const emptyBatch: ReadonlySet<string> = new Set();
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 10;
 const MARKER_SIZE_PREFERENCE = 'sshd-v2:marker-size-percent';
@@ -76,6 +79,11 @@ export default function MapCanvas({
     markerTitles,
     checkEras,
     onTransformChecks,
+    batchSelection,
+    onBatchChange,
+    onMarkerMenu,
+    transferPreview,
+    onCancelTransfer,
     states = emptyStates,
     counts = emptyCounts,
 }: {
@@ -93,6 +101,16 @@ export default function MapCanvas({
     markerTitles?: Record<string, string>;
     checkEras?: MapPack['checkEras'];
     onTransformChecks?: (next: PackMap) => void;
+    batchSelection?: ReadonlySet<string>;
+    onBatchChange?: (ids: Set<string> | undefined) => void;
+    onMarkerMenu?: (
+        event: MouseEvent<HTMLElement>,
+        ids: ReadonlySet<string>,
+        position: { x: number; y: number },
+        isBatch: boolean,
+    ) => void;
+    transferPreview?: readonly MapMarker[];
+    onCancelTransfer?: () => void;
     onHover?: (marker: MapMarker, anchor: DOMRect) => void;
     onLeave?: () => void;
     onViewportChange?: () => void;
@@ -201,8 +219,20 @@ export default function MapCanvas({
         x: number;
         y: number;
     }>();
-    const [batchMode, setBatchMode] = useState(false);
-    const [batchIds, setBatchIds] = useState<Set<string>>(() => new Set());
+    const batchMode = Boolean(batchSelection);
+    const batchIds = batchSelection ?? emptyBatch;
+    const [transferPoint, setTransferPoint] = useState<{
+        x: number;
+        y: number;
+    }>();
+    const transferGhosts =
+        transferPreview &&
+        positionTransferredMarkers(
+            transferPreview,
+            map,
+            transferPoint?.x ?? map.width / 2,
+            transferPoint?.y ?? map.height / 2,
+        );
     const [marquee, setMarquee] = useState<{
         x: number;
         y: number;
@@ -273,7 +303,7 @@ export default function MapCanvas({
             (measuredHeight - 48) / map.height,
         ),
     );
-    const point = (event: PointerEvent) => {
+    const point = (event: Pick<MouseEvent, 'clientX' | 'clientY'>) => {
         const bounds = stage.current!.getBoundingClientRect();
         return {
             x: Math.round(
@@ -297,6 +327,31 @@ export default function MapCanvas({
                 ),
             ),
         };
+    };
+    const showMarkerMenu = (
+        event: MouseEvent<HTMLElement>,
+        marker?: MapMarker,
+    ) => {
+        if (!onMarkerMenu || onPlace) return;
+        event.stopPropagation();
+        const frame = selectionFrame.current?.getBoundingClientRect();
+        const isBatch =
+            batchMode &&
+            (marker
+                ? batchIds.has(marker.id)
+                : Boolean(
+                      frame &&
+                          event.clientX >= frame.left &&
+                          event.clientX <= frame.right &&
+                          event.clientY >= frame.top &&
+                          event.clientY <= frame.bottom,
+                  ));
+        onMarkerMenu(
+            event,
+            isBatch ? batchIds : marker ? new Set([marker.id]) : emptyBatch,
+            point(event),
+            isBatch,
+        );
     };
     const begin = (
         event: PointerEvent,
@@ -447,7 +502,7 @@ export default function MapCanvas({
                         );
                     })
                     .map((marker) => marker.id);
-                setBatchIds(new Set(ids));
+                onBatchChange?.(new Set(ids));
             }
         } else if (current.id && moved) {
             const position = point(event);
@@ -498,8 +553,9 @@ export default function MapCanvas({
                             disabled={Boolean(onPlace)}
                             onClick={() => {
                                 if (!batchMode) onBackgroundClick?.();
-                                setBatchMode(!batchMode);
-                                setBatchIds(new Set());
+                                onBatchChange?.(
+                                    batchMode ? undefined : new Set(),
+                                );
                             }}
                         >
                             <Icon name="object-group" />
@@ -513,6 +569,28 @@ export default function MapCanvas({
                             {batchCount} {batchCount > 1 ? 'markers' : 'marker'}{' '}
                             selected
                         </output>
+                    )}
+                    {transferPreview && (
+                        <>
+                            <button
+                                type="button"
+                                title="Place at map center"
+                                aria-label="Place at map center"
+                                onClick={() =>
+                                    onPlace?.(map.width / 2, map.height / 2)
+                                }
+                            >
+                                <Icon name="check" />
+                            </button>
+                            <button
+                                type="button"
+                                title="Cancel move"
+                                aria-label="Cancel move"
+                                onClick={onCancelTransfer}
+                            >
+                                <Icon name="times" />
+                            </button>
+                        </>
                     )}
                     {beforeZoom}
                     <MapRangeControl
@@ -567,11 +645,12 @@ export default function MapCanvas({
                     <div className={styles.mapOverlay}>{overlay}</div>
                 )}
                 <div
-                    className={`${styles.viewport} ${batchMode && !onPlace ? styles.marqueeMode : ''}`}
+                    className={`${styles.viewport} ${batchMode && !onPlace ? styles.marqueeMode : ''} ${transferPreview ? styles.transferActive : ''}`}
                     ref={viewport}
                     data-testid="map-viewport"
                     onDragOver={(event) => {
                         if (
+                            !transferPreview &&
                             onDropCheck &&
                             event.dataTransfer.types.includes(
                                 'application/x-sshd-check',
@@ -583,7 +662,7 @@ export default function MapCanvas({
                         const payload = event.dataTransfer.getData(
                             'application/x-sshd-check',
                         );
-                        if (!payload || !onDropCheck) return;
+                        if (transferPreview || !payload || !onDropCheck) return;
                         event.preventDefault();
                         const bounds = stage.current!.getBoundingClientRect();
                         onDropCheck(
@@ -610,7 +689,20 @@ export default function MapCanvas({
                         );
                     }}
                     onPointerDown={(event) => begin(event)}
-                    onPointerMove={move}
+                    onPointerMove={(event) => {
+                        if (transferPreview && !drag.current && stage.current) {
+                            const bounds =
+                                stage.current.getBoundingClientRect();
+                            if (
+                                event.clientX >= bounds.left &&
+                                event.clientX <= bounds.right &&
+                                event.clientY >= bounds.top &&
+                                event.clientY <= bounds.bottom
+                            )
+                                setTransferPoint(point(event));
+                        }
+                        move(event);
+                    }}
                     onPointerUp={end}
                     onPointerCancel={() => {
                         drag.current = undefined;
@@ -624,6 +716,11 @@ export default function MapCanvas({
                         className={styles.stage}
                         ref={stage}
                         data-testid="map-stage"
+                        onContextMenu={
+                            onMarkerMenu
+                                ? (event) => showMarkerMenu(event)
+                                : undefined
+                        }
                         style={{
                             width: map.width * fit * zoom,
                             height: map.height * fit * zoom,
@@ -634,6 +731,35 @@ export default function MapCanvas({
                             alt={map.name}
                             draggable={false}
                         />
+                        {transferGhosts?.map((marker) => {
+                            const size = markerMetrics(
+                                markerScale,
+                                0,
+                                markerPercent,
+                                marker.kind === 'checks'
+                                    ? CHECK_MARKER_SCALE
+                                    : 1,
+                            ).size;
+                            return (
+                                <span
+                                    key={marker.id}
+                                    aria-hidden="true"
+                                    data-transfer-marker={marker.id}
+                                    className={`${styles.marker} ${styles.transferGhost} ${marker.kind === 'link' ? styles.linkMarker : ''}`}
+                                    style={{
+                                        left: `${(marker.x / map.width) * 100}%`,
+                                        top: `${(marker.y / map.height) * 100}%`,
+                                        width: size,
+                                        height: size,
+                                        minHeight: size,
+                                    }}
+                                >
+                                    {marker.kind === 'link' && (
+                                        <Icon name="arrow-right" />
+                                    )}
+                                </span>
+                            );
+                        })}
                         {marquee && (
                             <div
                                 className={styles.marquee}
@@ -775,9 +901,11 @@ export default function MapCanvas({
                                     }
                                     data-count-visible={showCount}
                                     aria-label={marker.label}
+                                    tabIndex={transferPreview ? -1 : undefined}
                                     onDoubleClick={(event) => {
                                         if (
                                             !batchMode &&
+                                            !transferPreview &&
                                             marker.kind === 'link' &&
                                             onNavigateLink
                                         ) {
@@ -786,8 +914,11 @@ export default function MapCanvas({
                                         }
                                     }}
                                     onContextMenu={(event) => {
-                                        if (
+                                        if (onMarkerMenu) {
+                                            showMarkerMenu(event, marker);
+                                        } else if (
                                             !batchMode &&
+                                            !transferPreview &&
                                             marker.kind === 'link' &&
                                             onNavigateLink
                                         ) {
@@ -859,18 +990,16 @@ export default function MapCanvas({
                                             if (
                                                 !skipBatchClick.current ||
                                                 event.detail === 0
-                                            )
-                                                setBatchIds((previous) => {
-                                                    const next = new Set(
-                                                        previous,
-                                                    );
-                                                    if (next.has(marker.id))
-                                                        next.delete(marker.id);
-                                                    else next.add(marker.id);
-                                                    return next;
-                                                });
+                                            ) {
+                                                const next = new Set(batchIds);
+                                                if (next.has(marker.id))
+                                                    next.delete(marker.id);
+                                                else next.add(marker.id);
+                                                onBatchChange?.(next);
+                                            }
                                             return;
                                         }
+                                        if (transferPreview) return;
                                         onSelect(
                                             marker,
                                             event.currentTarget.getBoundingClientRect(),

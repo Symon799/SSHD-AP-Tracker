@@ -8,6 +8,7 @@ import {
     extractChecks,
     mapCheckIds,
     mergeMarkers,
+    positionTransferredMarkers,
     transformMarkers,
 } from './editOperations';
 import { legacyDocument } from './legacyPack';
@@ -56,6 +57,40 @@ const names = {
     blade1: 'Woods - Grass Patch 1 - Blade 1',
     blade2: 'Woods - Grass Patch 1 - Blade 2',
 };
+
+it('places a transferred group within the new map without distorting its layout', () => {
+    const markers = fixture().maps[0].markers.map((marker, index) =>
+        index ? { ...marker, y: 150 } : marker,
+    );
+    const coordinates = (placed: typeof markers) =>
+        placed.map(({ x, y }) => [x, y]);
+    expect(
+        coordinates(
+            positionTransferredMarkers(
+                markers,
+                { width: 300, height: 200 },
+                100,
+                100,
+            ),
+        ),
+    ).toEqual([
+        [50, 75],
+        [150, 125],
+    ]);
+    const fitted = positionTransferredMarkers(
+        markers,
+        { width: 50, height: 100 },
+        0,
+        100,
+    );
+    expect(coordinates(fitted)).toEqual([
+        [0, 75],
+        [50, 100],
+    ]);
+    expect(fitted.map(({ x: _x, y: _y, ...marker }) => marker)).toEqual(
+        markers.map(({ x: _x, y: _y, ...marker }) => marker),
+    );
+});
 it('translates and scales check markers as one bounded selection', () => {
     const map = fixture().maps[0];
     const selected = new Set(['first', 'second']);

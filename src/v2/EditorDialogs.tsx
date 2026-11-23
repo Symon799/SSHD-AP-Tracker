@@ -1,6 +1,60 @@
 import { useEffect, useState } from 'react';
 import { Dialog } from '../additionalComponents/Dialog';
+import type { PackMap } from './pack';
 import styles from './v2.module.css';
+
+export function MoveMarkersDialog({
+    destinations,
+    onClose,
+    onContinue,
+}: {
+    destinations: readonly PackMap[];
+    onClose: () => void;
+    onContinue: (id: string) => void;
+}) {
+    const [destination, setDestination] = useState('');
+    return (
+        <Dialog
+            open
+            hideFooter
+            title="Move to map"
+            onOpenChange={(open) => !open && onClose()}
+        >
+            <form
+                className={`${styles.app} ${styles.dialogForm}`}
+                onSubmit={(event) => {
+                    event.preventDefault();
+                    if (destination) onContinue(destination);
+                }}
+            >
+                <label>
+                    Destination map
+                    <select
+                        value={destination}
+                        onChange={(event) => setDestination(event.target.value)}
+                    >
+                        <option value="" disabled>
+                            Select a map
+                        </option>
+                        {destinations.map((map) => (
+                            <option value={map.id} key={map.id}>
+                                {map.name}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+                <div className={styles.actions}>
+                    <button type="button" onClick={onClose}>
+                        Cancel
+                    </button>
+                    <button type="submit" disabled={!destination}>
+                        Preview placement
+                    </button>
+                </div>
+            </form>
+        </Dialog>
+    );
+}
 
 export function NameInput({
     label,

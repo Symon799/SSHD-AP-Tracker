@@ -29,6 +29,8 @@ declare const classNames: {
     readonly canvas: 'canvas';
     readonly mapToolbar: 'mapToolbar';
     readonly selectionCount: 'selectionCount';
+    readonly markerMenu: 'markerMenu';
+    readonly markerMenuDelete: 'markerMenuDelete';
     readonly mapRangeControl: 'mapRangeControl';
     readonly mapZoomValue: 'mapZoomValue';
     readonly mapRangePopover: 'mapRangePopover';
@@ -45,6 +47,8 @@ declare const classNames: {
     readonly stage: 'stage';
     readonly marker: 'marker';
     readonly linkMarker: 'linkMarker';
+    readonly transferActive: 'transferActive';
+    readonly transferGhost: 'transferGhost';
     readonly selectedMarker: 'selectedMarker';
     readonly marqueeMode: 'marqueeMode';
     readonly marquee: 'marquee';

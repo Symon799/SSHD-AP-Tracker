@@ -40,7 +40,7 @@ beforeAll(() => {
     logic = parseLogic(raw);
 });
 
-function reachable(
+function reachableBits(
     inventory: Record<string, number>,
     overrides: Partial<TypedOptions> = {},
     checked: string[] = [],
@@ -63,7 +63,7 @@ function reachable(
         ),
         {},
     );
-    const bits = computeLeastFixedPoint(
+    return computeLeastFixedPoint(
         'feature test',
         mergeRequirements(
             logic.numRequirements,
@@ -81,6 +81,10 @@ function reachable(
             mapSettings(logic, options, settings, exits, dungeons),
         ),
     );
+}
+
+function reachable(...args: Parameters<typeof reachableBits>) {
+    const bits = reachableBits(...args);
     return (id: string) => {
         expect(logic.itemBits[id], `Unknown requirement ${id}`).toBeDefined();
         return bits.test(logic.itemBits[id]);
@@ -598,35 +602,46 @@ describe('SSHD bird statues and goddess chest options', () => {
         );
     });
 
-    it('keeps optimized and unoptimized access equivalent with real inventory', () => {
-        const inventory = {
-            Loftwing: 1,
-            Sailcloth: 1,
-            'Progressive Sword': 2,
-            'Emerald Tablet': 1,
-            'Ruby Tablet': 1,
-            'Amber Tablet': 1,
-            'Sealed Grounds Statue Unlock': 1,
-            'Volcano East Statue Unlock': 1,
-            'Lanayru Mine Entry Statue Unlock': 1,
-        };
-        for (const mode of [
+    it.each(
+        [
             'locked_until_struck',
             'unlocked_after_goddess_sword',
             'unlocked_from_start',
-        ]) {
-            for (const unlocked of ['on', 'off']) {
-                const settings = {
-                    'bird-statues-need-unlock': unlocked,
-                    'goddess-chest-unlock': mode,
-                };
-                const baseline = reachable(inventory, settings);
-                const optimized = reachable(inventory, settings, [], true);
-                for (const id of Object.keys(raw.checks))
-                    expect(optimized(id), id).toBe(baseline(id));
-            }
-        }
-    });
+        ].flatMap((mode) =>
+            ['on', 'off'].map((unlocked) => ({ mode, unlocked })),
+        ),
+    )(
+        'keeps optimized and unoptimized access equivalent ($mode, statue locks $unlocked)',
+        ({ mode, unlocked }) => {
+            const inventory = {
+                Loftwing: 1,
+                Sailcloth: 1,
+                'Progressive Sword': 2,
+                'Emerald Tablet': 1,
+                'Ruby Tablet': 1,
+                'Amber Tablet': 1,
+                'Sealed Grounds Statue Unlock': 1,
+                'Volcano East Statue Unlock': 1,
+                'Lanayru Mine Entry Statue Unlock': 1,
+            };
+            const settings = {
+                'bird-statues-need-unlock': unlocked,
+                'goddess-chest-unlock': mode,
+            };
+            const baseline = reachableBits(inventory, settings);
+            const optimized = reachableBits(inventory, settings, [], true);
+            const differences = Object.keys(raw.checks).flatMap((id) => {
+                const bit = logic.itemBits[id];
+                if (bit === undefined) return [`${id}: unknown requirement`];
+                const expected = baseline.test(bit);
+                const actual = optimized.test(bit);
+                return actual === expected
+                    ? []
+                    : [`${id}: expected ${expected}, got ${actual}`];
+            });
+            expect(differences).toEqual([]);
+        },
+    );
 
     it('does not double count precollected statue items received again from AP', () => {
         expect(

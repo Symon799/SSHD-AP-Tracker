@@ -1,4 +1,18 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import {
+    useCallback,
+    useEffect,
+    useLayoutEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
+import {
+    Item,
+    Menu,
+    Separator,
+    useContextMenu,
+    type ItemParams,
+} from 'react-contexify';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { logicSelector } from '../logic/Selectors';
@@ -11,10 +25,12 @@ import {
     extractChecks,
     mapCheckIds,
     mergeMarkers,
+    positionTransferredMarkers,
 } from './editOperations';
 import {
     ExportPackDialog,
     MapCreationDialog,
+    MoveMarkersDialog,
     NameInput,
     NewPackDialog,
 } from './EditorDialogs';
@@ -45,6 +61,16 @@ import { ResizableCatalogue, ResizableWorkspace } from './ResizablePanels';
 import styles from './v2.module.css';
 
 const newId = () => window.crypto.randomUUID();
+const markerMenuId = 'v2-marker-menu';
+type MarkerMenuContext = {
+    ids: ReadonlySet<string>;
+    isBatch: boolean;
+    position: { x: number; y: number };
+    destination?: string;
+};
+type MarkerMenuItem = ItemParams<MarkerMenuContext>;
+const noMarkerTarget = ({ props }: Pick<MarkerMenuItem, 'props'>) =>
+    !props?.ids.size;
 const afterPaint = () =>
     new Promise<void>((resolve) => {
         requestAnimationFrame(() => setTimeout(resolve, 0));
@@ -73,7 +99,26 @@ export default function PackEditor({
     const exits = useSelector(exitsByIdSelector);
     const catalogue = useCatalogue();
     const orderChecks = useMemo(() => createV1CheckOrder(logic), [logic]);
-    const [mapId, setMapId] = useState(pack.maps[0].id);
+    const [mapId, setActiveMapId] = useState(pack.maps[0].id);
+    const [batchSelection, setBatchSelection] = useState<Set<string>>();
+    const [choosingDestination, setChoosingDestination] =
+        useState<Pick<MarkerMenuContext, 'ids' | 'isBatch'>>();
+    const [clipboard, setClipboard] = useState<MapMarker[]>([]);
+    const { show: showMarkerMenu } = useContextMenu<MarkerMenuContext>({
+        id: markerMenuId,
+    });
+    const [transfer, setTransfer] = useState<{
+        sourceId: string;
+        sourceIds: Set<string>;
+        markers: MapMarker[];
+        sourceBatch?: Set<string>;
+        sourceSelection?: string;
+        isBatch: boolean;
+    }>();
+    const setMapId = (id: string) => {
+        if (id !== mapId) setBatchSelection(undefined);
+        setActiveMapId(id);
+    };
     const map = pack.maps.find((entry) => entry.id === mapId) ?? pack.maps[0];
     const markerTitles = useMemo(
         () =>
@@ -149,6 +194,23 @@ export default function PackEditor({
         ? target
         : pack.maps[0].id;
     const [message, setMessage] = useState('');
+    const cancelTransfer = useCallback(() => {
+        if (!transfer) return;
+        setActiveMapId(transfer.sourceId);
+        setBatchSelection(transfer.sourceBatch);
+        setSelectedRaw(transfer.sourceSelection);
+        setTransfer(undefined);
+        setMessage('');
+    }, [transfer]);
+    useEffect(() => {
+        if (!transfer) return;
+        const cancelOnEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape' && !event.defaultPrevented)
+                cancelTransfer();
+        };
+        window.addEventListener('keydown', cancelOnEscape);
+        return () => window.removeEventListener('keydown', cancelOnEscape);
+    }, [transfer, cancelTransfer]);
     const [busy, setBusy] = useState(false);
     const [importStatus, setImportStatus] = useState('');
     const [creation, setCreation] = useState<{
@@ -217,6 +279,78 @@ export default function PackEditor({
         setMessage('');
         return stamped;
     };
+    const startTransfer = (destinationId: string) => {
+        if (!choosingDestination) return;
+        setChoosingDestination(undefined);
+        const destination = pack.maps.find(
+            (entry) => entry.id === destinationId,
+        );
+        if (!destination || destination === map) return;
+        const markers = map.markers.filter(({ id }) =>
+            choosingDestination.ids.has(id),
+        );
+        if (!markers.length) return;
+        const selfLink = markers.find(
+            (marker) =>
+                marker.kind === 'link' &&
+                !marker.exitId &&
+                marker.targetMapId === destinationId,
+        );
+        if (selfLink) {
+            setMessage(
+                `Deselect "${selfLink.label}" before moving to ${destination.name}: the link would point to its own map.`,
+            );
+            return;
+        }
+        const taken = new Set(destination.markers.map(({ id }) => id));
+        setTransfer({
+            sourceId: map.id,
+            sourceIds: new Set(markers.map(({ id }) => id)),
+            sourceBatch: batchSelection,
+            sourceSelection: selectedId,
+            isBatch: choosingDestination.isBatch,
+            markers: markers.map((marker) =>
+                taken.has(marker.id) ? { ...marker, id: newId() } : marker,
+            ),
+        });
+        setMapId(destinationId);
+        setSelectedId(undefined);
+        setMessage('');
+    };
+    const placeTransfer = (x: number, y: number) => {
+        if (!transfer) return;
+        editAction(() => {
+            const markers = positionTransferredMarkers(
+                transfer.markers,
+                map,
+                x,
+                y,
+            );
+            commit({
+                ...document,
+                pack: {
+                    ...pack,
+                    maps: pack.maps.map((entry) => {
+                        if (entry.id === transfer.sourceId)
+                            return {
+                                ...entry,
+                                markers: entry.markers.filter(
+                                    ({ id }) => !transfer.sourceIds.has(id),
+                                ),
+                            };
+                        if (entry.id === map.id)
+                            return {
+                                ...entry,
+                                markers: [...entry.markers, ...markers],
+                            };
+                        return entry;
+                    }),
+                },
+            });
+            selectMarkerResult(markers, transfer.isBatch);
+            setTransfer(undefined);
+        });
+    };
     const updateMap = (next: PackMap) =>
         commit({
             ...document,
@@ -233,6 +367,67 @@ export default function PackEditor({
             markers: map.markers.map((marker) =>
                 marker.id === next.id ? next : marker,
             ),
+        });
+    const openMap = (id: string) => {
+        setMapId(id);
+        setSelectedId(undefined);
+        setPlacement(undefined);
+    };
+    const resolveLink = (marker: MapMarker) =>
+        marker.kind === 'link'
+            ? linkDestination(
+                  marker,
+                  pack,
+                  marker.exitId
+                      ? exits[marker.exitId]?.entrance?.id
+                      : undefined,
+              )
+            : undefined;
+    const selectMarkerResult = (
+        markers: readonly MapMarker[],
+        group: boolean,
+    ) => {
+        setBatchSelection(
+            group ? new Set(markers.map(({ id }) => id)) : undefined,
+        );
+        setSelectedId(group ? undefined : markers[0]?.id);
+    };
+    const removeMarkers = (ids: ReadonlySet<string>) =>
+        editAction(() => {
+            updateMap({
+                ...map,
+                markers: map.markers.filter(({ id }) => !ids.has(id)),
+            });
+            if (selectedId && ids.has(selectedId)) setSelectedId(undefined);
+            if (batchSelection)
+                setBatchSelection(
+                    new Set([...batchSelection].filter((id) => !ids.has(id))),
+                );
+        });
+    const pasteMarkers = ({ x, y }: MarkerMenuContext['position']) =>
+        editAction(() => {
+            if (!clipboard.length) return;
+            const selfLink = clipboard.find(
+                (marker) =>
+                    marker.kind === 'link' &&
+                    !marker.exitId &&
+                    marker.targetMapId === map.id,
+            );
+            if (selfLink)
+                throw new Error(
+                    `Cannot paste "${selfLink.label}" onto its own destination map.`,
+                );
+            const markers = positionTransferredMarkers(
+                clipboard,
+                map,
+                x,
+                y,
+            ).map((marker) => ({ ...marker, id: newId() }));
+            updateMap({ ...map, markers: [...map.markers, ...markers] });
+            selectMarkerResult(
+                markers,
+                markers.length > 1 || Boolean(batchSelection),
+            );
         });
     const updateEra = (era: CheckEra | '') => {
         const checkEras = { ...pack.checkEras };
@@ -417,7 +612,10 @@ export default function PackEditor({
     };
     return (
         <div className={styles.app}>
-            <header className={`${styles.header} ${styles.editorHeader}`}>
+            <header
+                className={`${styles.header} ${styles.editorHeader}`}
+                inert={Boolean(transfer)}
+            >
                 <div className={styles.packIdentity}>
                     <div className={styles.packHeading}>
                         <label htmlFor="v2-pack-name">Map pack</label>
@@ -543,6 +741,7 @@ export default function PackEditor({
                 left={
                     <aside
                         className={`${styles.sidebar} ${styles.editorCatalogue}`}
+                        inert={Boolean(transfer)}
                     >
                         <ResizableCatalogue
                             maps={
@@ -714,7 +913,10 @@ export default function PackEditor({
                     </aside>
                 }
                 right={
-                    <aside className={`${styles.sidebar} ${styles.inspector}`}>
+                    <aside
+                        className={`${styles.sidebar} ${styles.inspector}`}
+                        inert={Boolean(transfer)}
+                    >
                         <section className={styles.selectionHeader}>
                             <h2>
                                 <label htmlFor="v2-current-selection">
@@ -1027,15 +1229,9 @@ export default function PackEditor({
                                         type="button"
                                         className={styles.danger}
                                         onClick={() => {
-                                            updateMap({
-                                                ...map,
-                                                markers: map.markers.filter(
-                                                    (entry) =>
-                                                        entry.id !==
-                                                        selected.id,
-                                                ),
-                                            });
-                                            setSelectedId(undefined);
+                                            removeMarkers(
+                                                new Set([selected.id]),
+                                            );
                                         }}
                                     >
                                         <Icon name="trash" /> Delete{' '}
@@ -1160,21 +1356,30 @@ export default function PackEditor({
                     markerTitles={markerTitles}
                     checkEras={pack.checkEras}
                     onTransformChecks={updateMap}
+                    batchSelection={batchSelection}
+                    onBatchChange={setBatchSelection}
+                    onMarkerMenu={(event, ids, position, isBatch) => {
+                        const marker =
+                            ids.size === 1
+                                ? map.markers.find(({ id }) => ids.has(id))
+                                : undefined;
+                        showMarkerMenu({
+                            event,
+                            props: {
+                                ids,
+                                position,
+                                isBatch,
+                                destination: marker && resolveLink(marker),
+                            },
+                        });
+                    }}
+                    transferPreview={transfer?.markers}
+                    onCancelTransfer={cancelTransfer}
                     images={images}
                     selected={selectedId}
                     onNavigateLink={(marker) => {
-                        const destination = linkDestination(
-                            marker,
-                            pack,
-                            marker.exitId
-                                ? exits[marker.exitId]?.entrance?.id
-                                : undefined,
-                        );
-                        if (destination) {
-                            setMapId(destination);
-                            setSelectedId(undefined);
-                            setPlacement(undefined);
-                        }
+                        const destination = resolveLink(marker);
+                        if (destination) openMap(destination);
                     }}
                     onSelect={(marker) => {
                         setSelectedId(marker.id);
@@ -1193,7 +1398,9 @@ export default function PackEditor({
                         );
                         if (marker) updateMarker({ ...marker, x, y });
                     }}
-                    onPlace={placement ? place : undefined}
+                    onPlace={
+                        transfer ? placeTransfer : placement ? place : undefined
+                    }
                     onBackgroundClick={() => setSelectedId(undefined)}
                     onDropCheck={(payload, x, y, targetId) =>
                         editAction(() => {
@@ -1232,15 +1439,85 @@ export default function PackEditor({
                     {placedCount}/{catalogue.length} checks placed
                 </span>
                 <span>{pack.maps.length} maps</span>
-                {(message || placement) && (
+                {(message || placement || transfer) && (
                     <span role="status" className={styles.editorNotice}>
                         {message ||
-                            (placement === 'checks'
-                                ? `${selectedChecks.size} checks selected · Placement active`
-                                : 'Map-link placement active')}
+                            (transfer
+                                ? `Click to place ${transfer.markers.length} ${transfer.markers.length === 1 ? 'marker' : 'markers'} on ${map.name}`
+                                : placement === 'checks'
+                                  ? `${selectedChecks.size} checks selected · Placement active`
+                                  : 'Map-link placement active')}
                     </span>
                 )}
             </footer>
+            <Menu
+                id={markerMenuId}
+                animation={false}
+                className={styles.markerMenu}
+                aria-label="Map marker actions"
+            >
+                <Item
+                    hidden={({ props }: Pick<MarkerMenuItem, 'props'>) =>
+                        !props?.destination
+                    }
+                    onClick={({ props }: MarkerMenuItem) => {
+                        if (props?.destination) openMap(props.destination);
+                    }}
+                >
+                    <Icon name="arrow-right" /> Go to map
+                </Item>
+                <Item
+                    hidden={noMarkerTarget}
+                    disabled={pack.maps.length < 2}
+                    onClick={({ props }: MarkerMenuItem) =>
+                        setChoosingDestination(props)
+                    }
+                >
+                    <Icon name="exchange-alt" /> Move to map
+                </Item>
+                <Item
+                    hidden={noMarkerTarget}
+                    onClick={({ props }: MarkerMenuItem) => {
+                        if (!props) return;
+                        const markers = map.markers.filter(({ id }) =>
+                            props.ids.has(id),
+                        );
+                        setClipboard(markers);
+                        setMessage(
+                            `Copied ${markers.length} ${markers.length === 1 ? 'marker' : 'markers'}.`,
+                        );
+                    }}
+                >
+                    <Icon name="copy" /> Copy
+                </Item>
+                <Item
+                    disabled={!clipboard.length}
+                    onClick={({ props }: MarkerMenuItem) => {
+                        if (props) pasteMarkers(props.position);
+                    }}
+                >
+                    <Icon name="paste" /> Paste
+                </Item>
+                <Separator hidden={noMarkerTarget} />
+                <Item
+                    className={styles.markerMenuDelete}
+                    hidden={noMarkerTarget}
+                    onClick={({ props }: MarkerMenuItem) => {
+                        if (props) removeMarkers(props.ids);
+                    }}
+                >
+                    <Icon name="trash" /> Delete
+                </Item>
+            </Menu>
+            {choosingDestination && (
+                <MoveMarkersDialog
+                    destinations={pack.maps.filter(
+                        (entry) => entry.id !== map.id,
+                    )}
+                    onClose={() => setChoosingDestination(undefined)}
+                    onContinue={startTransfer}
+                />
+            )}
             {creation?.mode === 'pack' ? (
                 <NewPackDialog
                     onClose={() => setCreation(undefined)}

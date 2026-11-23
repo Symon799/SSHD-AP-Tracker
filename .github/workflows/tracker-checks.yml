@@ -9,8 +9,28 @@ permissions:
 
 jobs:
   quality:
-    name: Data, tests, browser tests, TypeScript and build
+    name: Data, unit tests, lint and build
     runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run code checks
+        run: npm run check:code
+
+  browser:
+    name: Playwright browser tests
+    runs-on: ubuntu-latest
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -27,5 +47,18 @@ jobs:
       - name: Install Playwright browser dependencies
         run: npx playwright install --with-deps chromium
 
-      - name: Run project checks
-        run: npm run check
+      - name: Run browser tests
+        run: npx playwright test --workers=2
+
+      - name: Upload Playwright failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-failures-${{ github.run_attempt }}
+          path: |
+            test-results/**/trace.zip
+            test-results/**/test-failed-*.png
+            test-results/**/video.webm
+            test-results/**/error-context.md
+          if-no-files-found: ignore
+          retention-days: 7
