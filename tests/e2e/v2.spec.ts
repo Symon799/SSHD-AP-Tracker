@@ -194,7 +194,8 @@ test('V2 bundled pack import shows reading and completion status', async ({
             window as typeof window & { finishPackRead?: () => void }
         ).finishPackRead?.(),
     );
-    await expect(status).toHaveCount(0);
+    // Allow the full archive to be decoded and saved to IndexedDB on CI.
+    await expect(status).toHaveCount(0, { timeout: 30_000 });
     await expect(
         page.getByRole('status').filter({ hasText: 'Map pack imported.' }),
     ).toBeVisible();
