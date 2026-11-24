@@ -260,8 +260,8 @@ const text = [
             ],
             [
                 'Ancient Cistern 1F and B1',
-                '`D101`',
-                'Record each unresolved basement room and any shared stairways.',
+                '`D101`, room 4 for B1',
+                'Verify room 4 in game and record any other unresolved basement room or shared stairway.',
             ],
             [
                 'Fire Sanctuary F1 and B1',

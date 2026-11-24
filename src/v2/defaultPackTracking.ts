@@ -45,6 +45,7 @@ export const defaultTrackingRules: Readonly<Record<string, LocationRule[]>> = {
     'SVT Boss Key': stages('B100'),
     'Skyview Spring': stages('B100_1'),
     'Ancient Cistern 1F': stages('D101'),
+    'Ancient Cistern B1': rooms('D101', 4),
     'AC Boss Room': stages('B101'),
     'AC Sacred Flame': stages('B101_1'),
 

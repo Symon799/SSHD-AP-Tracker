@@ -20,7 +20,7 @@ it('ships all three surface provinces alongside the Sky and Skyloft maps', () =>
     for (const part of parts)
         expect(part.length).toBeLessThan(100 * 1024 * 1024);
     const document = decodeArchive(Buffer.concat(parts));
-    expect(document.pack.name).toBe('Silent Realm and Sky Keep');
+    expect(document.pack.name).toBe('SSHD V2 - Faron V6');
     expect(document.pack.maps).toHaveLength(74);
     expect(placedChecks(document.pack).size).toBe(15016);
     expect(mapCheckIds(document.pack, 'faron')).toHaveLength(5875);
@@ -66,6 +66,8 @@ it('ships all three surface provinces alongside the Sky and Skyloft maps', () =>
     expect(mapFor({ stage: 'F001r', room: 6 })).toBe('Knight Academy F2');
     expect(mapFor({ stage: 'F001r', room: 0 })).toBe('Skyloft');
     expect(mapFor({ stage: 'F101' })).toBe('Deep Woods');
+    expect(mapFor({ stage: 'D101', room: 0 })).toBe('Ancient Cistern 1F');
+    expect(mapFor({ stage: 'D101', room: 4 })).toBe('Ancient Cistern B1');
     expect(mapFor({ stage: 'S000' })).toBe("The Goddess's Silent Realm");
     expect(mapFor({ stage: 'S200' })).toBe("Din's Silent Realm");
     for (let room = 0; room < 9; room++)
@@ -90,6 +92,9 @@ it('ships all three surface provinces alongside the Sky and Skyloft maps', () =>
     );
     const routed = parsePack(applyDefaultPackEntrances(tracked, areaGraph));
     const map = (name: string) => routed.maps.find((m) => m.name === name)!;
+    expect(map('Faron Woods').markers).toHaveLength(100);
+    expect(map('Skyview Temple').markers).toHaveLength(131);
+    expect(mapCheckIds(routed, map('Ancient Cistern B1').id)).toHaveLength(4);
     const links = routed.maps.flatMap((m) =>
         m.markers.filter(
             (marker): marker is MapLink & { exitId: string } =>

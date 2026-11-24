@@ -11,6 +11,10 @@ Faron and Eldin were replaced from **Faron-Mapping-V5.zip** and **Eldin.zip**.
 On 2026-11-24, Lehonno's **Silent-Realm-and-Sky-Keep.zip** added three maps:
 Sky Keep, the Goddess's Silent Realm and Din's Silent Realm. The 310 checks moved
 from Skyloft and Eldin Volcano remain counted by those parent maps in vanilla.
+Ray's **Faron-V6.zip** replaced the Faron placements except for Farore's Silent
+Realm. The other provinces, Skyloft and Lehonno's three new maps are unchanged.
+Existing child links are preserved so the Faron overview still counts 5,875
+checks.
 It contains 74 maps and 15,016 unique check placements,
 with no unused or byte-identical duplicate images. It is used for a fresh
 workspace and the editor's **New pack** action. Authored placements are preserved.
@@ -74,8 +78,8 @@ thereof. Imported packs and existing local drafts are not retroactively edited.
 
 ### Player following
 
-- Current baseline: 70 of 74 maps (116 rules), excluding the Eldin Province
-  navigation overview and three gameplay maps. Validate with a real Rust build
+- Current baseline: 71 of 74 maps (117 rules), excluding the Eldin Province
+  navigation overview and two gameplay maps. Validate with a real Rust build
   that publishes `tracker_location`, especially full stage suffixes, room/layer
   updates, and a snapshot when the tracker connects after Link is already in game.
 - Verify that `S000`, `S200` and all nine `D003_*` stages open the new maps.
@@ -83,7 +87,9 @@ thereof. Imported packs and existing local drafts are not retroactively edited.
 - Bug Heaven shares `F023` with the Thunderhead; no distinguishing room/layer is
   confirmed, so use The Sky. The Lumpy Pumpkin interior has `F011r`; the exterior
   is part of `F020` and stays on The Sky.
-- Ancient Cistern B1 and Sandship B3 need verified in-game room data. Sandship's
+- Ancient Cistern B1 now uses `D101` room 4, based on its four placed checks.
+  Verify it live and look for additional basement rooms. Sandship B3 still has
+  no rule. Sandship's
   escape stage stays on the province fallback; verify any remaining unclassified
   rooms in the three dungeons with split floors. Knight Academy room 0 spans both
   floors and stays on Skyloft unless telemetry can distinguish them reliably.
