@@ -104,9 +104,10 @@ export default function PackEditor({
     const [choosingDestination, setChoosingDestination] =
         useState<Pick<MarkerMenuContext, 'ids' | 'isBatch'>>();
     const [clipboard, setClipboard] = useState<MapMarker[]>([]);
-    const { show: showMarkerMenu } = useContextMenu<MarkerMenuContext>({
-        id: markerMenuId,
-    });
+    const { show: showMarkerMenu, hideAll: hideMarkerMenu } =
+        useContextMenu<MarkerMenuContext>({
+            id: markerMenuId,
+        });
     const [transfer, setTransfer] = useState<{
         sourceId: string;
         sourceIds: Set<string>;
@@ -1469,27 +1470,33 @@ export default function PackEditor({
                 aria-label="Map marker actions"
             >
                 <Item
+                    closeOnClick={false}
                     hidden={({ props }: Pick<MarkerMenuItem, 'props'>) =>
                         !props?.destination
                     }
                     onClick={({ props }: MarkerMenuItem) => {
+                        hideMarkerMenu();
                         if (props?.destination) openMap(props.destination);
                     }}
                 >
                     <Icon name="arrow-right" /> Go to map
                 </Item>
                 <Item
+                    closeOnClick={false}
                     hidden={noMarkerTarget}
                     disabled={pack.maps.length < 2}
-                    onClick={({ props }: MarkerMenuItem) =>
-                        setChoosingDestination(props)
-                    }
+                    onClick={({ props }: MarkerMenuItem) => {
+                        hideMarkerMenu();
+                        setChoosingDestination(props);
+                    }}
                 >
                     <Icon name="exchange-alt" /> Move to map
                 </Item>
                 <Item
+                    closeOnClick={false}
                     hidden={noMarkerTarget}
                     onClick={({ props }: MarkerMenuItem) => {
+                        hideMarkerMenu();
                         if (!props) return;
                         const markers = map.markers.filter(({ id }) =>
                             props.ids.has(id),
@@ -1503,8 +1510,10 @@ export default function PackEditor({
                     <Icon name="copy" /> Copy
                 </Item>
                 <Item
+                    closeOnClick={false}
                     disabled={!clipboard.length}
                     onClick={({ props }: MarkerMenuItem) => {
+                        hideMarkerMenu();
                         if (props) pasteMarkers(props.position);
                     }}
                 >
@@ -1512,9 +1521,11 @@ export default function PackEditor({
                 </Item>
                 <Separator hidden={noMarkerTarget} />
                 <Item
+                    closeOnClick={false}
                     className={styles.markerMenuDelete}
                     hidden={noMarkerTarget}
                     onClick={({ props }: MarkerMenuItem) => {
+                        hideMarkerMenu();
                         if (props) removeMarkers(props.ids);
                     }}
                 >

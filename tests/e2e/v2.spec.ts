@@ -6,13 +6,14 @@ import path from 'node:path';
 
 // Legacy interaction scenarios retain their original, stable geographic fixture.
 // The bundled-pack scenarios below exercise the actual contributor default.
+const defaultPackAssets = '**/default-map-pack.zip*';
 let legacyArchive: Buffer | undefined;
 test.beforeEach(async ({ page }, info) => {
     if (info.title.startsWith('V2 bundled')) {
         info.setTimeout(90_000);
         return;
     }
-    await page.route('**/default-map-pack.zip.*', async (route) => {
+    await page.route(defaultPackAssets, async (route) => {
         if (route.request().url().endsWith('.2')) {
             await route.fulfill({ body: '' });
             return;
@@ -147,7 +148,7 @@ test('V2 bundled pack import shows reading and completion status', async ({
     const download = new Promise<void>((resolve) => {
         finishDownload = resolve;
     });
-    await page.route('**/default-map-pack.zip.*', async (route) => {
+    await page.route(defaultPackAssets, async (route) => {
         await download;
         await route.continue();
     });
@@ -2560,8 +2561,21 @@ test('V2 editor associates searchable game exits and map arrivals, and manual en
     expect(saved.maps[0].markers[0]).not.toHaveProperty('navigation');
     expect(saved.maps[1].entranceIds).toEqual([arrivalA]);
     expect(saved.maps[2].entranceIds).toEqual([arrivalB]);
+    await expect(
+        page.getByRole('status').filter({ hasText: 'Saved locally' }),
+    ).toBeVisible();
     await page.getByRole('link', { name: 'Preview Tracker' }).click();
-    await marker(page, 'Dungeon Door').click();
+    await expect(
+        page.getByRole('button', { name: 'Entrances', exact: true }),
+    ).toBeVisible();
+    const door = marker(page, 'Dungeon Door');
+    await door.hover();
+    await expect(
+        page
+            .getByRole('dialog', { name: 'Dungeon Door', exact: true })
+            .getByLabel('Entrance connection', { exact: true }),
+    ).toContainText('Destination not mapped in Entrances');
+    await door.click();
     const dialog = page.getByRole('dialog', { name: 'Entrances', exact: true });
     await expect(dialog.getByPlaceholder('Search exits')).toHaveValue(
         'Skyview Temple (via Deep Woods)',
@@ -3296,6 +3310,9 @@ test('V2 marker menu copies and deletes individual markers and groups, and paste
     await menuOnBackground();
     await expect(item('Delete')).toHaveCount(0);
     await item('Paste').click();
+    await expect(
+        page.getByRole('menu', { name: 'Map marker actions' }),
+    ).toHaveCount(0);
     await expect(
         stage.getByRole('button', { name: 'Signs', exact: true }),
     ).toHaveCount(2);

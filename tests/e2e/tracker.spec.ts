@@ -1,4 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+
+const inactiveSpiralChargeImage = readFileSync(
+    'src/assets/no_bird_statuette.png',
+).toString('base64');
 
 async function connectToFixture(page: Page, slot = 'Test Player') {
     await page.goto('/');
@@ -418,17 +423,21 @@ test.describe('tracker with simulated Archipelago server', () => {
                 page
                     .getByRole('button', { name: 'Loftwing', exact: true })
                     .locator('img'),
-            ).toHaveAttribute('src', /\/Loftwing\.png/);
-            await expect(
-                page
-                    .getByRole('button', { name: 'Spiral Charge', exact: true })
-                    .locator('img'),
-            ).toHaveAttribute(
-                'src',
-                spiralCharge
-                    ? /\/bird_statuette\.png/
-                    : /\/no_bird_statuette\.png/,
-            );
+            ).toHaveAttribute('src', /\/Loftwing(?:-[\w-]+)?\.png$/);
+            const spiralChargeIcon = page
+                .getByRole('button', { name: 'Spiral Charge', exact: true })
+                .locator('img');
+            if (spiralCharge) {
+                await expect(spiralChargeIcon).toHaveAttribute(
+                    'src',
+                    /\/bird_statuette(?:-[\w-]+)?\.png$/,
+                );
+            } else {
+                await expect(spiralChargeIcon).toHaveAttribute(
+                    'src',
+                    `data:image/png;base64,${inactiveSpiralChargeImage}`,
+                );
+            }
             expect(errors).toEqual([]);
         });
     }
@@ -520,7 +529,7 @@ test.describe('tracker with simulated Archipelago server', () => {
         await expect(statues).toBeVisible();
         await expect(statues.locator('img')).toHaveAttribute(
             'src',
-            /bird_statue\.png/,
+            /\/bird_statue(?:-[\w-]+)?\.png$/,
         );
         const scrapperBounds = await page
             .getByRole('button', { name: 'Scrapper', exact: true })
@@ -618,7 +627,7 @@ test.describe('tracker with simulated Archipelago server', () => {
             await statue.scrollIntoViewIfNeeded();
             await expect(statue.locator('img')).toHaveAttribute(
                 'src',
-                /bird_statue\.png/,
+                /\/bird_statue(?:-[\w-]+)?\.png$/,
             );
             await statue.click();
         }

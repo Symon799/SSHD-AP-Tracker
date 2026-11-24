@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const testBuild = 'node_modules/.cache/tracker-e2e';
+
 export default defineConfig({
     testDir: './tests/e2e',
     fullyParallel: true,
@@ -26,9 +28,10 @@ export default defineConfig({
             timeout: 120_000,
         },
         {
-            command: 'npm run start -- --host 127.0.0.1 --port 4173',
+            // Use a built bundle so Vite cannot reload the app mid-test.
+            command: `npm run build -- --mode e2e --outDir ${testBuild} && npm run serve -- --mode e2e --outDir ${testBuild} --host 127.0.0.1 --port 4173 --strictPort`,
             url: 'http://127.0.0.1:4173/',
-            reuseExistingServer: !process.env.CI,
+            reuseExistingServer: false,
             timeout: 120_000,
         },
     ],
