@@ -15,6 +15,9 @@ Ray's **Faron-V6.zip** replaced the Faron placements except for Farore's Silent
 Realm. The other provinces, Skyloft and Lehonno's three new maps are unchanged.
 Existing child links are preserved so the Faron overview still counts 5,875
 checks.
+Ray's **Realms-V2.zip** then replaced only Farore's and Nayru's Silent Realm
+layouts. The individual markers are kept as authored; shuffled relic positions
+are not verified per seed. Both trial returns now have physical game links.
 It contains 74 maps and 15,016 unique check placements,
 with no unused or byte-identical duplicate images. It is used for a fresh
 workspace and the editor's **New pack** action. Authored placements are preserved.
@@ -84,6 +87,8 @@ thereof. Imported packs and existing local drafts are not retroactively edited.
   updates, and a snapshot when the tracker connects after Link is already in game.
 - Verify that `S000`, `S200` and all nine `D003_*` stages open the new maps.
   Sky Keep is one authored image for all of its rooms.
+- Follow Player for the revised Silent Realms still uses `S100` and `S300`.
+  Verify entry and return in a real trial shuffle seed.
 - Bug Heaven shares `F023` with the Thunderhead; no distinguishing room/layer is
   confirmed, so use The Sky. The Lumpy Pumpkin interior has `F011r`; the exterior
   is part of `F020` and stays on The Sky.
@@ -96,7 +101,7 @@ thereof. Imported packs and existing local drafts are not retroactively edited.
 
 ### Entrance randomizer
 
-- Current baseline: 71 physical links out of 249, and 174 arrival IDs out of
+- Current baseline: 72 physical links out of 250, and 174 arrival IDs out of
   188. The rest of the map links include navigation shortcuts, not 178 missing
   connections. Manual entrance choices now route verified links. Client-driven
   discovery remains separate; see [V2 Autotracking](V2_AUTOTRACKING.md).
@@ -106,8 +111,8 @@ thereof. Imported packs and existing local drafts are not retroactively edited.
   Sparring Hall, Bazaar, Waterfall Cave, Lumpy Pumpkin, the Great Tree, Mogma
   Turf, Temple of Time north/south, Construction Bay upper/lower and Pirate
   Stronghold top/side. Their arrivals are already assigned where the map exists.
-- Add or verify actual source markers for the Sandship exit, Nayru trial return,
-  Lake Floria return and Volcano Summit toward Fire Sanctuary's exterior. The
+- Add or verify actual source markers for the Sandship exit, Lake Floria return
+  and Volcano Summit toward Fire Sanctuary's exterior. The
   existing map overview and **Back to** shortcuts are not those exits. Bird
   statue landings are mapped as destinations; the province links are not treated
   as individual dives. The spawn itself does not have a physical map marker.

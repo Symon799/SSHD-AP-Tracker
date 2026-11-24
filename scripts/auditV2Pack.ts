@@ -244,6 +244,11 @@ const text = [
                 'Verify the three new maps on entry and return. Every Sky Keep room intentionally uses the same map.',
             ],
             [
+                "Farore's and Nayru's revised Silent Realms",
+                '`S100`, `S300`',
+                'Verify that following opens the actual realm after a shuffled trial gate and switches back on return.',
+            ],
+            [
                 'Bug Heaven',
                 '`F023`',
                 'Compare room and layer against another location in The Thunderhead. Leave on The Sky if indistinguishable.',

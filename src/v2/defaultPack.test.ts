@@ -20,7 +20,7 @@ it('ships all three surface provinces alongside the Sky and Skyloft maps', () =>
     for (const part of parts)
         expect(part.length).toBeLessThan(100 * 1024 * 1024);
     const document = decodeArchive(Buffer.concat(parts));
-    expect(document.pack.name).toBe('SSHD V2 - Faron V6');
+    expect(document.pack.name).toBe('SSHD V2 - Realms V2');
     expect(document.pack.maps).toHaveLength(74);
     expect(placedChecks(document.pack).size).toBe(15016);
     expect(mapCheckIds(document.pack, 'faron')).toHaveLength(5875);
@@ -70,6 +70,8 @@ it('ships all three surface provinces alongside the Sky and Skyloft maps', () =>
     expect(mapFor({ stage: 'D101', room: 4 })).toBe('Ancient Cistern B1');
     expect(mapFor({ stage: 'S000' })).toBe("The Goddess's Silent Realm");
     expect(mapFor({ stage: 'S200' })).toBe("Din's Silent Realm");
+    expect(mapFor({ stage: 'S100' })).toBe("Farore's Silent Realm");
+    expect(mapFor({ stage: 'S300' })).toBe("Nayru's Silent Realm");
     for (let room = 0; room < 9; room++)
         expect(mapFor({ stage: `D003_${room}` })).toBe('Sky Keep');
     expect(mapFor({ stage: 'F201_1', room: 0, layer: 0 })).toBe(
@@ -102,10 +104,34 @@ it('ships all three surface provinces alongside the Sky and Skyloft maps', () =>
         ),
     );
     const arrivals = routed.maps.flatMap((m) => m.entranceIds);
-    expect(links).toHaveLength(71);
-    expect(new Set(links.map((marker) => marker.exitId)).size).toBe(71);
+    expect(links).toHaveLength(72);
+    expect(new Set(links.map((marker) => marker.exitId)).size).toBe(72);
     expect(arrivals).toHaveLength(174);
     expect(arrivals.every((id) => areaGraph.entrances[id])).toBe(true);
+    for (const [name, returnMap, count] of [
+        ["Farore's Silent Realm", 'Faron Woods', 13],
+        ["Nayru's Silent Realm", 'Lanayru Desert', 16],
+    ] as const) {
+        const realm = map(name);
+        const markers = realm.markers.filter(
+            (marker) => marker.kind === 'checks',
+        );
+        expect(markers).toHaveLength(count);
+        expect(markers.every((marker) => marker.checkIds.length === 1)).toBe(
+            true,
+        );
+        const exit = links.find(
+            (link) =>
+                areaGraph.exits[link.exitId].short_name ===
+                `${name} -> ${returnMap}`,
+        );
+        expect(exit?.targetMapId).toBe(map(returnMap).id);
+        expect(realm.markers).toContain(exit);
+    }
+    const nayruBack = map("Nayru's Silent Realm").markers.find(
+        (marker) => marker.kind === 'link' && marker.navigation === 'back',
+    );
+    expect(nayruBack).not.toHaveProperty('exitId');
     for (const link of links) {
         expect(
             linkDestination(

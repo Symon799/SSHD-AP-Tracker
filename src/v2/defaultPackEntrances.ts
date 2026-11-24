@@ -216,6 +216,11 @@ const directions: Direction[] = [
         "Nayru's Silent Realm",
         "Lanayru Desert -> Nayru's Silent Realm",
     ],
+    [
+        "Nayru's Silent Realm",
+        'Lanayru Desert',
+        "Nayru's Silent Realm -> Lanayru Desert",
+    ],
     ['Faron Woods', 'Lake Floria', 'Faron Woods -> Lake Floria'],
     [
         'Volcano Summit in front of Temple',
